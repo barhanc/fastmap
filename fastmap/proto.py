@@ -20,7 +20,13 @@ def dhamming(u: np.ndarray[int], v: np.ndarray[int]):
 
 def dswap(u: np.ndarray[int], v: np.ndarray[int]):
     pos_u, pos_v = u.argsort(), v.argsort()
-    return np.sum(np.sign(np.subtract.outer(pos_u, pos_u)) != np.sign(np.subtract.outer(pos_v, pos_v))) // 2
+    return (
+        np.sum(
+            np.sign(np.subtract.outer(pos_u, pos_u))
+            != np.sign(np.subtract.outer(pos_v, pos_v))
+        )
+        // 2
+    )
 
 
 def bf(
@@ -44,7 +50,11 @@ def bf(
 def bf_with_cand_match(
     U: np.ndarray[int],
     V: np.ndarray[int],
-    d: np.ndarray[int] | Callable[[np.ndarray[int], np.ndarray[int]], int | float] | str,
+    d: (
+        np.ndarray[int]
+        | Callable[[np.ndarray[int], np.ndarray[int]], int | float]
+        | str
+    ),
 ) -> int | float:
     assert U.shape == V.shape
 
@@ -54,7 +64,11 @@ def bf_with_cand_match(
 
     for sigma in permutations(range(n_cands)):
         sigma = np.array(sigma)
-        cost = d[:, :, identity, sigma].sum(-1) if isinstance(d, np.ndarray) else cdist(sigma[U], V, metric=d)
+        cost = (
+            d[:, :, identity, sigma].sum(-1)
+            if isinstance(d, np.ndarray)
+            else cdist(sigma[U], V, metric=d)
+        )
         row, col = linear_sum_assignment(cost)
         best_res = min(cost[row, col].sum(), best_res)
 
@@ -67,7 +81,9 @@ def spear_ilp(U: np.ndarray[int], V: np.ndarray[int]) -> float:
     pos_U = np.argsort(U)
     pos_V = np.argsort(V)
 
-    D = np.abs(np.subtract.outer(pos_U, pos_V)).reshape(n_votes * n_cands, n_votes * n_cands, order="F")
+    D = np.abs(np.subtract.outer(pos_U, pos_V)).reshape(
+        n_votes * n_cands, n_votes * n_cands, order="F"
+    )
     N = cp.Variable((n_votes, n_votes), boolean=True)
     M = cp.Variable((n_cands, n_cands), boolean=True)
     P = cp.Variable((n_votes * n_cands, n_votes * n_cands), boolean=True)
@@ -105,7 +121,11 @@ def spear_ilp2(U: np.ndarray, V: np.ndarray) -> float:
     pos_U = np.argsort(U)
     pos_V = np.argsort(V)
 
-    D = np.abs(np.subtract.outer(pos_U, pos_V)).swapaxes(1, 2).reshape(n_votes**2, n_cands**2, order="F")
+    D = (
+        np.abs(np.subtract.outer(pos_U, pos_V))
+        .swapaxes(1, 2)
+        .reshape(n_votes**2, n_cands**2, order="F")
+    )
     N = cp.Variable((n_votes, n_votes), boolean=True)
     M = cp.Variable((n_cands, n_cands), boolean=True)
     W = cp.Variable((n_votes, n_votes), nonneg=True)

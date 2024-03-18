@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fast-map"
+name = "fastmap"
 version = "0.0.1"
 authors = [
   { name="Bartosz Hanc", email="bartosz.hanc02@gmail.com" }, ] 

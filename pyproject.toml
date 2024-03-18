@@ -16,3 +16,6 @@ classifiers=[
         "License :: OSI Approved :: MIT License"
       ]
 dependencies=["numpy", "tqdm", "scipy", "mapel", "cvxpy"]
+
+[tool.setuptools]
+packages = ["fastmap"]

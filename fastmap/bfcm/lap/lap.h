@@ -29,5 +29,4 @@ typedef double cost;
 
 /*************** FUNCTIONS  *******************/
 
-extern cost lap(int dim, cost *assigncost,
-                col *rowsol, row *colsol, cost *u, cost *v);
+extern cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v);

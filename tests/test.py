@@ -1,9 +1,7 @@
 import time
 import numpy as np
 
-from scipy.optimize import linear_sum_assignment
 from fastmap.proto import bf_with_cand_match, dist
-
 from fastmap.bfcm import bfcm
 
 if __name__ == "__main__":
@@ -17,9 +15,7 @@ if __name__ == "__main__":
     print(f"Cpp TO BEAT (with no extensions): {res}, {e-s:.4f}")
 
     s = time.perf_counter()
-    pos1 = np.argsort(V1)
-    pos2 = np.argsort(V2)
-    D = np.abs(np.subtract.outer(pos1, pos2)).swapaxes(1, 2)
+    D = np.abs(np.subtract.outer(np.argsort(V1), np.argsort(V2))).swapaxes(1, 2).swapaxes(-1, -2).flatten()
     res = bfcm(D, n_votes, n_cands)
     e = time.perf_counter()
     print(f"My CPP                          : {res}, {e-s:.4f}")

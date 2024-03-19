@@ -148,7 +148,6 @@ if __name__ == "__main__":
     d = np.abs(np.subtract.outer(pos1, pos2)).swapaxes(1, 2)  # Spearman
     # d = np.not_equal.outer(pos1, pos2).swapaxes(1, 2)  # Hamming
     # d = dswap
-    # d = dspear
     res = bf_with_cand_match(V1, V2, d)
     e = time.perf_counter()
     print(f"BF with Cand. Match Precomputed D: {res}, {e-s:.4f}")

@@ -2,40 +2,38 @@
 #include <pybind11/pybind11.h>
 
 #include <algorithm>
-#include <iostream>
 #include <limits>
-#include <numeric>
 
-#include "rectangular_lsap/rectangular_lsap.h"
+#include "lap/lap.h"
 
 namespace py = pybind11;
 
-double bfcm(py::array_t<double, py::array::f_style> D, int nv, int nc) {
-    auto data = D.unchecked<4>();
+double bfcm(py::array_t<double> D, const int nv, const int nc) {
+    py::buffer_info D_buf = D.request();
+    if (D_buf.ndim != 4) throw std::runtime_error("Number of dimensions must be 4");
+    if (D_buf.shape[0] != D_buf.shape[1] || D_buf.shape[2] != D_buf.shape[3])
+        throw std::runtime_error("Shape of D must be (n,n,m,m)");
+    double *ptr_D = static_cast<double *>(D_buf.ptr);
 
-    int sigma[nc];
+    int sigma[nc];  // Permutation array
     for (int i = 0; i < nc; i++) sigma[i] = i;
 
+    int a[nv], b[nv];
+    double cost[nv * nv], u[nv], v[nv];
     double best_res = std::numeric_limits<double>::infinity();
-    double cost[nv * nv];
-    int64_t a[nv], b[nv];
+
+    const int nvnv = nv * nv;
+    const int ncnc = nc * nc;
+    const int nvnvncnc = nvnv * ncnc;
 
     do {
-        for (int i = 0; i < nv; i++)
-            for (int j = 0; j < nv; j++) {
-                double acc = 0;
-                for (int k = 0; k < nc; k++) acc += data(i, j, k, sigma[k]);
-                cost[i * nv + j] = acc;
-            }
+        std::memset(cost, 0, nv * nv * sizeof(double));
+        for (int k = 0; k < nc; k++)
+            for (int i = 0; i < nv; i++)
+                for (int j = 0; j < nv; j++)
+                    cost[i * nv + j] += ptr_D[i * nv * nc * nc + j * nc * nc + k * nc + sigma[k]];
 
-        int ret = solve_rectangular_linear_sum_assignment(nv, nv, cost, false, a, b);
-        if (ret == RECTANGULAR_LSAP_INFEASIBLE || ret == RECTANGULAR_LSAP_INVALID)
-            throw std::runtime_error("LSAP problem is infeasible or invalid");
-
-        double res = 0;
-        for (int i = 0; i < nv; i++) res += cost[a[i] * nv + b[i]];
-
-        best_res = std::min(best_res, res);
+        best_res = std::min(best_res, lap(nv, cost, a, b, u, v));
     } while (std::next_permutation(sigma, sigma + nc));
 
     return best_res;
@@ -43,6 +41,5 @@ double bfcm(py::array_t<double, py::array::f_style> D, int nv, int nc) {
 
 PYBIND11_MODULE(bfcm, m) {
     m.doc() = "";  // optional module docstring
-    m.def("bf_match_cand", &bfcm,
-          "Exhaustive search over all possible candidates matchings");
+    m.def("bfcm", &bfcm, "Exhaustive search over all possible candidates matchings");
 }

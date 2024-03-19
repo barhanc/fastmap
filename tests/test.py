@@ -1,9 +1,10 @@
 import time
 import numpy as np
 
-from itertools import product
-from fastmap.bfcm import bf_match_cand
+from scipy.optimize import linear_sum_assignment
 from fastmap.proto import bf_with_cand_match, dist
+
+from fastmap.bfcm import bfcm
 
 if __name__ == "__main__":
     n_votes, n_cands = 8, 8
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     pos1 = np.argsort(V1)
     pos2 = np.argsort(V2)
     D = np.abs(np.subtract.outer(pos1, pos2)).swapaxes(1, 2)
-    res = bf_match_cand(D, n_votes, n_cands)
+    res = bfcm(D, n_votes, n_cands)
     e = time.perf_counter()
     print(f"My CPP                          : {res}, {e-s:.4f}")
 

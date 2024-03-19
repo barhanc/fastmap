@@ -1,5 +1,5 @@
 from setuptools import setup
-from pybind11.setup_helpers import Pybind11Extension, build_ext
+from pybind11.setup_helpers import Pybind11Extension
 
 
 setup(
@@ -20,8 +20,11 @@ setup(
     ext_modules=[
         Pybind11Extension(
             "fastmap.bfcm",
-            ["fastmap/bfcm/rectangular_lsap/rectangular_lsap.cpp", "fastmap/bfcm/bfcm.cpp"],
-            extra_compile_args=["-std=c++17", "-Wall", "-Ofast"],
+            [
+                "fastmap/bfcm/lap/lap.cpp",
+                "fastmap/bfcm/bfcm.cpp",
+            ],
+            extra_compile_args=["-std=c++17", "-Ofast", "-Wall"],
         ),
     ],
 )

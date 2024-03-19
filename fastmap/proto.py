@@ -57,7 +57,6 @@ def bf_with_cand_match(
         cost = d[:, :, identity, sigma].sum(-1) if isinstance(d, np.ndarray) else cdist(sigma[U], V, metric=d)
         row, col = linear_sum_assignment(cost)
         best_res = min(cost[row, col].sum(), best_res)
-
     return best_res
 
 

@@ -4,7 +4,8 @@ from typing import Callable
 from itertools import permutations
 
 import numpy as np
-import cvxpy as cp
+
+# import cvxpy as cp
 
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment

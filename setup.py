@@ -13,7 +13,7 @@ setup(
         "numpy",
         "scipy",
         "tqdm",
-        "cvxpy",  # For development only (or not if You come up with a nice MILP form.)
+        # "cvxpy",  # For development only (or not if You come up with a nice MILP form.)
         "mapel",  # For development only
     ],
     python_requires=">=3.11",

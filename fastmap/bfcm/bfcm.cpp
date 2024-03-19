@@ -28,10 +28,8 @@ double bfcm(py::array_t<double, py::array::f_style> D, int nv, int nc) {
                 cost[i * nv + j] = acc;
             }
 
-        int ret =
-            solve_rectangular_linear_sum_assignment(nv, nv, cost, false, a, b);
-        if (ret == RECTANGULAR_LSAP_INFEASIBLE ||
-            ret == RECTANGULAR_LSAP_INVALID)
+        int ret = solve_rectangular_linear_sum_assignment(nv, nv, cost, false, a, b);
+        if (ret == RECTANGULAR_LSAP_INFEASIBLE || ret == RECTANGULAR_LSAP_INVALID)
             throw std::runtime_error("LSAP problem is infeasible or invalid");
 
         double res = 0;

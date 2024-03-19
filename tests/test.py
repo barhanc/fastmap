@@ -6,7 +6,7 @@ from fastmap.bfcm import bf_match_cand
 from fastmap.proto import bf_with_cand_match, dist
 
 if __name__ == "__main__":
-    n_votes, n_cands = 9, 9
+    n_votes, n_cands = 3, 3
     V1 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
     V2 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
 

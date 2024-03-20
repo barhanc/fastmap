@@ -2,10 +2,12 @@
 #include <pybind11/pybind11.h>
 
 #include <algorithm>
-#include <iostream>
 #include <limits>
 
 #include "lap/lap.h"
+
+#define STRINGIFY(x) #x
+#define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 namespace py = pybind11;
 
@@ -40,7 +42,17 @@ double bfcm(py::array_t<double> D, const int nv, const int nc) {
     return best_res;
 }
 
-PYBIND11_MODULE(bfcm, m) {
-    m.doc() = "";  // optional module docstring
-    m.def("bfcm", &bfcm, "Exhaustive search over all possible candidates matchings");
+PYBIND11_MODULE(fast, m) {
+    m.doc() = R"pbdoc(
+        Exhaustive search over all possible candidates matchings"
+    )pbdoc";
+    m.def("bfcm", &bfcm, R"pbdoc(
+        Exhaustive search over all possible candidates matchings"
+    )pbdoc");
+
+#ifdef VERSION_INFO
+    m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
+#else
+    m.attr("__version__") = "dev";
+#endif
 }

@@ -1,5 +1,3 @@
-import time
-
 from typing import Callable
 from itertools import permutations
 
@@ -127,42 +125,3 @@ def spear_ilp2(U: np.ndarray, V: np.ndarray) -> float:
     res = prob.solve(solver="CPLEX", verbose=True)
 
     return res
-
-
-import mapel.elections.distances.cppdistances as dist
-
-if __name__ == "__main__":
-    n_votes, n_cands = 8, 8
-    V1 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
-    V2 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
-
-    # s = time.perf_counter()
-    # res = bf(V1, V2, dspear)
-    # e = time.perf_counter()
-    # print(f"BF: {res}, {e-s:.4f}")
-
-    s = time.perf_counter()
-    pos1 = np.argsort(V1)
-    pos2 = np.argsort(V2)
-    d = np.abs(np.subtract.outer(pos1, pos2)).swapaxes(1, 2)  # Spearman
-    # d = np.not_equal.outer(pos1, pos2).swapaxes(1, 2)  # Hamming
-    # d = dswap
-    res = bf_with_cand_match(V1, V2, d)
-    e = time.perf_counter()
-    print(f"BF with Cand. Match Precomputed D: {res}, {e-s:.4f}")
-
-    s = time.perf_counter()
-    res = dist.speard(V1, V2)
-    # res = dist.swapd(V1, V2)
-    e = time.perf_counter()
-    print(f"Cpp TO BEAT (with no extensions) : {res}, {e-s:.4f}")
-
-    # s = time.perf_counter()
-    # res = spear_ilp(V1, V2)
-    # e = time.perf_counter()
-    # print(f"ILP form. 1:                     {res}, {e-s:.4f}")
-
-    # s = time.perf_counter()
-    # res = spear_ilp2(V1, V2)
-    # e = time.perf_counter()
-    # print(f"ILP form. 2:                     {res}, {e-s:.4f}")

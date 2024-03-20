@@ -1,10 +1,13 @@
 from setuptools import setup
+from glob import glob
 from pybind11.setup_helpers import Pybind11Extension
+import pybind11
 
+__version__ = "0.0.1"
 
 setup(
     name="fastmap",
-    version="0.0.1",
+    version=__version__,
     license="MIT",
     description="Optimized implementations of algorithms computing distance measures for Maps of Elections.",
     packages=["fastmap"],
@@ -19,12 +22,10 @@ setup(
     python_requires=">=3.11",
     ext_modules=[
         Pybind11Extension(
-            "fastmap.bfcm",
-            [
-                "fastmap/bfcm/lap/lap.cpp",
-                "fastmap/bfcm/bfcm.cpp",
-            ],
+            "fastmap.fast",
+            sources=["fastmap/fast/bfcm.cpp", "fastmap/fast/lap/lap.cpp"],
             extra_compile_args=["-std=c++17", "-Ofast", "-Wall"],
+            define_macros=[("VERSION_INFO", __version__)],
         ),
     ],
 )

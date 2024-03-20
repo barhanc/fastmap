@@ -28,12 +28,12 @@
 
 #include "gnrl.h"
 
-#define _assigncost_(i, j) assigncost[i * dim + j]
+#define _assigncost_(i, j) assigncost[i][j]
 
 using namespace std;
 
 /*This function is the jv shortest augmenting path algorithm to solve the assignment problem*/
-cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
+cost lap(int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, cost *v)
 
 // input:
 // dim        - problem size
@@ -48,8 +48,8 @@ cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
 {
     boolean unassignedfound;
     row i, imin, numfree = 0, prvnumfree, f, i0, k, freerow, *pred, *free;
-    col j, j1, j2, endofpath, last, low, up, *collist, *matches;
-    cost min, h, umin, usubmin, v2, *d;
+    col j, j1, j2 = -1, endofpath, last = -1, low, up, *collist, *matches;
+    cost min = BIG, h, umin, usubmin, v2, *d;
 
     free = new row[dim];     // list of unassigned rows.
     collist = new col[dim];  // list of columns to be scanned in various ways.
@@ -119,7 +119,7 @@ cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
             usubmin = BIG;
             for (j = 1; j < dim; j++) {
                 h = _assigncost_(i, j) - v[j];
-                if (h < usubmin)
+                if (h < usubmin) {
                     if (h >= umin) {
                         usubmin = h;
                         j2 = j;
@@ -129,6 +129,7 @@ cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
                         j2 = j1;
                         j1 = j;
                     }
+                }
             }
 
             i0 = colsol[j1];
@@ -148,7 +149,7 @@ cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
             rowsol[i] = j1;
             colsol[j1] = i;
 
-            if (i0 > -1)  // minimum column j1 assigned earlier.
+            if (i0 > -1) {  // minimum column j1 assigned earlier.
                 if (umin < usubmin)
                     //           put in current k, and go back to that k.
                     //           continue augmenting path i - j1 with i0.
@@ -157,6 +158,7 @@ cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
                     //           no further augmenting reduction possible.
                     //           store i0 in list of free rows for next phase.
                     free[numfree++] = i0;
+            }
         }
     } while (loopcnt < 2);  // repeat once.
 
@@ -210,7 +212,8 @@ cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
             }
 
             if (!unassignedfound) {
-                // update 'distances' between freerow and all unscanned columns, via next scanned column.
+                // update 'distances' between freerow and all unscanned columns, via next scanned
+                // column.
                 j1 = collist[low];
                 low++;
                 i = colsol[j1];
@@ -221,7 +224,7 @@ cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
                     v2 = _assigncost_(i, j) - v[j] - h;
                     if (v2 < d[j]) {
                         pred[j] = i;
-                        if (v2 == min)  // new column found at same minimum value
+                        if (v2 == min) {  // new column found at same minimum value
                             if (colsol[j] < 0) {
                                 // if unassigned, shortest augmenting path is complete.
                                 endofpath = j;
@@ -233,6 +236,7 @@ cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
                                 collist[k] = collist[up];
                                 collist[up++] = j;
                             }
+                        }
                         d[j] = v2;
                     }
                 }

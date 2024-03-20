@@ -25,7 +25,7 @@ setup(
                 "fastmap/fast/lap/lap.cpp",
                 "fastmap/fast/module.cpp",
             ],
-            extra_compile_args=["-O2"],
+            extra_compile_args=["-O2", "-Wall"],
             include_dirs=[],
         ),
     ],

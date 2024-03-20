@@ -1,33 +1,68 @@
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <algorithm>
+#include <execution>
+#include <iostream>
 #include <limits>
 
 #include "lap/lap.h"
 
 namespace py = pybind11;
 
-double bfcm(std::vector<double> D, const int nv, const int nc) {
-    int sigma[nc];
+double bfcm(py::array_t<double> npyD, const int nv, const int nc) {
+    auto D = npyD.unchecked<4>();
+
+    double **cost = (double **)malloc(nv * sizeof(double *));
+    for (int i = 0; i < nv; i++) cost[i] = (double *)malloc(nv * sizeof(double));
+
+    for (int i = 0; i < nv; i++)
+        for (int j = 0; j < nv; j++) {
+            double acc = 0;
+            for (int k = 0; k < nc; k++) acc += D(i, j, k, k);
+            cost[i][j] = acc;
+        }
+
+    int sigma[nc], stack[nc] = {0}, alpha = 1;
     for (int i = 0; i < nc; i++) sigma[i] = i;
 
     int a[nv], b[nv];
-    double cost[nv * nv], u[nv], v[nv];
-    double best_res = std::numeric_limits<double>::max();
+    double _x[nv], _y[nv];
+    double best_res = lap(nv, cost, a, b, _x, _y);
 
-    const int ncnc = nc * nc;
-    const int nvnv = nv * nv;
-    const int nvncnc = nv * ncnc;
+    while (alpha < nc) {
+        if (stack[alpha] < alpha) {
+            if (alpha % 2 == 0) {
+                for (int i = 0; i < nv; i++)
+                    for (int j = 0; j < nv; j++)
+                        cost[i][j] += D(i, j, alpha, sigma[0]) + D(i, j, 0, sigma[alpha]) -
+                                      D(i, j, 0, sigma[0]) - D(i, j, alpha, sigma[alpha]);
 
-    do {
-        std::memset(cost, 0, nvnv * sizeof(double));
-        for (int i = 0; i < nv; i++)
-            for (int j = 0; j < nv; j++)
-                for (int k = 0; k < nc; k++) cost[i * nv + j] += D[i * nvncnc + j * ncnc + sigma[k] * nc + k];
+                std::swap(sigma[0], sigma[alpha]);
 
-        best_res = std::min(best_res, lap(nv, cost, a, b, u, v));
-    } while (std::next_permutation(sigma, sigma + nc));
+            } else {
+                for (int i = 0; i < nv; i++)
+                    for (int j = 0; j < nv; j++)
+                        cost[i][j] += -D(i, j, alpha, sigma[alpha]) -
+                                      D(i, j, stack[alpha], sigma[stack[alpha]]) +
+                                      D(i, j, alpha, sigma[stack[alpha]]) +
+                                      D(i, j, stack[alpha], sigma[alpha]);
+
+                std::swap(sigma[alpha], sigma[stack[alpha]]);
+            }
+
+            best_res = std::min(best_res, lap(nv, cost, a, b, _x, _y));
+            stack[alpha]++;
+            alpha = 1;
+        } else {
+            stack[alpha] = 0;
+            alpha++;
+        }
+    }
+
+    for (int i = 0; i < nv; i++) free(cost[i]);
+    free(cost);
 
     return best_res;
 }

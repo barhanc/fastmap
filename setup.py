@@ -1,5 +1,5 @@
 from setuptools import setup
-from pybind11.setup_helpers import Pybind11Extension
+from pybind11.setup_helpers import Pybind11Extension, build_ext
 
 __version__ = "0.0.1"
 
@@ -21,9 +21,12 @@ setup(
     ext_modules=[
         Pybind11Extension(
             "fastmap.fast",
-            sources=["fastmap/fast/bfcm.cpp", "fastmap/fast/lap/lap.cpp"],
-            include_dirs=["extern/"],
-            extra_compile_args=["-std=c++17", "-Ofast", "-Wall"],
-        ),
+            sources=[
+                "fastmap/fast/lap/lap.cpp",
+                "fastmap/fast/bfcm.cpp",
+            ],
+            extra_compile_args=["-Ofast"],
+        )
     ],
+    cmdclass={"build_ext": build_ext},
 )

@@ -3,6 +3,8 @@ import numpy as np
 
 from fastmap.proto import bf_with_cand_match
 import mapel.elections.distances.cppdistances as dist
+
+# from fastmap.fast import bfcm
 from fastmap.fast import bfcm
 
 if __name__ == "__main__":
@@ -16,7 +18,7 @@ if __name__ == "__main__":
     print(f"Cpp TO BEAT (with no extensions): {res}, {e-s:.4f}")
 
     s = time.perf_counter()
-    D = np.abs(np.subtract.outer(np.argsort(V1), np.argsort(V2))).swapaxes(1, 2).swapaxes(-2, -1)
+    D = np.abs(np.subtract.outer(np.argsort(V1), np.argsort(V2))).swapaxes(1, 2)
     res = bfcm(D.flatten(), n_votes, n_cands)
     e = time.perf_counter()
     print(f"My CPP                          : {res}, {e-s:.4f}")

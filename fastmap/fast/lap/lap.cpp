@@ -33,12 +33,7 @@
 using namespace std;
 
 /*This function is the jv shortest augmenting path algorithm to solve the assignment problem*/
-cost lap(int dim,
-         cost *assigncost,
-         col *rowsol,
-         row *colsol,
-         cost *u,
-         cost *v)
+cost lap(int dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
 
 // input:
 // dim        - problem size
@@ -63,8 +58,7 @@ cost lap(int dim,
     pred = new row[dim];     // row-predecessor of column in augmenting/alternating path.
 
     // init how many times a row will be assigned in the column reduction.
-    for (i = 0; i < dim; i++)
-        matches[i] = 0;
+    for (i = 0; i < dim; i++) matches[i] = 0;
 
     // COLUMN REDUCTION
     for (j = dim; j--;)  // reverse order gives better results.
@@ -101,8 +95,7 @@ cost lap(int dim,
             min = BIG;
             for (j = 0; j < dim; j++)
                 if (j != j1)
-                    if (_assigncost_(i, j) - v[j] < min)
-                        min = _assigncost_(i, j) - v[j];
+                    if (_assigncost_(i, j) - v[j] < min) min = _assigncost_(i, j) - v[j];
             v[j1] = v[j1] - min;
         }
 

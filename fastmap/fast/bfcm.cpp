@@ -5,7 +5,6 @@
 #include <limits>
 
 #include "lap/lap.h"
-
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 

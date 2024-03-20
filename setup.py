@@ -1,7 +1,8 @@
+import sys
+
+sys.path.append("./fastmap/fast/Fastor/")
 from setuptools import setup
-from pathlib import Path
 from pybind11.setup_helpers import Pybind11Extension
-import pybind11
 
 __version__ = "0.0.1"
 

@@ -15,11 +15,10 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
     ],
     install_requires=[
-        "pybind11",
         "numpy",
         "scipy",
         "tqdm",
-        "cvxpy",  # For development only (or not if You come up with a nice MILP form, doesnt work on Mac OS)
+        # "cvxpy",  # For development only (doesnt work on Mac OS)
         "mapel",  # For development only
     ],
     python_requires=">=3.11",
@@ -33,9 +32,9 @@ setup(
             extra_compile_args=[
                 "-Wall",
                 "-O3",
-                "-fopenmp",
+                # "-fopenmp", # (Not on Mac OS out-of-the-box)
             ],
-            extra_link_args=["-lgomp"],
+            # extra_link_args=["-lgomp"], # (Not on Mac OS out-of-the-box)
         )
     ],
     include_dirs=[numpy.get_include()],

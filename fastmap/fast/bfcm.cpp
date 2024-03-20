@@ -5,8 +5,6 @@
 #include <limits>
 
 #include "lap/lap.h"
-#define STRINGIFY(x) #x
-#define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 namespace py = pybind11;
 
@@ -15,11 +13,8 @@ double bfcm(py::array_t<double> D, const int nv, const int nc) {
     if (D_buf.ndim != 1) throw std::runtime_error("Number of dimensions must be 1 (use .flatten())");
     double *ptr_D = static_cast<double *>(D_buf.ptr);
 
-    int sigma[nc], identity[nc];
-    for (int i = 0; i < nc; i++) {
-        sigma[i] = i;
-        identity[i] = i;
-    }
+    int sigma[nc];
+    for (int i = 0; i < nc; i++) sigma[i] = i;
 
     int a[nv], b[nv];
     double cost[nv * nv], u[nv], v[nv];
@@ -48,10 +43,4 @@ PYBIND11_MODULE(fast, m) {
     m.def("bfcm", &bfcm, R"pbdoc(
         Exhaustive search over all possible candidates matchings"
     )pbdoc");
-
-#ifdef VERSION_INFO
-    m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
-#else
-    m.attr("__version__") = "dev";
-#endif
 }

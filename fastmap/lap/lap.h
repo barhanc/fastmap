@@ -1,4 +1,8 @@
 /************************************************************************
+ * Taken from:
+ * https://github.com/yongyanghz/LAPJV-algorithm-c/tree/master
+*************************************************************************
+/************************************************************************
 *
 *  lap.h
    version 1.0 - 21 june 1996
@@ -29,4 +33,4 @@ typedef int cost;
 
 /*************** FUNCTIONS  *******************/
 
-extern cost lap(int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, cost *v);
+extern cost lap (int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, cost *v);

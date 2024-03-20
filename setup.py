@@ -23,7 +23,7 @@ setup(
     ext_modules=[
         Pybind11Extension(
             "fastmap.fast",
-            sources=[str(path) for path in Path("./fastmap/fast/").rglob("*.cpp")],
+            sources=["fastmap/fast/bfcm.cpp", "fastmap/fast/lap/lap.cpp"],
             extra_compile_args=["-std=c++17", "-Ofast", "-Wall"],
             define_macros=[("VERSION_INFO", __version__)],
         ),

@@ -1,5 +1,5 @@
 from setuptools import setup
-from glob import glob
+from pathlib import Path
 from pybind11.setup_helpers import Pybind11Extension
 import pybind11
 
@@ -23,7 +23,7 @@ setup(
     ext_modules=[
         Pybind11Extension(
             "fastmap.fast",
-            sources=["fastmap/fast/bfcm.cpp", "fastmap/fast/lap/lap.cpp"],
+            sources=[str(path) for path in Path("./fastmap/fast/").rglob("*.cpp")],
             extra_compile_args=["-std=c++17", "-Ofast", "-Wall"],
             define_macros=[("VERSION_INFO", __version__)],
         ),

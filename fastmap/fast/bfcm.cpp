@@ -1,4 +1,3 @@
-#include <Fastor/Fastor.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
@@ -38,10 +37,6 @@ double bfcm(py::array_t<double> D, const int nv, const int nc) {
 }
 
 PYBIND11_MODULE(fast, m) {
-    m.doc() = R"pbdoc(
-        Exhaustive search over all possible candidates matchings"
-    )pbdoc";
-    m.def("bfcm", &bfcm, R"pbdoc(
-        Exhaustive search over all possible candidates matchings"
-    )pbdoc");
+    m.doc() = "Exhaustive search over all possible candidates matchings";
+    m.def("bfcm", &bfcm, "Exhaustive search over all possible candidates matchings");
 }

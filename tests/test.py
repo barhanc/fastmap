@@ -16,8 +16,8 @@ if __name__ == "__main__":
     print(f"Cpp TO BEAT (with no extensions): {res}, {e-s:.4f}")
 
     s = time.perf_counter()
-    D = np.abs(np.subtract.outer(np.argsort(V1), np.argsort(V2))).swapaxes(1, 2).swapaxes(-2, -1).flatten()
-    res = bfcm(D, n_votes, n_cands)
+    D = np.abs(np.subtract.outer(np.argsort(V1), np.argsort(V2))).swapaxes(1, 2).swapaxes(-2, -1)
+    res = bfcm(D.flatten(), n_votes, n_cands)
     e = time.perf_counter()
     print(f"My CPP                          : {res}, {e-s:.4f}")
 

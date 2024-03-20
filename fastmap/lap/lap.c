@@ -1,4 +1,8 @@
 /************************************************************************
+ * Taken from:
+ * https://github.com/Fil/lap-jv
+*************************************************************************
+/************************************************************************
 *
 *  lap.cpp
    version 1.0 - 4 September 1996
@@ -23,15 +27,16 @@
 #include "lap.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "gnrl.h"
 
 #define _assigncost_(i, j) assigncost[i][j]
 
 /*This function is the jv shortest augmenting path algorithm to solve the assignment problem*/
-cost lap(const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, cost *v)
+cost
+lap (const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, cost *v)
 
 // input:
 // dim        - problem size
@@ -55,22 +60,22 @@ cost lap(const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, co
         matches[dim]; // counts how many times a row could be assigned.
     cost d[dim];      // 'cost-distance' in augmenting path calculation.
 
-    memset(free, 0, sizeof free);
-    memset(pred, 0, sizeof pred);
-    memset(collist, 0, sizeof collist);
-    memset(matches, 0, sizeof matches);
-    memset(d, 0, sizeof d);
+    memset (free, 0, sizeof free);
+    memset (pred, 0, sizeof pred);
+    memset (collist, 0, sizeof collist);
+    memset (matches, 0, sizeof matches);
+    memset (d, 0, sizeof d);
 
     // COLUMN REDUCTION
     for (j = dim; j--;) // reverse order gives better results.
     {
         // find minimum cost over rows.
-        min = _assigncost_(0, j);
+        min = _assigncost_ (0, j);
         imin = 0;
         for (i = 1; i < dim; i++)
-            if (_assigncost_(i, j) < min)
+            if (_assigncost_ (i, j) < min)
             {
-                min = _assigncost_(i, j);
+                min = _assigncost_ (i, j);
                 imin = i;
             }
         v[j] = min;
@@ -101,8 +106,8 @@ cost lap(const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, co
             min = BIG;
             for (j = 0; j < dim; j++)
                 if (j != j1)
-                    if (_assigncost_(i, j) - v[j] < min)
-                        min = _assigncost_(i, j) - v[j];
+                    if (_assigncost_ (i, j) - v[j] < min)
+                        min = _assigncost_ (i, j) - v[j];
             v[j1] = v[j1] - min;
         }
 
@@ -123,12 +128,12 @@ cost lap(const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, co
             k++;
 
             //       find minimum and second minimum reduced cost over columns.
-            umin = _assigncost_(i, 0) - v[0];
+            umin = _assigncost_ (i, 0) - v[0];
             j1 = 0;
             usubmin = BIG;
             for (j = 1; j < dim; j++)
             {
-                h = _assigncost_(i, j) - v[j];
+                h = _assigncost_ (i, j) - v[j];
                 if (h < usubmin)
                 {
                     if (h >= umin)
@@ -186,7 +191,7 @@ cost lap(const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, co
         // runs until unassigned column added to shortest path tree.
         for (j = dim; j--;)
         {
-            d[j] = _assigncost_(freerow, j) - v[j];
+            d[j] = _assigncost_ (freerow, j) - v[j];
             pred[j] = freerow;
             collist[j] = j; // init column list.
         }
@@ -239,12 +244,12 @@ cost lap(const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, co
                 j1 = collist[low];
                 low++;
                 i = colsol[j1];
-                h = _assigncost_(i, j1) - v[j1] - min;
+                h = _assigncost_ (i, j1) - v[j1] - min;
 
                 for (k = up; k < dim; k++)
                 {
                     j = collist[k];
-                    v2 = _assigncost_(i, j) - v[j] - h;
+                    v2 = _assigncost_ (i, j) - v[j] - h;
                     if (v2 < d[j])
                     {
                         pred[j] = i;
@@ -294,8 +299,8 @@ cost lap(const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, co
     for (i = dim; i--;)
     {
         j = rowsol[i];
-        u[i] = _assigncost_(i, j) - v[j];
-        lapcost = lapcost + _assigncost_(i, j);
+        u[i] = _assigncost_ (i, j) - v[j];
+        lapcost = lapcost + _assigncost_ (i, j);
     }
 
     return lapcost;

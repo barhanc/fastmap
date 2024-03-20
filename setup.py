@@ -32,7 +32,7 @@ setup(
             ],
             extra_compile_args=[
                 "-Wall",
-                "-Ofast",
+                "-O3",
                 "-fopenmp",
             ],
             extra_link_args=["-lgomp"],

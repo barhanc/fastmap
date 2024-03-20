@@ -3,6 +3,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "numpy/arrayobject.h"
 
+// #include <omp.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,9 +17,18 @@
     }
 #define Ten(i, j, k, l) Ten[i * (nv * nc * nc) + j * (nc * nc) + k * nc + l]
 
+/**
+ * @brief
+ *
+ * @param Ten 4-D tensor of distances where T(i,j,k,l) = d((vote=i, cand=k), (vote=j, cand=l))
+ * @param nv Number of votes
+ * @param nc Number of candidates
+ * @return int d-Isomorphic distance with distance tensor given by Ten
+ */
 static int
 bfcm (const int *Ten, const int nv, const int nc)
 {
+    // printf ("Available threads: %d\n", omp_get_max_threads ());
     int **cost = (int **)malloc (nv * sizeof (int *));
     for (int i = 0; i < nv; i++)
         cost[i] = (int *)malloc (nv * sizeof (int));

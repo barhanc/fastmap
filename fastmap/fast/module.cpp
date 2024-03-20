@@ -21,7 +21,7 @@ double bfcm(std::vector<double> D, const int nv, const int nc) {
     const int nvncnc = nv * ncnc;
 
     do {
-        std::fill(cost, cost + nvnv, 0);
+        std::memset(cost, 0, nvnv * sizeof(double));
         for (int i = 0; i < nv; i++)
             for (int j = 0; j < nv; j++)
                 for (int k = 0; k < nc; k++) cost[i * nv + j] += D[i * nvncnc + j * ncnc + sigma[k] * nc + k];
@@ -31,6 +31,12 @@ double bfcm(std::vector<double> D, const int nv, const int nc) {
 
     return best_res;
 }
+
+// ========================================================
+// ========================================================
+// ========================================================
+// ========================================================
+// ========================================================
 
 PYBIND11_MODULE(fast, m) {
     m.doc() = "Exhaustive search over all possible candidates matchings";

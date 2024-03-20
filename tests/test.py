@@ -1,6 +1,7 @@
 import time
 import numpy as np
 
+import fastmap
 from fastmap.proto import bf_with_cand_match
 import mapel.elections.distances.cppdistances as dist
 
@@ -8,7 +9,7 @@ import mapel.elections.distances.cppdistances as dist
 from fastmap.fast import bfcm
 
 if __name__ == "__main__":
-    n_votes, n_cands = 8, 8
+    n_votes, n_cands = 9, 9
     V1 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
     V2 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
 

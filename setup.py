@@ -23,10 +23,11 @@ setup(
             "fastmap.fast",
             sources=[
                 "fastmap/fast/lap/lap.cpp",
-                "fastmap/fast/bfcm.cpp",
+                "fastmap/fast/module.cpp",
             ],
-            extra_compile_args=["-Ofast"],
-        )
+            extra_compile_args=["-O2"],
+            include_dirs=[],
+        ),
     ],
     cmdclass={"build_ext": build_ext},
 )

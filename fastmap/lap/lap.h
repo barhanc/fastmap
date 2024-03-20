@@ -24,8 +24,8 @@ typedef int row;
 #define ROW_TYPE INT
 typedef int col;
 #define COL_TYPE INT
-typedef double cost;
-#define COST_TYPE DOUBLE
+typedef int cost;
+#define COST_TYPE INT
 
 /*************** FUNCTIONS  *******************/
 

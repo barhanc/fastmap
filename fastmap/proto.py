@@ -39,7 +39,7 @@ def bf(
     return best_res
 
 
-def bf_with_cand_match(
+def bfcm(
     U: np.ndarray[int],
     V: np.ndarray[int],
     d: np.ndarray[int] | Callable[[np.ndarray[int], np.ndarray[int]], int | float] | str,

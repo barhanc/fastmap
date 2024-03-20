@@ -1,33 +1,29 @@
-import time
 import numpy as np
+import time
 
-import fastmap
-from fastmap.proto import bf_with_cand_match
+import fastmap.bfcm
+import fastmap.proto
+
 import mapel.elections.distances.cppdistances as dist
 
-# from fastmap.fast import bfcm
-from fastmap.fast import bfcm
-
 if __name__ == "__main__":
-    n_votes, n_cands = 10, 10
+    n_votes, n_cands = 30, 9
     V1 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
     V2 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
 
     s = time.perf_counter()
+    D = np.abs(np.subtract.outer(V1.argsort(), V2.argsort()), dtype=np.int32).swapaxes(1, 2)
+    res = fastmap.bfcm.bfcm(D)
+    e = time.perf_counter()
+    print(f"C    : {res}, {e-s:.4f}s")
+
+    s = time.perf_counter()
     res = dist.speard(V1, V2)
     e = time.perf_counter()
-    print(f"Cpp to beat      : {res}, {e-s:.4f}")
+    print(f"C++  : {res}, {e-s:.4f}s")
 
     s = time.perf_counter()
-    D = np.abs(np.subtract.outer(np.argsort(V1), np.argsort(V2))).swapaxes(1, 2)
-    res = bfcm(D, n_votes, n_cands)
+    D = np.abs(np.subtract.outer(V1.argsort(), V2.argsort())).swapaxes(1, 2)
+    res = fastmap.proto.bfcm(V1, V2, D)
     e = time.perf_counter()
-    print(f"My CPP           : {res}, {e-s:.4f}")
-
-    s = time.perf_counter()
-    pos1 = np.argsort(V1)
-    pos2 = np.argsort(V2)
-    D = np.abs(np.subtract.outer(pos1, pos2)).swapaxes(1, 2)
-    res = bf_with_cand_match(V1, V2, D)
-    e = time.perf_counter()
-    print(f"Numpy + Itertools:{res}, {e-s:.4f}")
+    print(f"Numpy: {res}, {e-s:.4f}s")

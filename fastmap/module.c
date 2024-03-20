@@ -105,7 +105,7 @@ pybfcm (PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *result = NULL;
     PyObject *obj_Ten = NULL;
     static const char *kwlist[] = { (const char *)"dist_tensor", NULL };
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "O|p", (char **)kwlist, &obj_Ten))
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "O", (char **)kwlist, &obj_Ten))
         return NULL;
 
     PyArrayObject *obj_cont = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Ten, NPY_INT, 0, 0);

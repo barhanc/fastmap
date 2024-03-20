@@ -19,7 +19,7 @@ setup(
         "scipy",
         "tqdm",
         # "cvxpy",  # For development only (doesnt work on Mac OS)
-        "mapel",  # For development only
+        "mapel",  # For comparison only
     ],
     python_requires=">=3.11",
     ext_modules=[

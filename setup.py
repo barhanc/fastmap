@@ -22,7 +22,8 @@ setup(
         Pybind11Extension(
             "fastmap.fast",
             sources=["fastmap/fast/bfcm.cpp", "fastmap/fast/lap/lap.cpp"],
-            extra_compile_args=["-std=c++17", "-Ofast", "-Wall"],
+            include_dirs=["extern/"],
+            extra_compile_args=["-std=c++17", "-Ofast", "-Wall", r"-I./Fastor"],
         ),
     ],
 )

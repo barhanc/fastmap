@@ -18,7 +18,7 @@ setup(
         "numpy",
         "scipy",
         "tqdm",
-        # "cvxpy",  # For development only (doesnt work on Mac OS)
+        "cvxpy",  # For development only (doesnt work on Mac OS)
         "mapel",  # For comparison only
     ],
     python_requires=">=3.11",

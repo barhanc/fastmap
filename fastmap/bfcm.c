@@ -1,6 +1,4 @@
 #include "Python.h"
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "numpy/arrayobject.h"
 
 // #include <omp.h> // Not on Mac OS (at least not out-of-the-box)
@@ -170,7 +168,7 @@ cleanup:
 static PyMethodDef bfcm_methods[] = {
     { "bfcm",
       (PyCFunction)pybfcm,
-      METH_VARARGS | METH_KEYWORDS,
+      METH_VARARGS,
       "Exhaustive seach over all candidates matchings.\n" },
     { NULL, NULL, 0, NULL }
 };

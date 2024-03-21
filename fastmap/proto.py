@@ -2,8 +2,7 @@ from typing import Callable
 from itertools import permutations
 
 import numpy as np
-
-# import cvxpy as cp # Doesn't work on Mac OS (I hate dependencies)
+import cvxpy as cp  # Doesn't work on Mac OS (I hate dependencies)
 
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment

@@ -7,7 +7,7 @@ import fastmap.proto
 import mapel.elections.distances.cppdistances as dist
 
 if __name__ == "__main__":
-    n_votes, n_cands = 10, 7
+    n_votes, n_cands = 8, 8
     V1 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
     V2 = np.array([np.random.permutation(n_cands) for _ in range(n_votes)])
     # print(V1.argsort())

@@ -27,11 +27,11 @@ setup(
             name="fastmap.bfcm",
             sources=[
                 "fastmap/lap/lap.c",
-                "fastmap/module.c",
+                "fastmap/bfcm.c",
             ],
             extra_compile_args=[
                 "-Wall",
-                "-O3",
+                "-O2",
                 # "-fopenmp", # (Not on Mac OS out-of-the-box)
             ],
             # extra_link_args=["-lgomp"], # (Not on Mac OS out-of-the-box)

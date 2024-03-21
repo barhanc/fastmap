@@ -137,7 +137,7 @@ pybfcm (PyObject *self, PyObject *args)
     int32_t *pos_y = (int32_t *)PyArray_DATA (obj_cont_y);
     if (pos_x == NULL || pos_y == NULL)
     {
-        PyErr_SetString (PyExc_TypeError, "invalid distance tensor object");
+        PyErr_SetString (PyExc_TypeError, "invalid election matrix object");
         goto cleanup;
     }
 

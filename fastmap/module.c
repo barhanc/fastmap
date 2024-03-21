@@ -15,7 +15,8 @@
         x = y;           \
         y = SWAP;        \
     }
-#define d(i, j, k, l) abs (pos_x[i * nc + k] - pos_y[j * nc + l])
+#define d(i, j, k, l) abs (pos_x[i * nc + k] - pos_y[j * nc + l]) // Spearman distaance
+// #define d(i, j, k, l) (pos_x[i * nc + k] == pos_y[j * nc + l] ? 1 : 0) // Hamming distance
 
 /**
  * @brief Exhaustive search over all possible candidates' matchings with polynomial-time finding of

@@ -15,12 +15,13 @@
         x = y;           \
         y = SWAP;        \
     }
-#define d(i, j, k, l) abs (pos_x[i * nc + k] - pos_y[j * nc + l]) // Spearman distaance
+#define d(i, j, k, l) abs (pos_x[i * nc + k] - pos_y[j * nc + l]) // Spearman distance
 // #define d(i, j, k, l) (pos_x[i * nc + k] == pos_y[j * nc + l] ? 1 : 0) // Hamming distance
 
 /**
- * @brief Exhaustive search over all possible candidates' matchings with polynomial-time finding of
- * optimal votes' matching to minimize the following objective
+ * @brief Exhaustive search over all possible candidates' matchings (Brute-Force over Candidate's
+ * Matchings) with polynomial-time finding of optimal votes' matching to minimize the following
+ * objective
  *
  *  Sum_{i,j=1,..,nv} Sum_{k,l=1,..,nc} d(i,j,k,l)
  *

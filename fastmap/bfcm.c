@@ -15,7 +15,7 @@
         y = SWAP;        \
     }
 #define d(i, j, k, l) abs (pos_x[i * nc + k] - pos_y[j * nc + l]) // Spearman distance
-// #define d(i, j, k, l) (pos_x[i * nc + k] == pos_y[j * nc + l] ? 1 : 0) // Hamming distance
+// #define d(i, j, k, l) (pos_x[i * nc + k] == pos_y[j * nc + l] ? 0 : 1) // Hamming distance
 
 /**
  * @brief Exhaustive search over all possible candidates' matchings (Brute-Force over Candidate's
@@ -27,7 +27,7 @@
  * where d(i,j,k,l) is a distance tensor between elections e.g.
  *
  *  Spearman distance: d(i,j,k,l) := |pos_x(i,k) - pos_y(j,l)|
- *  Hamming distance : d(i,j,k,l) := [pos_x(i,k) == pos_y(j,l)]
+ *  Hamming distance : d(i,j,k,l) := [pos_x(i,k) != pos_y(j,l)]
  *
  * Implements iterative Heap's algorithm for generating all possible permutations (not in
  * lexicographical order) and for every permutation (which is equivalent to some candidates'
@@ -56,7 +56,8 @@ bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t 
             cost[i][j] = acc;
         }
 
-    int32_t stack[nc], sigma[nc], alpha = 1;
+    size_t alpha = 1;
+    int32_t stack[nc], sigma[nc];
     memset (stack, 0, sizeof stack);
     for (size_t i = 0; i < nc; i++)
         sigma[i] = i;
@@ -143,7 +144,6 @@ pybfcm (PyObject *self, PyObject *args)
 
     npy_intp rows_x = PyArray_DIM (obj_cont_x, 0), cols_x = PyArray_DIM (obj_cont_x, 1);
     npy_intp rows_y = PyArray_DIM (obj_cont_y, 0), cols_y = PyArray_DIM (obj_cont_y, 1);
-
     if (rows_x != rows_y || cols_x != cols_y)
     {
         PyErr_SetString (PyExc_TypeError, "expected arrays to be oh the same shape");

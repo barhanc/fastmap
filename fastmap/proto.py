@@ -58,7 +58,7 @@ def bfcm(
     return best_res
 
 
-def spear_ilp(U: np.ndarray[int], V: np.ndarray[int]) -> float:
+def spear_ilp(U: np.ndarray[int], V: np.ndarray[int], solver: str = "CPLEX") -> float:
     assert U.shape == V.shape
     n_votes, n_cands = U.shape[0], U.shape[1]
     pos_U = np.argsort(U)
@@ -87,12 +87,12 @@ def spear_ilp(U: np.ndarray[int], V: np.ndarray[int]) -> float:
     ]
 
     prob = cp.Problem(cp.Minimize(cp.sum(cp.multiply(P, D))), constraints)
-    res = prob.solve(solver="CPLEX", verbose=False)
+    res = prob.solve(solver=solver, verbose=False)
 
     return res
 
 
-def spear_ilp2(U: np.ndarray, V: np.ndarray) -> float:
+def spear_ilp2(U: np.ndarray, V: np.ndarray, solver: str = "CPLEX") -> float:
     """
     Based on "An algorithm for the quadratic assignment problem using Benders' decomposition",
     L.Kaufman, F.Broeckx
@@ -122,6 +122,6 @@ def spear_ilp2(U: np.ndarray, V: np.ndarray) -> float:
     ]
 
     prob = cp.Problem(cp.Minimize(W.sum()), constraints)
-    res = prob.solve(solver="CPLEX", verbose=True)
+    res = prob.solve(solver=solver, verbose=False)
 
     return res

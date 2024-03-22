@@ -31,7 +31,7 @@ setup(
             ],
             extra_compile_args=[
                 "-Wall",
-                "-O2",
+                "-O3",
                 # "-fopenmp", # (Not on Mac OS out-of-the-box)
             ],
             # extra_link_args=["-lgomp"], # (Not on Mac OS out-of-the-box)

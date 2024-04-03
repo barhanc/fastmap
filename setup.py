@@ -21,20 +21,13 @@ setup(
         "cvxpy",  # For development only (doesnt work on Mac OS)
         "mapel",  # For comparison only
     ],
-    python_requires=">=3.11",
+    python_requires=">=3.10",
     ext_modules=[
         Extension(
             name="fastmap.bfcm",
-            sources=[
-                "fastmap/lap/lap.c",
-                "fastmap/bfcm.c",
-            ],
-            extra_compile_args=[
-                "-Wall",
-                "-O3",
-                # "-fopenmp", # (Not on Mac OS out-of-the-box)
-            ],
-            # extra_link_args=["-lgomp"], # (Not on Mac OS out-of-the-box)
+            sources=["fastmap/bfcm.c"],
+            extra_compile_args=["-O3"],
+            include_dirs=["fastmap/lap/"],
         )
     ],
     include_dirs=[numpy.get_include()],

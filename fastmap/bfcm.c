@@ -21,7 +21,7 @@
  * Matchings) with polynomial-time finding of optimal votes' matching to minimize the following
  * objective
  *
- *  Sum_{i,j=1,..,nv} Sum_{k,l=1,..,nc} d(i,j,k,l)
+ *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
  *
  * where d(i,j,k,l) is a distance tensor between elections e.g.
  *

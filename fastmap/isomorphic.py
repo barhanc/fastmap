@@ -8,12 +8,12 @@ from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
 
 
-def dspear(u: np.ndarray[int], v: np.ndarray[int]):
+def dspear(u: np.ndarray[int], v: np.ndarray[int]) -> int:
     pos_u, pos_v = u.argsort(), v.argsort()
     return np.sum(np.abs(pos_u - pos_v))
 
 
-def dswap(u: np.ndarray[int], v: np.ndarray[int]):
+def dswap(u: np.ndarray[int], v: np.ndarray[int]) -> int:
     pos_u, pos_v = u.argsort(), v.argsort()
     return np.sum(np.sign(np.subtract.outer(pos_u, pos_u)) != np.sign(np.subtract.outer(pos_v, pos_v))) // 2
 

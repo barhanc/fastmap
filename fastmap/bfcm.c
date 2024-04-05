@@ -13,8 +13,8 @@
         x = y;           \
         y = SWAP;        \
     }
-#define d(i, j, k, l) abs (pos_x[(i) * nc + (k)] - pos_y[(j) * nc + (l)]) // Spearman distance
 #define cost(i, j) cost[(i) * nv + (j)]
+#define d(i, j, k, l) abs (pos_x[(i) * nc + (k)] - pos_y[(j) * nc + (l)]) // Spearman distance
 
 /**
  * @brief Exhaustive search over all possible candidates' matchings (Brute-Force over Candidate's
@@ -40,24 +40,20 @@
 static int32_t
 bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t nc)
 {
-    register size_t i, j, k;
-
-    int32_t cost[nv * nv];
-    memset (cost, 0, sizeof cost);
-    for (i = 0; i < nv; i++)
-        for (j = 0; j < nv; j++)
-            for (k = 0; k < nc; k++)
+    int32_t *cost = calloc (nv * nv, sizeof (int32_t));
+    for (size_t i = 0; i < nv; i++)
+        for (size_t j = 0; j < nv; j++)
+            for (size_t k = 0; k < nc; k++)
                 cost (i, j) += d (i, j, k, k);
 
-    size_t alpha = 1, stack[nc];
-
-    int32_t sigma[nc];
-    memset (stack, 0, sizeof stack);
-    for (i = 0; i < nc; i++)
+    size_t alpha = 1;
+    size_t *stack = calloc (nc, sizeof (size_t)), *sigma = calloc (nc, sizeof (size_t));
+    for (size_t i = 0; i < nc; i++)
         sigma[i] = i;
 
-    int32_t a[nv], b[nv], _x[nv], _y[nv];
-    int32_t best_res = lap (nv, cost, a, b, _x, _y);
+    int32_t *a = calloc (nv, sizeof (int32_t)), *b = calloc (nv, sizeof (int32_t));
+    int32_t *x = calloc (nv, sizeof (int32_t)), *y = calloc (nv, sizeof (int32_t));
+    int32_t best_res = lap (nv, cost, a, b, x, y);
 
     while (alpha < nc)
     {
@@ -65,26 +61,26 @@ bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t 
         {
             if (alpha % 2 == 0)
             {
-                for (i = 0; i < nv; i++)
-                    for (j = 0; j < nv; j++)
+                for (size_t i = 0; i < nv; i++)
+                    for (size_t j = 0; j < nv; j++)
                     {
                         cost (i, j) += d (i, j, alpha, sigma[0]) + d (i, j, 0, sigma[alpha]);
                         cost (i, j) -= d (i, j, 0, sigma[0]) + d (i, j, alpha, sigma[alpha]);
                     }
-                swap (int32_t, sigma[0], sigma[alpha]);
+                swap (size_t, sigma[0], sigma[alpha]);
             }
             else
             {
-                for (i = 0; i < nv; i++)
-                    for (j = 0; j < nv; j++)
+                for (size_t i = 0; i < nv; i++)
+                    for (size_t j = 0; j < nv; j++)
                     {
                         cost (i, j) += d (i, j, alpha, sigma[stack[alpha]]) + d (i, j, stack[alpha], sigma[alpha]);
                         cost (i, j) -= d (i, j, alpha, sigma[alpha]) + d (i, j, stack[alpha], sigma[stack[alpha]]);
                     }
-                swap (int32_t, sigma[alpha], sigma[stack[alpha]]);
+                swap (size_t, sigma[alpha], sigma[stack[alpha]]);
             }
 
-            int32_t res = lap (nv, cost, a, b, _x, _y);
+            int32_t res = lap (nv, cost, a, b, x, y);
             best_res = (res < best_res ? res : best_res);
             stack[alpha]++;
             alpha = 1;
@@ -96,6 +92,8 @@ bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t 
         }
     }
 
+    free (cost), free (stack), free (sigma);
+    free (a), free (b), free (x), free (y);
     return best_res;
 }
 

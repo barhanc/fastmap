@@ -14,32 +14,42 @@
         y = SWAP;        \
     }
 #define cost(i, j) cost[(i) * nv + (j)]
-#define d(i, j, k, l) abs (pos_x[(i) * nc + (k)] - pos_y[(j) * nc + (l)]) // Spearman distance
+#define d(i, j, k, l) abs (X[(i) * nc + (k)] - Y[(j) * nc + (l)]) // Spearman distance
+// #define d(i, j, k, l) X[(i) * nc + (k)] ^ Y[(j) * nc + (l)]       // Approval Hamming distance
 
 /**
- * @brief Exhaustive search over all possible candidates' matchings (Brute-Force over Candidate's
- * Matchings) with polynomial-time finding of optimal votes' matching to minimize the following
- * objective
+ * @brief Exhaustive search over all possible candidates' (votes') matchings with polynomial-time
+ * procedure for finding optimal votes' (candidate's) matching to minimize the following objective
  *
  *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
  *
  * where d(i,j,k,l) is a distance tensor between elections e.g.
  *
- *  Spearman distance: d(i,j,k,l) := |pos_x(i,k) - pos_y(j,l)|
+ * -> Spearman distance: d(i,j,k,l) := |X(i,k) - Y(j,l)|
+ *    X(i,k) := position of the k-th candidate in i-th vote in the 1st election
+ *    Y(j,l) := position of the l-th candidate in j-th vote in the 2nd election
+ *
+ * -> Approval Hamming distance: d(i,j,k,l) = X(i,k) xor Y(j,l)
+ *    X(i,k) := 1 if i-th approval ballot in the 1st election contains k-th candidate else 0
+ *    Y(j,l) := 1 if j-th approval ballot in the 2nd election contains l-th candidate else 0
  *
  * Implements iterative Heap's algorithm for generating all possible permutations (not in
- * lexicographical order) and for every permutation (which is equivalent to some candidates'
- * matching) solves the corresponding LAP (using JV algorithm) to find votes' matching.
+ * lexicographical order) and for every permutation (which is equivalent to some candidates' <<
+ * votes'>> matching) solves the corresponding LAP (using JV algorithm) to find votes' (candidate's)
+ * matching. The exhaustive search is performed over candidates or votes whichever size is lower.
  *
- * @param pos_x Matrix of positions of each candidate in each vote in the 1st election
- * @param pos_y Matrix of positions of each candidate in each vote in the 2nd election
- * @param nv Number of votes (== rows(pos_x) == rows(pos_y))
- * @param nc Number of candidates (== cols(pos_x) == cols(pos_y))
+ * @param X Matrix representing 1st election required for computing distance tensor
+ * @param Y Matrix representing 2nd election required for computing distance tensor
+ * @param nv Number of votes (== rows(X) == rows(Y))
+ * @param nc Number of candidates (== cols(X) == cols(Y))
  * @return int32_t
  */
 static int32_t
-bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t nc)
+bfcm (const int32_t *X, const int32_t *Y, size_t nv, size_t nc)
 {
+    if (nv < nc)
+        swap (size_t, nc, nv);
+
     int32_t *cost = calloc (nv * nv, sizeof (int32_t));
     for (size_t i = 0; i < nv; i++)
         for (size_t j = 0; j < nv; j++)
@@ -97,59 +107,59 @@ bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t 
     return best_res;
 }
 
-// ========================================================
-// ========================================================
-// ========================================================
+// =================================================================================================
+// =================================================================================================
+// =================================================================================================
 
 static PyObject *
 pybfcm (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL;
-    PyObject *obj_pos_x = NULL;
-    PyObject *obj_pos_y = NULL;
-    if (!PyArg_ParseTuple (args, "OO", &obj_pos_x, &obj_pos_y))
+    PyObject *obj_X = NULL;
+    PyObject *obj_Y = NULL;
+    if (!PyArg_ParseTuple (args, "OO", &obj_X, &obj_Y))
         return NULL;
 
-    PyArrayObject *obj_cont_x = (PyArrayObject *)PyArray_ContiguousFromAny (obj_pos_x, NPY_INT, 0, 0);
-    PyArrayObject *obj_cont_y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_pos_y, NPY_INT, 0, 0);
-    if (!obj_cont_x || !obj_cont_y)
+    PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT, 0, 0);
+    PyArrayObject *obj_cont_Y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Y, NPY_INT, 0, 0);
+    if (!obj_cont_X || !obj_cont_Y)
         return NULL;
-    if (PyArray_NDIM (obj_cont_x) != 2 || PyArray_NDIM (obj_cont_y) != 2)
+    if (PyArray_NDIM (obj_cont_X) != 2 || PyArray_NDIM (obj_cont_Y) != 2)
     {
         PyErr_Format (PyExc_ValueError, "expected a 2-D arrays, got a %d and %d array",
-                      PyArray_NDIM (obj_cont_x), PyArray_NDIM (obj_cont_y));
+                      PyArray_NDIM (obj_cont_X), PyArray_NDIM (obj_cont_Y));
         goto cleanup;
     }
 
-    int32_t *pos_x = (int32_t *)PyArray_DATA (obj_cont_x);
-    int32_t *pos_y = (int32_t *)PyArray_DATA (obj_cont_y);
-    if (pos_x == NULL || pos_y == NULL)
+    int32_t *X = (int32_t *)PyArray_DATA (obj_cont_X);
+    int32_t *Y = (int32_t *)PyArray_DATA (obj_cont_Y);
+    if (X == NULL || Y == NULL)
     {
-        PyErr_SetString (PyExc_TypeError, "invalid election matrix object");
+        PyErr_SetString (PyExc_TypeError, "invalid matrix object");
         goto cleanup;
     }
 
-    npy_intp rows_x = PyArray_DIM (obj_cont_x, 0), cols_x = PyArray_DIM (obj_cont_x, 1);
-    npy_intp rows_y = PyArray_DIM (obj_cont_y, 0), cols_y = PyArray_DIM (obj_cont_y, 1);
-    if (rows_x != rows_y || cols_x != cols_y)
+    npy_intp rows_X = PyArray_DIM (obj_cont_X, 0), cols_X = PyArray_DIM (obj_cont_X, 1);
+    npy_intp rows_Y = PyArray_DIM (obj_cont_Y, 0), cols_Y = PyArray_DIM (obj_cont_Y, 1);
+    if (rows_X != rows_Y || cols_X != cols_Y)
     {
-        PyErr_SetString (PyExc_TypeError, "expected arrays to be oh the same shape");
+        PyErr_SetString (PyExc_TypeError, "expected arrays to have the same shape");
         goto cleanup;
     }
 
-    size_t nv = rows_x, nc = cols_x;
+    size_t nv = rows_X, nc = cols_X;
     int ret;
     Py_BEGIN_ALLOW_THREADS
         ret
-        = bfcm (pos_x, pos_y, nv, nc);
+        = bfcm (X, Y, nv, nc);
     Py_END_ALLOW_THREADS
 
         result
         = PyLong_FromLong (ret);
 
 cleanup:
-    Py_XDECREF ((PyObject *)obj_cont_x);
-    Py_XDECREF ((PyObject *)obj_cont_y);
+    Py_XDECREF ((PyObject *)obj_cont_X);
+    Py_XDECREF ((PyObject *)obj_cont_Y);
     return result;
 }
 

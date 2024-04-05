@@ -55,7 +55,7 @@ def bfcm(
     return best_res
 
 
-def spear_ilp(U: np.ndarray[int], V: np.ndarray[int], solver: str = "CPLEX") -> float:
+def spear_ilp1(U: np.ndarray[int], V: np.ndarray[int], solver: str = "CPLEX") -> float:
     assert U.shape == V.shape
     n_votes, n_cands = U.shape[0], U.shape[1]
     pos_U = np.argsort(U)

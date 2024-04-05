@@ -2,18 +2,15 @@ from typing import Callable
 from itertools import permutations
 
 import numpy as np
-import cvxpy as cp  # Doesn't work on Mac OS (I hate dependencies)
+import cvxpy as cp
 
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
 
 
 def dspear(u: np.ndarray[int], v: np.ndarray[int]):
-    return np.sum(np.abs(u.argsort() - v.argsort()))
-
-
-def dhamming(u: np.ndarray[int], v: np.ndarray[int]):
-    return np.sum(np.not_equal(u.argsort(), v.argsort()))
+    pos_u, pos_v = u.argsort(), v.argsort()
+    return np.sum(np.abs(pos_u - pos_v))
 
 
 def dswap(u: np.ndarray[int], v: np.ndarray[int]):

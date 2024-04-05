@@ -2,7 +2,6 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-// #include <omp.h> // Not on Mac OS (at least not out-of-the-box)
 #include <stdlib.h>
 #include <string.h>
 
@@ -14,8 +13,8 @@
         x = y;           \
         y = SWAP;        \
     }
-#define d(i, j, k, l) abs (pos_x[i * nc + k] - pos_y[j * nc + l]) // Spearman distance
-// #define d(i, j, k, l) (pos_x[i * nc + k] == pos_y[j * nc + l] ? 0 : 1) // Hamming distance
+#define d(i, j, k, l) abs (pos_x[(i) * nc + (k)] - pos_y[(j) * nc + (l)]) // Spearman distance
+#define cost(i, j) cost[(i) * nv + (j)]
 
 /**
  * @brief Exhaustive search over all possible candidates' matchings (Brute-Force over Candidate's
@@ -27,7 +26,6 @@
  * where d(i,j,k,l) is a distance tensor between elections e.g.
  *
  *  Spearman distance: d(i,j,k,l) := |pos_x(i,k) - pos_y(j,l)|
- *  Hamming distance : d(i,j,k,l) := [pos_x(i,k) != pos_y(j,l)]
  *
  * Implements iterative Heap's algorithm for generating all possible permutations (not in
  * lexicographical order) and for every permutation (which is equivalent to some candidates'
@@ -42,24 +40,20 @@
 static int32_t
 bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t nc)
 {
-    // printf ("Available threads: %d\n", omp_get_max_threads ());
-    int32_t **cost = (int32_t **)malloc (nv * sizeof (int32_t *));
-    for (size_t i = 0; i < nv; i++)
-        cost[i] = (int32_t *)malloc (nv * sizeof (int32_t));
+    register size_t i, j, k;
 
-    for (size_t i = 0; i < nv; i++)
-        for (size_t j = 0; j < nv; j++)
-        {
-            int32_t acc = 0;
-            for (size_t k = 0; k < nc; k++)
-                acc += d (i, j, k, k);
-            cost[i][j] = acc;
-        }
+    int32_t cost[nv * nv];
+    memset (cost, 0, sizeof cost);
+    for (i = 0; i < nv; i++)
+        for (j = 0; j < nv; j++)
+            for (k = 0; k < nc; k++)
+                cost (i, j) += d (i, j, k, k);
 
-    size_t alpha = 1;
-    int32_t stack[nc], sigma[nc];
+    size_t alpha = 1, stack[nc];
+
+    int32_t sigma[nc];
     memset (stack, 0, sizeof stack);
-    for (size_t i = 0; i < nc; i++)
+    for (i = 0; i < nc; i++)
         sigma[i] = i;
 
     int32_t a[nv], b[nv], _x[nv], _y[nv];
@@ -71,21 +65,21 @@ bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t 
         {
             if (alpha % 2 == 0)
             {
-                for (size_t i = 0; i < nv; i++)
-                    for (size_t j = 0; j < nv; j++)
+                for (i = 0; i < nv; i++)
+                    for (j = 0; j < nv; j++)
                     {
-                        cost[i][j] += d (i, j, alpha, sigma[0]) + d (i, j, 0, sigma[alpha]);
-                        cost[i][j] -= d (i, j, 0, sigma[0]) + d (i, j, alpha, sigma[alpha]);
+                        cost (i, j) += d (i, j, alpha, sigma[0]) + d (i, j, 0, sigma[alpha]);
+                        cost (i, j) -= d (i, j, 0, sigma[0]) + d (i, j, alpha, sigma[alpha]);
                     }
                 swap (int32_t, sigma[0], sigma[alpha]);
             }
             else
             {
-                for (size_t i = 0; i < nv; i++)
-                    for (size_t j = 0; j < nv; j++)
+                for (i = 0; i < nv; i++)
+                    for (j = 0; j < nv; j++)
                     {
-                        cost[i][j] += d (i, j, alpha, sigma[stack[alpha]]) + d (i, j, stack[alpha], sigma[alpha]);
-                        cost[i][j] -= d (i, j, alpha, sigma[alpha]) + d (i, j, stack[alpha], sigma[stack[alpha]]);
+                        cost (i, j) += d (i, j, alpha, sigma[stack[alpha]]) + d (i, j, stack[alpha], sigma[alpha]);
+                        cost (i, j) -= d (i, j, alpha, sigma[alpha]) + d (i, j, stack[alpha], sigma[stack[alpha]]);
                     }
                 swap (int32_t, sigma[alpha], sigma[stack[alpha]]);
             }
@@ -102,14 +96,9 @@ bfcm (const int32_t *pos_x, const int32_t *pos_y, const size_t nv, const size_t 
         }
     }
 
-    for (size_t i = 0; i < nv; i++)
-        free (cost[i]);
-    free (cost);
-
     return best_res;
 }
 
-// ========================================================
 // ========================================================
 // ========================================================
 // ========================================================

@@ -25,12 +25,9 @@
 
 /*************** TYPES      *******************/
 
-typedef int row;
-#define ROW_TYPE INT
-typedef int col;
-#define COL_TYPE INT
-typedef int cost;
-#define COST_TYPE INT
+typedef int32_t row;
+typedef int32_t col;
+typedef int32_t cost;
 
 /*************** FUNCTIONS  *******************/
 #include <stdio.h>
@@ -39,11 +36,11 @@ typedef int cost;
 
 #include "gnrl.h"
 
-#define _assigncost_(i, j) assigncost[i][j]
+#define _assigncost_(i, j) assigncost[(i) * dim + (j)]
 
 /*This function is the jv shortest augmenting path algorithm to solve the assignment problem*/
 static cost
-lap (const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, cost *v)
+lap (const int32_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
 
 // input:
 // dim        - problem size
@@ -94,7 +91,7 @@ lap (const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, cost *
         }
         else if (v[j] < v[rowsol[imin]])
         {
-            int j1 = rowsol[imin];
+            int32_t j1 = rowsol[imin];
             rowsol[imin] = j;
             colsol[j] = imin;
             colsol[j1] = -1;
@@ -119,7 +116,7 @@ lap (const int dim, cost **assigncost, col *rowsol, row *colsol, cost *u, cost *
         }
 
     //   AUGMENTING ROW REDUCTION
-    int loopcnt = 0; // do-loop to be done twice.
+    int32_t loopcnt = 0; // do-loop to be done twice.
     do
     {
         loopcnt++;

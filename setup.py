@@ -26,8 +26,9 @@ setup(
         Extension(
             name="fastmap.bfcm",
             sources=["fastmap/bfcm.c"],
-            extra_compile_args=["-O3"],
+            extra_compile_args=["-Ofast"],
             include_dirs=["fastmap/lap/"],
+            # extra_link_args=["-lgomp"],
         )
     ],
     include_dirs=[numpy.get_include()],

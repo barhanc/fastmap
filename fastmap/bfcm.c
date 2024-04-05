@@ -20,6 +20,7 @@
 /**
  * @brief Exhaustive search over all possible candidates' (votes') matchings with polynomial-time
  * procedure for finding optimal votes' (candidate's) matching to minimize the following objective
+ * (equivalent to Bilinear Assignment Problem (BAP))
  *
  *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
  *

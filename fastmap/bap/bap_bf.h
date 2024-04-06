@@ -18,18 +18,15 @@
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
  * ```
  * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
- * and integers nv, nc describe the size of the problem instance. The algorithm genertes all
- * permutations in S_nc using Heap's algorithm and for every generated permutation σ solves following
- * Linear Assignment Problem (LAP) in order to find the optimal permutation v ∈ S_nv
+ * and integers nv, nc describe the size of the problem instance. The algorithm generates all
+ * permutations of S_nc using Heap's algorithm and for every generated permutation σ solves the
+ * following Linear Assignment Problem (LAP) in order to find the optimal permutation v ∈ S_nv
  * ```
  *   min_{v ∈ S_nv} sum_{i=1,..,nv} (sum_{k=1,..,nc} d(i,v(i),k,σ(k))) .
  * ```
  *
- * NOTE: You must define a macro
- * ```
- *  #define d(i,j,k,l) ...
- * ```
- * which computes the cost tensor (see: fastmap/example/).
+ * NOTE: You must define a macro `#define d(i,j,k,l) ...` which computes the cost tensor (see:
+ * fastmap/example/).
  *
  * @param nv
  * @param nc

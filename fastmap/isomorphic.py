@@ -18,6 +18,10 @@ def dswap(u: np.ndarray[int], v: np.ndarray[int]) -> int:
     return np.sum(np.sign(np.subtract.outer(pos_u, pos_u)) != np.sign(np.subtract.outer(pos_v, pos_v))) // 2
 
 
+def dhamming(u: np.ndarray[int], v: np.ndarray[int]) -> int:
+    return np.logical_xor(u, v).sum()
+
+
 def bf(
     U: np.ndarray[int],
     V: np.ndarray[int],

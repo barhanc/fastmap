@@ -30,7 +30,7 @@
  *    X(i,k) := position of the k-th candidate in i-th vote in the 1st election
  *    Y(j,l) := position of the l-th candidate in j-th vote in the 2nd election
  *
- * -> Approval Hamming distance: d(i,j,k,l) = X(i,k) xor Y(j,l)
+ * -> Approval Hamming distance: d(i,j,k,l) := X(i,k) xor Y(j,l)
  *    X(i,k) := 1 if i-th approval ballot in the 1st election contains k-th candidate else 0
  *    Y(j,l) := 1 if j-th approval ballot in the 2nd election contains l-th candidate else 0
  *
@@ -46,11 +46,8 @@
  * @return int32_t
  */
 static int32_t
-bfcm (const int32_t *X, const int32_t *Y, size_t nv, size_t nc)
+bfcm (const int32_t *X, const int32_t *Y, const size_t nv, const size_t nc)
 {
-    if (nv < nc)
-        swap (size_t, nc, nv);
-
     int32_t *cost = calloc (nv * nv, sizeof (int32_t));
     for (size_t i = 0; i < nv; i++)
         for (size_t j = 0; j < nv; j++)

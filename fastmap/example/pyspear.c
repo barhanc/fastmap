@@ -2,14 +2,16 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-// =================================================================================================
-// Include headers defining functions computing various distances
-// =================================================================================================
-#include "spear.h"
+const int32_t *POS_U, *POS_V;
+#define d(i, j, k, l) abs (POS_U[(i) * nc + (k)] - POS_V[(j) * nc + (l)])
+#include "bap_bf.h"
 
-// =================================================================================================
-// For every function define a Python wrapper for this function
-// =================================================================================================
+static int32_t
+spear (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size_t nc)
+{
+    POS_U = pos_U, POS_V = pos_V;
+    return bap (nv, nc);
+}
 
 static PyObject *
 py_spear (PyObject *self, PyObject *args)
@@ -63,24 +65,20 @@ cleanup:
     return result;
 }
 
-// =================================================================================================
-// Define Python extension module with function (methods) computing various distances
-// =================================================================================================
-
-static PyMethodDef bfcm_methods[] = {
+static PyMethodDef fast_methods[] = {
     { "spear",
       (PyCFunction)py_spear,
       METH_VARARGS,
-      "Exhaustive seach over all candidates matchings.\n" },
+      "Spearman distance.\n" },
     { NULL, NULL, 0, NULL }
 };
 
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
-    "fastmap",
-    "Exhaustive seach over all candidates matchings",
+    "cspear",
+    "Spearman distance.\n",
     -1,
-    bfcm_methods,
+    fast_methods,
     NULL,
     NULL,
     NULL,
@@ -88,7 +86,7 @@ static struct PyModuleDef moduledef = {
 };
 
 PyMODINIT_FUNC
-PyInit_spear (void)
+PyInit_cspear (void)
 {
     import_array ();
     return PyModule_Create (&moduledef);

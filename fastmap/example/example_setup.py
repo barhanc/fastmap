@@ -23,13 +23,13 @@ setup(
     python_requires=">=3.10",
     ext_modules=[
         Extension(
-            name="fastmap.cspear",
+            name="fastmap._spear",
             sources=["fastmap/example/pyspear.c"],
             extra_compile_args=["-Ofast"],
             include_dirs=["fastmap/lap/", "fastmap/bap/"],
         ),
         Extension(
-            name="fastmap.chamm",
+            name="fastmap._hamm",
             sources=["fastmap/example/pyhamm.c"],
             extra_compile_args=["-Ofast"],
             include_dirs=["fastmap/lap/", "fastmap/bap/"],

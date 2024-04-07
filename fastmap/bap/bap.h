@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "lap.h"
 
@@ -22,18 +21,18 @@
  * permutations of S_nc using Heap's algorithm and for every generated permutation σ solves the
  * following Linear Assignment Problem (LAP) in order to find the optimal permutation v ∈ S_nv
  * ```
- *   min_{v ∈ S_nv} sum_{i=1,..,nv} (sum_{k=1,..,nc} d(i,v(i),k,σ(k))) .
+ *   min_{v ∈ S_nv} sum_{i=1,..,nv} ( sum_{k=1,..,nc} d(i,v(i),k,σ(k)) ) .
  * ```
  *
  * NOTE: You must define a macro `#define d(i,j,k,l) ...` which computes the cost tensor (see:
  * fastmap/example/).
  *
- * @param nv
- * @param nc
+ * @param nv problem size parameter
+ * @param nc problem size parameter
  * @return int32_t
  */
 static int32_t
-bap (const size_t nv, const size_t nc)
+bap_bf (const size_t nv, const size_t nc)
 {
     int32_t *cost = calloc (nv * nv, sizeof (int32_t));
     for (size_t i = 0; i < nv; i++)
@@ -90,4 +89,15 @@ bap (const size_t nv, const size_t nc)
     free (cost), free (stack), free (sigma);
     free (a), free (b), free (x), free (y);
     return best_res;
+}
+
+static int32_t
+bap_cd (const size_t nv, const size_t nc, size_t *feasible_sigma, size_t feasible_nu)
+{
+    int32_t *cost_sigma = calloc (nv * nv, sizeof (int32_t));
+    int32_t *cost_nu = calloc (nc * nc, sizeof (int32_t));
+
+    while (1)
+    {
+    }
 }

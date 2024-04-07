@@ -1,8 +1,5 @@
 import numpy as np
 
-import fastmap.cspear
-import fastmap.chamm
-
 
 def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     """Computes Isomorphic Spearman distance between ordinal elections U and V defined as
@@ -22,26 +19,29 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
         method: Method used to compute the distance. Should be one of the
                 `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
-                        Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's
-                        algorithm and for each generated permutation σ solves the Linear Assignment
-                        Problem (LAP) to obtain the optimal permutation v of {1,..,max(nv,nc)}.
-                        NOTE: This method returns exact value but if one of the nv,nc is greater
-                        than 10 it is extremely slow.
+                    Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
+                    and for each generated permutation σ solves the Linear Assignment Problem (LAP)
+                    to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
+                    this method is O(min(nv,nc)! * max(nv,nc)^3)
+                    NOTE: This method returns exact value but if one of the nv, nc is greater than
+                    10 it is extremely slow.
 
     Returns:
         Isomorphic Spearman distance between U and V.
     """
+    import fastmap._spear
+
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2D arrays, got {dim}D arrays"
 
     nv, nc = U.shape
-    pos_U, pos_V = U.argsort().T if nv < nc else U.argsort(), V.argsort().T if nv < nc else V.argsort()
+    if nv < nc:
+        pos_U, pos_V = U.argsort().T, V.argsort().T
+    else:
+        pos_U, pos_V = U.argsort(), V.argsort()
     pos_U, pos_V = pos_U.astype(np.int32), pos_V.astype(np.int32)
 
-    res = fastmap.cspear.spear(pos_U, pos_V)
-    if res < 0:
-        raise RuntimeError("Error ocurred while using C extension")
-    return res
+    return fastmap._spear.spear(pos_U, pos_V)
 
 
 def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
@@ -61,23 +61,24 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
         method: Method used to compute the distance. Should be one of the
                 `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
-                        Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's
-                        algorithm and for each generated permutation σ solves the Linear Assignment
-                        Problem (LAP) to obtain the optimal permutation v of {1,..,max(nv,nc)}.
-                        NOTE: This method returns exact value but if one of the nv,nc is greater
-                        than 10 it is extremely slow.
+                    Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
+                    and for each generated permutation σ solves the Linear Assignment Problem (LAP)
+                    to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
+                    this method is O(min(nv,nc)! * max(nv,nc)^3)
+                    NOTE: This method returns exact value but if one of the nv, nc is greater than
+                    10 it is extremely slow.
 
     Returns:
         Isomorphic Hamming distance between U and V.
     """
+    import fastmap._hamm
+
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2D arrays, got {dim}D arrays"
 
     nv, nc = U.shape
-    U, V = U.T if nv < nc else U, V.T if nv < nc else V
+    if nv < nc:
+        U, V = U.T, V.T
     U, V = U.astype(np.int32), V.astype(np.int32)
 
-    res = fastmap.chamm.hamm(U, V)
-    if res < 0:
-        raise RuntimeError("Error ocurred while using C extension")
-    return res
+    return fastmap._hamm.hamm(U, V)

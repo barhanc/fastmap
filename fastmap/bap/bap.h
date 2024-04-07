@@ -104,6 +104,7 @@ bap_cd (const size_t nv, const size_t nc)
     // ====================================================
     // TODO: Randomized greedy initialization
     // ====================================================
+
     size_t *sigma_nv = calloc (nv, sizeof (size_t)), *sigma_nc = calloc (nc, sizeof (size_t));
     for (size_t i = 0; i < nv; i++)
         sigma_nv[i] = i;
@@ -124,6 +125,9 @@ bap_cd (const size_t nv, const size_t nc)
     int32_t *x_nc = calloc (nc, sizeof (int32_t)), *y_nc = calloc (nc, sizeof (int32_t));
 
     int32_t f = 0, f_star = 0;
+    for (size_t i = 0; i < nv; i++)
+        for (size_t k = 0; k < nc; k++)
+            f += d (i, sigma_nv[i], k, sigma_nc[k]);
 
     while (1)
     {

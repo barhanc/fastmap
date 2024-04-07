@@ -91,13 +91,83 @@ bap_bf (const size_t nv, const size_t nc)
     return best_res;
 }
 
+/**
+ * @brief
+ *
+ * @param nv problem size parameter
+ * @param nc problem size parameter
+ * @return int32_t
+ */
 static int32_t
-bap_cd (const size_t nv, const size_t nc, size_t *feasible_sigma, size_t feasible_nu)
+bap_cd (const size_t nv, const size_t nc)
 {
-    int32_t *cost_sigma = calloc (nv * nv, sizeof (int32_t));
-    int32_t *cost_nu = calloc (nc * nc, sizeof (int32_t));
+    // ====================================================
+    // TODO: Randomized greedy initialization
+    // ====================================================
+    size_t *sigma_nv = calloc (nv, sizeof (size_t)), *sigma_nc = calloc (nc, sizeof (size_t));
+    for (size_t i = 0; i < nv; i++)
+        sigma_nv[i] = i;
+    for (size_t i = 0; i < nc; i++)
+        sigma_nc[i] = i;
+
+    // ====================================================
+    // Coordinate descent - like refinment
+    // ====================================================
+
+    int32_t *cost_nv = calloc (nv * nv, sizeof (int32_t));
+    int32_t *cost_nc = calloc (nc * nc, sizeof (int32_t));
+
+    int32_t *rowsol_nv = calloc (nv, sizeof (int32_t)), *colsol_nv = calloc (nv, sizeof (int32_t));
+    int32_t *rowsol_nc = calloc (nc, sizeof (int32_t)), *colsol_nc = calloc (nc, sizeof (int32_t));
+
+    int32_t *x_nv = calloc (nv, sizeof (int32_t)), *y_nv = calloc (nv, sizeof (int32_t));
+    int32_t *x_nc = calloc (nc, sizeof (int32_t)), *y_nc = calloc (nc, sizeof (int32_t));
+
+    int32_t f = 0, f_star = 0;
 
     while (1)
     {
+        for (size_t i = 0; i < nv; i++)
+            for (size_t j = 0; j < nv; j++)
+            {
+                int32_t acc = 0;
+                for (size_t k = 0; k < nc; k++)
+                    acc += d (i, j, k, sigma_nc[k]);
+                cost_nv[i * nv + j] = acc;
+            }
+
+        f_star = lap (nv, cost_nv, rowsol_nv, colsol_nv, x_nv, y_nv);
+        for (size_t i = 0; i < nv; i++)
+            sigma_nv[i] = rowsol_nv[i];
+
+        for (size_t i = 0; i < nc; i++)
+            for (size_t j = 0; j < nc; j++)
+            {
+                int32_t acc = 0;
+                for (size_t k = 0; k < nv; k++)
+                    acc += d (k, sigma_nv[k], i, j);
+                cost_nc[i * nc + j] = acc;
+            }
+
+        f_star = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
+        for (size_t i = 0; i < nc; i++)
+            sigma_nc[i] = rowsol_nc[i];
+
+        if (f == f_star)
+            break;
+
+        f = f_star;
     }
+
+    free (sigma_nv), free (sigma_nc);
+
+    free (cost_nv), free (cost_nc);
+
+    free (rowsol_nv), free (rowsol_nc);
+    free (colsol_nv), free (colsol_nc);
+
+    free (x_nv), free (y_nv);
+    free (x_nc), free (y_nc);
+
+    return f_star;
 }

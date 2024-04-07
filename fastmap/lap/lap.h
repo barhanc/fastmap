@@ -30,11 +30,9 @@ typedef int32_t col;
 typedef int32_t cost;
 
 /*************** FUNCTIONS  *******************/
-#include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "gnrl.h"
 
 #define _assigncost_(i, j) assigncost[(i) * dim + (j)]
 
@@ -53,7 +51,7 @@ lap (const int32_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cos
 // v          - dual variables, column reduction numbers
 
 {
-    boolean unassignedfound;
+    bool unassignedfound;
     row i, imin, numfree = 0, prvnumfree, f, i0, k, freerow;
     col j, j1, j2 = -1, endofpath, last = -1, low, up;
     cost min = BIG, h, umin, usubmin, v2;
@@ -204,7 +202,7 @@ lap (const int32_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cos
         up = 0;  // columns in low..up-1 are to be scanned for current minimum, now none.
                  // columns in up..dim-1 are to be considered later to find new minimum,
                  // at this stage the list simply contains all columns
-        unassignedfound = FALSE;
+        unassignedfound = false;
         do
         {
             if (up == low) // no more columns to be scanned for current minimum.
@@ -236,7 +234,7 @@ lap (const int32_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cos
                     if (colsol[collist[k]] < 0)
                     {
                         endofpath = collist[k];
-                        unassignedfound = TRUE;
+                        unassignedfound = true;
                         break;
                     }
             }
@@ -263,7 +261,7 @@ lap (const int32_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cos
                             {
                                 // if unassigned, shortest augmenting path is complete.
                                 endofpath = j;
-                                unassignedfound = TRUE;
+                                unassignedfound = true;
                                 break;
                             }
                             // else add to list to be scanned right away.

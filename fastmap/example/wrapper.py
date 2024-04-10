@@ -18,13 +18,18 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         position in the i-th voter in the V election. Shape (nv, nc).
 
         method: Method used to compute the distance. Should be one of the
-                `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
+                `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem.
                     Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
-                    and for each generated permutation σ solves the Linear Assignment Problem (LAP)
-                    to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
-                    this method is O(min(nv,nc)! * max(nv,nc)^3)
+                    and for each generated permutation σ solves the Linear Assignment Problem to
+                    obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of this
+                    method is O(min(nv,nc)! * max(nv,nc)^3)
                     NOTE: This method returns exact value but if one of the nv, nc is greater than
                     10 it is extremely slow.
+
+                `"cd"` - uses heuristic coordinate-descent-like algorithm to solve the equivalent
+                    Bilinear Assignment Problem.
+                    NOTE: This method is much faster than "bf" but there are no theoretical
+                    guarantees on approximation ratio for the used heuristic.
 
     Returns:
         Isomorphic Spearman distance between U and V.
@@ -34,6 +39,8 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2D arrays, got {dim}D arrays"
 
+    methods = {"bf": 0, "cd": 1}
+
     nv, nc = U.shape
     if nv < nc:
         pos_U, pos_V = U.argsort().T, V.argsort().T
@@ -41,7 +48,7 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         pos_U, pos_V = U.argsort(), V.argsort()
     pos_U, pos_V = pos_U.astype(np.int32), pos_V.astype(np.int32)
 
-    return fastmap._spear.spear(pos_U, pos_V)
+    return fastmap._spear.spear(pos_U, pos_V, methods[method])
 
 
 def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
@@ -68,6 +75,11 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     NOTE: This method returns exact value but if one of the nv, nc is greater than
                     10 it is extremely slow.
 
+                `"cd"` - uses heuristic coordinate-descent-like algorithm to solve the equivalent
+                    Bilinear Assignment Problem.
+                    NOTE: This method is much faster than "bf" but there are no theoretical
+                    guarantees on approximation ratio for the used heuristic.
+
     Returns:
         Isomorphic Hamming distance between U and V.
     """
@@ -76,9 +88,11 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2D arrays, got {dim}D arrays"
 
+    methods = {"bf": 0, "cd": 1}
+
     nv, nc = U.shape
     if nv < nc:
         U, V = U.T, V.T
     U, V = U.astype(np.int32), V.astype(np.int32)
 
-    return fastmap._hamm.hamm(U, V)
+    return fastmap._hamm.hamm(U, V, methods[method])

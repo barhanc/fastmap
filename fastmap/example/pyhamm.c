@@ -10,7 +10,8 @@ static PyObject *
 py_hamm (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    if (!PyArg_ParseTuple (args, "OO", &obj_X, &obj_Y))
+    int method = 0;
+    if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
         return NULL;
 
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT, 0, 0);
@@ -27,14 +28,22 @@ py_hamm (PyObject *self, PyObject *args)
     }
 
     size_t nv = PyArray_DIM (obj_cont_X, 0), nc = PyArray_DIM (obj_cont_X, 1);
-    int32_t ret;
-    Py_BEGIN_ALLOW_THREADS
-        ret
-        = bap_bf (nv, nc);
-    Py_END_ALLOW_THREADS
+    int32_t ret = -1;
+    Py_BEGIN_ALLOW_THREADS;
+    switch (method)
+    {
+    case 0:
+        ret = bap_bf (nv, nc);
+        break;
+    case 1:
+        ret = bap_cd (nv, nc);
+        break;
+    default:
+        break;
+    }
+    Py_END_ALLOW_THREADS;
 
-        result
-        = PyLong_FromLong (ret);
+    result = PyLong_FromLong (ret);
 
 cleanup:
     Py_XDECREF ((PyObject *)obj_cont_X);

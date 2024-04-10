@@ -22,7 +22,7 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
                     and for each generated permutation σ solves the Linear Assignment Problem (LAP)
                     to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
-                    this method is O(min(nv,nc)! * max(nv,nc)^3)
+                    this method is O(min(nv,nc)! * max(nv,nc)**3)
 
                     NOTE: This method returns exact value but if one of the nv, nc is greater than
                     10 it is extremely slow.
@@ -31,11 +31,12 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     which solves the equivalent Bilinear Assignment Problem (BAP). The algorithm
                     first generates a feasible solution to the BAP using (TODO: Choose
                     initialization method) and then performs a coordinate-descent-like refinment by
-                    solving Linear Assignment Problem (LAP) with one of the permutations fixed until
-                    convergence.
+                    solving Linear Assignment Problem (LAP) with one of the permutations fixed;
+                    until convergence. Time complexity of this method is O(N * (nv**3 + nc**3))
+                    where N is the number of iterations it takes for the algorithm to converge.
 
-                    NOTE: This method is much faster than "bf" but there are no theoretical
-                    guarantees on the approximation ratio for the used heuristic.
+                    NOTE: This method is much faster in practice than "bf" but there are no
+                    theoretical guarantees on the approximation ratio for the used heuristic.
 
     Returns:
         Isomorphic Spearman distance between U and V.
@@ -79,7 +80,7 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
                     and for each generated permutation σ solves the Linear Assignment Problem (LAP)
                     to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
-                    this method is O(min(nv,nc)! * max(nv,nc)^3)
+                    this method is O(min(nv,nc)! * max(nv,nc)**3)
 
                     NOTE: This method returns exact value but if one of the nv, nc is greater than
                     10 it is extremely slow.
@@ -88,11 +89,12 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     which solves the equivalent Bilinear Assignment Problem (BAP). The algorithm
                     first generates a feasible solution to the BAP using (TODO: Choose
                     initialization method) and then performs a coordinate-descent-like refinment by
-                    solving Linear Assignment Problem (LAP) with one of the permutations fixed until
-                    convergence.
+                    solving Linear Assignment Problem (LAP) with one of the permutations fixed;
+                    until convergence. Time complexity of this method is O(N * (nv**3 + nc**3))
+                    where N is the number of iterations it takes for the algorithm to converge.
 
-                    NOTE: This method is much faster than "bf" but there are no theoretical
-                    guarantees on the approximation ratio for the used heuristic.
+                    NOTE: This method is much faster in practice than "bf" but there are no
+                    theoretical guarantees on the approximation ratio for the used heuristic.
 
     Returns:
         Isomorphic Hamming distance between U and V.

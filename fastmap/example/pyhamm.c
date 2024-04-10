@@ -10,9 +10,15 @@ static PyObject *
 py_hamm (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0;
+    int method = 0, N_METHODS = 2;
     if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
         return NULL;
+
+    if (method < 0 || method >= N_METHODS)
+    {
+        PyErr_Format (PyExc_ValueError, "expected method to be between 0 and %d", N_METHODS - 1);
+        return NULL;
+    }
 
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT32, 0, 0);
     PyArrayObject *obj_cont_Y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Y, NPY_INT32, 0, 0);

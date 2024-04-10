@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "lap.h"
 
@@ -96,7 +97,6 @@ bap_bf (const size_t nv, const size_t nc)
     free (cost);
     free (stack);
     free (sigma);
-
     free (a);
     free (b);
     free (x);
@@ -174,31 +174,23 @@ bap_aa (const size_t nv, const size_t nc)
         for (size_t k = 0; k < nc; k++)
             res_prev += d (i, sigma_nv[i], k, sigma_nc[k]);
 
-    size_t iters = 0;
     while (1)
     {
-        iters++;
+        memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
         for (size_t i = 0; i < nv; i++)
             for (size_t j = 0; j < nv; j++)
-            {
-                int32_t acc = 0;
                 for (size_t k = 0; k < nc; k++)
-                    acc += d (i, j, k, sigma_nc[k]);
-                cost_nv[i * nv + j] = acc;
-            }
+                    cost_nv[i * nv + j] += d (i, j, k, sigma_nc[k]);
 
         res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv, x_nv, y_nv);
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
 
-        for (size_t i = 0; i < nc; i++)
-            for (size_t j = 0; j < nc; j++)
-            {
-                int32_t acc = 0;
-                for (size_t k = 0; k < nv; k++)
-                    acc += d (k, sigma_nv[k], i, j);
-                cost_nc[i * nc + j] = acc;
-            }
+        memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
+        for (size_t k = 0; k < nv; k++)
+            for (size_t i = 0; i < nc; i++)
+                for (size_t j = 0; j < nc; j++)
+                    cost_nc[i * nc + j] += d (k, sigma_nv[k], i, j);
 
         res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
         for (size_t i = 0; i < nc; i++)
@@ -209,14 +201,11 @@ bap_aa (const size_t nv, const size_t nc)
 
         res_prev = res_curr;
     }
-    printf ("Iters %d\n", iters);
 
     free (sigma_nv);
     free (sigma_nc);
-
     free (cost_nv);
     free (cost_nc);
-
     free (rowsol_nv);
     free (rowsol_nc);
     free (colsol_nv);

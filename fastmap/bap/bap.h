@@ -169,10 +169,10 @@ bap_aa (const size_t nv, const size_t nc)
     // Coordinate-descent-like refinment
     // ====================================================
 
-    int32_t cost_prev = 0, cost_next = -1;
+    int32_t res_prev = 0, res_curr = -1;
     for (size_t i = 0; i < nv; i++)
         for (size_t k = 0; k < nc; k++)
-            cost_prev += d (i, sigma_nv[i], k, sigma_nc[k]);
+            res_prev += d (i, sigma_nv[i], k, sigma_nc[k]);
 
     size_t iters = 0;
     while (1)
@@ -187,7 +187,7 @@ bap_aa (const size_t nv, const size_t nc)
                 cost_nv[i * nv + j] = acc;
             }
 
-        cost_next = lap (nv, cost_nv, rowsol_nv, colsol_nv, x_nv, y_nv);
+        res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv, x_nv, y_nv);
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
 
@@ -200,14 +200,14 @@ bap_aa (const size_t nv, const size_t nc)
                 cost_nc[i * nc + j] = acc;
             }
 
-        cost_next = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
+        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc[i] = rowsol_nc[i];
 
-        if (cost_prev == cost_next)
+        if (res_prev == res_curr)
             break;
 
-        cost_prev = cost_next;
+        res_prev = res_curr;
     }
     printf ("Iters %d\n", iters);
 
@@ -226,5 +226,5 @@ bap_aa (const size_t nv, const size_t nc)
     free (x_nc);
     free (y_nc);
 
-    return cost_next;
+    return res_curr;
 }

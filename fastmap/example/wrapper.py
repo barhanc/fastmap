@@ -12,10 +12,10 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
     Args:
         U: Ordinal Election matrix s.t. U[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
-        position in the i-th voter in the U election. Shape (nv, nc).
+        position in the i-th vote in the U election. Shape (nv, nc).
 
         V: Ordinal Election matrix s.t. V[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
-        position in the i-th voter in the V election. Shape (nv, nc).
+        position in the i-th vote in the V election. Shape (nv, nc).
 
         method: Method used to compute the distance. Should be one of the
                 `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
@@ -35,26 +35,28 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     convergence.
 
                     NOTE: This method is much faster than "bf" but there are no theoretical
-                    guarantees on approximation ratio for the used heuristic.
+                    guarantees on the approximation ratio for the used heuristic.
 
     Returns:
         Isomorphic Spearman distance between U and V.
     """
     import fastmap._spear
 
+    assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
-    assert (dim := len(U.shape)) == 2, f"Expected 2D arrays, got {dim}D arrays"
-
-    methods = {"bf": 0, "aa": 1}
+    assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
 
     nv, nc = U.shape
     if nv < nc:
         pos_U, pos_V = U.argsort().T, V.argsort().T
     else:
         pos_U, pos_V = U.argsort(), V.argsort()
-    pos_U, pos_V = pos_U.astype(np.int32), pos_V.astype(np.int32)
 
-    return fastmap._spear.spear(pos_U, pos_V, methods[method])
+    return fastmap._spear.spear(
+        pos_U.astype(np.int32),
+        pos_V.astype(np.int32),
+        {"bf": 0, "aa": 1}[method],
+    )
 
 
 def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
@@ -90,21 +92,23 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     convergence.
 
                     NOTE: This method is much faster than "bf" but there are no theoretical
-                    guarantees on approximation ratio for the used heuristic.
+                    guarantees on the approximation ratio for the used heuristic.
 
     Returns:
         Isomorphic Hamming distance between U and V.
     """
     import fastmap._hamm
 
+    assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
-    assert (dim := len(U.shape)) == 2, f"Expected 2D arrays, got {dim}D arrays"
-
-    methods = {"bf": 0, "aa": 1}
+    assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
 
     nv, nc = U.shape
     if nv < nc:
         U, V = U.T, V.T
-    U, V = U.astype(np.int32), V.astype(np.int32)
 
-    return fastmap._hamm.hamm(U, V, methods[method])
+    return fastmap._hamm.hamm(
+        U.astype(np.int32),
+        V.astype(np.int32),
+        {"bf": 0, "aa": 1}[method],
+    )

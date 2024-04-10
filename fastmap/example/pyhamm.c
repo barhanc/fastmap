@@ -36,7 +36,7 @@ py_hamm (PyObject *self, PyObject *args)
         ret = bap_bf (nv, nc);
         break;
     case 1:
-        ret = bap_cd (nv, nc);
+        ret = bap_aa (nv, nc);
         break;
     default:
         break;

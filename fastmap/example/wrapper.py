@@ -7,8 +7,8 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
 
     where d(i,j,k,l) := |pos_U[i,k] - pos_V[j,l]|, nc is the number of candidates, nv is the number
-    of voters and pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U
-    election.
+    of voters, pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election
+    and S_n denotes the set of all permutations of the set {1,..,n}.
 
     Args:
         U: Ordinal Election matrix s.t. U[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
@@ -18,16 +18,22 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         position in the i-th voter in the V election. Shape (nv, nc).
 
         method: Method used to compute the distance. Should be one of the
-                `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem.
+                `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
                     Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
-                    and for each generated permutation σ solves the Linear Assignment Problem to
-                    obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of this
-                    method is O(min(nv,nc)! * max(nv,nc)^3)
+                    and for each generated permutation σ solves the Linear Assignment Problem (LAP)
+                    to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
+                    this method is O(min(nv,nc)! * max(nv,nc)^3)
+
                     NOTE: This method returns exact value but if one of the nv, nc is greater than
                     10 it is extremely slow.
 
-                `"cd"` - uses heuristic coordinate-descent-like algorithm to solve the equivalent
-                    Bilinear Assignment Problem.
+                `"aa"` - implements Alternating Algorithm heuristic described in arXiv:1707.07057
+                    which solves the equivalent Bilinear Assignment Problem (BAP). The algorithm
+                    first generates a feasible solution to the BAP using (TODO: Choose
+                    initialization method) and then performs a coordinate-descent-like refinment by
+                    solving Linear Assignment Problem (LAP) with one of the permutations fixed until
+                    convergence.
+
                     NOTE: This method is much faster than "bf" but there are no theoretical
                     guarantees on approximation ratio for the used heuristic.
 
@@ -39,7 +45,7 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2D arrays, got {dim}D arrays"
 
-    methods = {"bf": 0, "cd": 1}
+    methods = {"bf": 0, "aa": 1}
 
     nv, nc = U.shape
     if nv < nc:
@@ -56,8 +62,8 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
 
-    where d(i,j,k,l) := U[i,k] xor V[j,l], nc is the number of candidates and nv is the number of
-    voters.
+    where d(i,j,k,l) := U[i,k] xor V[j,l], nc is the number of candidates, nv is the number of
+    voters and S_n denotes the set of all permutations of the set {1,..,n}.
 
     Args:
         U: Approval Election matrix s.t. U[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
@@ -72,11 +78,17 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     and for each generated permutation σ solves the Linear Assignment Problem (LAP)
                     to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
                     this method is O(min(nv,nc)! * max(nv,nc)^3)
+
                     NOTE: This method returns exact value but if one of the nv, nc is greater than
                     10 it is extremely slow.
 
-                `"cd"` - uses heuristic coordinate-descent-like algorithm to solve the equivalent
-                    Bilinear Assignment Problem.
+                `"aa"` - implements Alternating Algorithm heuristic described in arXiv:1707.07057
+                    which solves the equivalent Bilinear Assignment Problem (BAP). The algorithm
+                    first generates a feasible solution to the BAP using (TODO: Choose
+                    initialization method) and then performs a coordinate-descent-like refinment by
+                    solving Linear Assignment Problem (LAP) with one of the permutations fixed until
+                    convergence.
+
                     NOTE: This method is much faster than "bf" but there are no theoretical
                     guarantees on approximation ratio for the used heuristic.
 
@@ -88,7 +100,7 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2D arrays, got {dim}D arrays"
 
-    methods = {"bf": 0, "cd": 1}
+    methods = {"bf": 0, "aa": 1}
 
     nv, nc = U.shape
     if nv < nc:

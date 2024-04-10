@@ -22,8 +22,8 @@
  * ```
  *   min_{v ∈ S_nv} sum_{i=1,..,nv} ( sum_{k=1,..,nc} d(i,v(i),k,σ(k)) ) .
  * ```
- * NOTE: You must define a macro `#define d(i,j,k,l) ...` which computes the cost tensor (see:
- * fastmap/example/).
+ * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
+ * used to compute the cost tensor (see: fastmap/example/).
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
@@ -49,8 +49,10 @@ bap_bf (const size_t nv, const size_t nc)
         sigma[i] = i;
 
     // Auxiliary variables required for J-V LAP algorithm
-    int32_t *a = calloc (nv, sizeof (int32_t)), *b = calloc (nv, sizeof (int32_t));
-    int32_t *x = calloc (nv, sizeof (int32_t)), *y = calloc (nv, sizeof (int32_t));
+    int32_t *a = calloc (nv, sizeof (int32_t));
+    int32_t *b = calloc (nv, sizeof (int32_t));
+    int32_t *x = calloc (nv, sizeof (int32_t));
+    int32_t *y = calloc (nv, sizeof (int32_t));
 
     int32_t best_res = lap (nv, cost, a, b, x, y);
 
@@ -80,7 +82,7 @@ bap_bf (const size_t nv, const size_t nc)
             }
 
             int32_t res = lap (nv, cost, a, b, x, y);
-            best_res = (res < best_res ? res : best_res);
+            best_res = res < best_res ? res : best_res;
             stack[alpha]++;
             alpha = 1;
         }
@@ -91,20 +93,39 @@ bap_bf (const size_t nv, const size_t nc)
         }
     }
 
-    free (cost), free (stack), free (sigma);
-    free (a), free (b), free (x), free (y);
+    free (cost);
+    free (stack);
+    free (sigma);
+
+    free (a);
+    free (b);
+    free (x);
+    free (y);
+
     return best_res;
 }
 
 /**
- * @brief
+ * @brief Implementation of the Alternating Algorithm described in arXiv:1707.07057 which is a
+ * heuristic to solve the Bilinear Assignment Problem (BAP)
+ * ```
+ *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
+ * ```
+ * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
+ * and integers nv, nc describe the size of the problem instance. The algorithm first generates a
+ * feasible solution to the BAP using (TODO: Choose initialization method) and then performs a
+ * coordinate-descent-like refinment by solving Linear Assignment Problem (LAP) with one of the
+ * permutations fixed until convergence.
+ *
+ * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
+ * used to compute the cost tensor (see: fastmap/example/).
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
  * @return int32_t
  */
 static int32_t
-bap_cd (const size_t nv, const size_t nc)
+bap_aa (const size_t nv, const size_t nc)
 {
     // Cost matrices for LAP
     int32_t *cost_nv = calloc (nv * nv, sizeof (int32_t));
@@ -115,8 +136,10 @@ bap_cd (const size_t nv, const size_t nc)
     int32_t *colsol_nv = calloc (nv, sizeof (int32_t));
     int32_t *rowsol_nc = calloc (nc, sizeof (int32_t));
     int32_t *colsol_nc = calloc (nc, sizeof (int32_t));
-    int32_t *x_nv = calloc (nv, sizeof (int32_t)), *y_nv = calloc (nv, sizeof (int32_t));
-    int32_t *x_nc = calloc (nc, sizeof (int32_t)), *y_nc = calloc (nc, sizeof (int32_t));
+    int32_t *x_nv = calloc (nv, sizeof (int32_t));
+    int32_t *y_nv = calloc (nv, sizeof (int32_t));
+    int32_t *x_nc = calloc (nc, sizeof (int32_t));
+    int32_t *y_nc = calloc (nc, sizeof (int32_t));
 
     // Permutation arrays initilized to identity
     size_t *sigma_nv = calloc (nv, sizeof (size_t));
@@ -190,13 +213,18 @@ bap_cd (const size_t nv, const size_t nc)
 
     free (sigma_nv);
     free (sigma_nc);
+
     free (cost_nv);
     free (cost_nc);
 
-    free (rowsol_nv), free (rowsol_nc);
-    free (colsol_nv), free (colsol_nc);
-    free (x_nv), free (y_nv);
-    free (x_nc), free (y_nc);
+    free (rowsol_nv);
+    free (rowsol_nc);
+    free (colsol_nv);
+    free (colsol_nc);
+    free (x_nv);
+    free (y_nv);
+    free (x_nc);
+    free (y_nc);
 
     return cost_next;
 }

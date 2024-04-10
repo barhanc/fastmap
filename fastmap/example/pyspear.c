@@ -14,20 +14,20 @@ py_spear (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
         return NULL;
 
-    if (method < 0 || method >= N_METHODS)
-    {
-        PyErr_Format (PyExc_ValueError, "expected method to be between 0 and %d", N_METHODS - 1);
-        return NULL;
-    }
-
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT32, 0, 0);
     PyArrayObject *obj_cont_Y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Y, NPY_INT32, 0, 0);
     if (!obj_cont_X || !obj_cont_Y)
         return NULL;
 
+    if (method < 0 || method >= N_METHODS)
+    {
+        PyErr_Format (PyExc_ValueError, "expected method to be an int between 0 and %d", N_METHODS - 1);
+        goto cleanup;
+    }
+
     if (PyArray_NDIM (obj_cont_X) != 2 || PyArray_NDIM (obj_cont_Y) != 2)
     {
-        PyErr_Format (PyExc_ValueError, "expected 2D arrays, got a %d and %d array",
+        PyErr_Format (PyExc_ValueError, "expected 2-D arrays, got a %d-D and %d-D array",
                       PyArray_NDIM (obj_cont_X), PyArray_NDIM (obj_cont_Y));
         goto cleanup;
     }
@@ -73,13 +73,13 @@ cleanup:
     return result;
 }
 
-static PyMethodDef fast_methods[] = {
+static PyMethodDef methods[] = {
     { "spear", (PyCFunction)py_spear, METH_VARARGS, "Spearman distance.\n" },
     { NULL, NULL, 0, NULL }
 };
 
 static struct PyModuleDef moduledef = {
-    PyModuleDef_HEAD_INIT, "_spear", "Spearman distance.\n", -1, fast_methods,
+    PyModuleDef_HEAD_INIT, "_spear", "Spearman distance.\n", -1, methods,
     NULL, NULL, NULL, NULL
 };
 

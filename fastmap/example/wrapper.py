@@ -54,8 +54,8 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         pos_U, pos_V = U.argsort(), V.argsort()
 
     return fastmap._spear.spear(
-        pos_U.astype(np.int32),
-        pos_V.astype(np.int32),
+        pos_U.astype(np.int64),
+        pos_V.astype(np.int64),
         {"bf": 0, "aa": 1}[method],
     )
 
@@ -110,7 +110,7 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         U, V = U.T, V.T
 
     return fastmap._hamm.hamm(
-        U.astype(np.int32),
-        V.astype(np.int32),
+        U.astype(np.int64),
+        V.astype(np.int64),
         {"bf": 0, "aa": 1}[method],
     )

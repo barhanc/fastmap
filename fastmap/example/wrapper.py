@@ -50,7 +50,7 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
 
     nv, nc = U.shape
-    if nv < nc:
+    if nv > nc:
         pos_U, pos_V = U.argsort().T, V.argsort().T
     else:
         pos_U, pos_V = U.argsort(), V.argsort()
@@ -110,7 +110,7 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
 
     nv, nc = U.shape
-    if nv < nc:
+    if nv > nc:
         U, V = U.T, V.T
 
     return fastmap._hamm.hamm(

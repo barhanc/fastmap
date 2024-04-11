@@ -3,7 +3,7 @@
 #include <numpy/arrayobject.h>
 
 int64_t *X = NULL, *Y = NULL;
-#define d(i, j, k, l) (X[(i) * nc + (k)] ^ Y[(j) * nc + (l)])
+#define d(i, j, k, l) (X[(i) + (k) * nv] ^ Y[(j) + (l) * nv])
 #include "bap.h"
 
 static PyObject *
@@ -48,7 +48,7 @@ py_hamm (PyObject *self, PyObject *args)
         goto cleanup;
     }
 
-    size_t nv = rows_X, nc = cols_X;
+    size_t nc = rows_X, nv = cols_X;
     int64_t ret = -1;
 
     Py_BEGIN_ALLOW_THREADS;

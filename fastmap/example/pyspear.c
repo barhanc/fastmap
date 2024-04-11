@@ -2,7 +2,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-int32_t *X = NULL, *Y = NULL;
+int64_t *X = NULL, *Y = NULL;
 #define d(i, j, k, l) abs (X[(i) * nc + (k)] - Y[(j) * nc + (l)])
 #include "bap.h"
 
@@ -14,8 +14,8 @@ py_spear (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
         return NULL;
 
-    PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT32, 0, 0);
-    PyArrayObject *obj_cont_Y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Y, NPY_INT32, 0, 0);
+    PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT64, 0, 0);
+    PyArrayObject *obj_cont_Y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Y, NPY_INT64, 0, 0);
     if (!obj_cont_X || !obj_cont_Y)
         return NULL;
 
@@ -32,8 +32,8 @@ py_spear (PyObject *self, PyObject *args)
         goto cleanup;
     }
 
-    X = (int32_t *)PyArray_DATA (obj_cont_X);
-    Y = (int32_t *)PyArray_DATA (obj_cont_Y);
+    X = (int64_t *)PyArray_DATA (obj_cont_X);
+    Y = (int64_t *)PyArray_DATA (obj_cont_Y);
     if (X == NULL || Y == NULL)
     {
         PyErr_SetString (PyExc_TypeError, "invalid array object");
@@ -49,7 +49,7 @@ py_spear (PyObject *self, PyObject *args)
     }
 
     size_t nv = rows_X, nc = cols_X;
-    int32_t ret = -1;
+    int64_t ret = -1;
 
     Py_BEGIN_ALLOW_THREADS;
     switch (method)

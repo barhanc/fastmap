@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "lap.h"
 
@@ -148,6 +149,7 @@ bap_aa (const size_t nv, const size_t nc)
 
     for (size_t i = 0; i < nv; i++)
         sigma_nv[i] = i;
+
     for (size_t i = 0; i < nc; i++)
         sigma_nc[i] = i;
 
@@ -169,33 +171,57 @@ bap_aa (const size_t nv, const size_t nc)
             res_prev += d (i, sigma_nv[i], k, sigma_nc[k]);
 
     // Coordinate-descent-like refinment
+    clock_t t;
+    size_t iters = 0;
     while (1)
     {
+        iters++;
+        // TODO: This is too slow (it's 2-3 OoM slower than lap() with the same theoretical time
+        // complexity when nv=nc).
+        // NOTE: It's basically a more advanced matmul. Notice that the structure is the same but we
+        // are actually contracting a 4-D tensor which is defined by a macro.
+        t = clock ();
         memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
         for (size_t i = 0; i < nv; i++)
             for (size_t j = 0; j < nv; j++)
                 for (size_t k = 0; k < nc; k++)
                     cost_nv[i * nv + j] += d (i, j, k, sigma_nc[k]);
+        t = clock () - t;
+        printf ("Loop 1: %f\n", ((double)t) / CLOCKS_PER_SEC);
 
+        t = clock ();
         res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv, x_nv, y_nv);
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
+        t = clock () - t;
+        printf ("LAP  1: %f\n", ((double)t) / CLOCKS_PER_SEC);
 
+        // TODO: This is too slow (it's 2-3 OoM slower than lap() with the same theoretical time
+        // complexity when nv=nc).
+        // NOTE: It's basically a more advanced matmul. Notice that the structure is the same but we
+        // are actually contracting a 4-D tensor which is defined by a macro.
+        t = clock ();
         memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
         for (size_t k = 0; k < nv; k++)
             for (size_t i = 0; i < nc; i++)
                 for (size_t j = 0; j < nc; j++)
                     cost_nc[i * nc + j] += d (k, sigma_nv[k], i, j);
+        t = clock () - t;
+        printf ("Loop 2: %f\n", ((double)t) / CLOCKS_PER_SEC);
 
+        t = clock ();
         res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc[i] = rowsol_nc[i];
+        t = clock () - t;
+        printf ("LAP  2: %f\n\n", ((double)t) / CLOCKS_PER_SEC);
 
         if (res_prev == res_curr)
             break;
 
         res_prev = res_curr;
     }
+    printf ("Iters %d\n", iters);
 
     free (sigma_nv);
     free (sigma_nc);

@@ -191,8 +191,8 @@ bap_aa (const size_t nv, const size_t nc)
         // NOTE: It's basically a more advanced matmul. Notice that the structure is the same but we
         // are actually contracting a 4-D tensor which is defined by a macro.
         memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
-        for (size_t i = 0; i < nc; i++)
-            for (size_t k = 0; k < nv; k++)
+        for (size_t k = 0; k < nv; k++)
+            for (size_t i = 0; i < nc; i++)
                 for (size_t j = 0; j < nc; j++)
                     cost_nc[i * nc + j] += d (k, sigma_nv[k], i, j);
 

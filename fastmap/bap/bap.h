@@ -113,9 +113,10 @@ bap_bf (const size_t nv, const size_t nc)
  * ```
  * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
  * and integers nv, nc describe the size of the problem instance. The algorithm first generates a
- * feasible solution to the BAP using (TODO: Choose initialization method) and then performs a
- * coordinate-descent-like refinment by solving Linear Assignment Problem (LAP) with one of the
- * permutations fixed until convergence.
+ * feasible solution to the BAP by sampling from a uniform distribution two permutations σ, v and
+ * then performs a coordinate-descent-like refinment by interchangeably fixing one of the
+ * permutations, solving the corresponding Linear Assignment Problem (LAP) and updating the other
+ * permutation with the matching found in LAP doing so until convergence.
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
  * used to compute the cost tensor (see: fastmap/example/).
@@ -141,18 +142,14 @@ bap_aa (const size_t nv, const size_t nc)
     int64_t *x_nc = calloc (nc, sizeof (int64_t));
     int64_t *y_nc = calloc (nc, sizeof (int64_t));
 
-    // Permutation arrays initilized to identity
+    // Permutation arrays randomly initialized
     size_t *sigma_nv = calloc (nv, sizeof (size_t));
     size_t *sigma_nc = calloc (nc, sizeof (size_t));
+
     for (size_t i = 0; i < nv; i++)
         sigma_nv[i] = i;
     for (size_t i = 0; i < nc; i++)
         sigma_nc[i] = i;
-
-    // ====================================================
-    // Shuffle to random initilize
-    // TODO: Try randomized greedy init instead
-    // ====================================================
 
     for (size_t i = nv - 1; i > 0; i--)
     {
@@ -165,15 +162,13 @@ bap_aa (const size_t nv, const size_t nc)
         swap (size_t, sigma_nc[i], sigma_nc[j]);
     }
 
-    // ====================================================
-    // Coordinate-descent-like refinment
-    // ====================================================
-
+    // Minimum costs found in the previous and current iteration
     int64_t res_prev = 0, res_curr = -1;
     for (size_t i = 0; i < nv; i++)
         for (size_t k = 0; k < nc; k++)
             res_prev += d (i, sigma_nv[i], k, sigma_nc[k]);
 
+    // Coordinate-descent-like refinment
     while (1)
     {
         memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));

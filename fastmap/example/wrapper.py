@@ -29,11 +29,13 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
                 `"aa"` - implements Alternating Algorithm heuristic described in arXiv:1707.07057
                     which solves the equivalent Bilinear Assignment Problem (BAP). The algorithm
-                    first generates a feasible solution to the BAP using (TODO: Choose
-                    initialization method) and then performs a coordinate-descent-like refinment by
-                    solving Linear Assignment Problem (LAP) with one of the permutations fixed;
-                    until convergence. Time complexity of this method is O(N * (nv**3 + nc**3))
-                    where N is the number of iterations it takes for the algorithm to converge.
+                    first generates a feasible solution to the BAP by sampling from a uniform
+                    distribution two permutations σ, v and then performs a coordinate-descent-like
+                    refinment by interchangeably fixing one of the permutations, solving the
+                    corresponding Linear Assignment Problem (LAP) and updating the other permutation
+                    with the matching found in LAP, doing so until convergence. Time complexity of
+                    this method is O(N * (nv**3 + nc**3)) where N is the number of iterations it
+                    takes for the algorithm to converge.
 
                     NOTE: This method is much faster in practice than "bf" but there are no
                     theoretical guarantees on the approximation ratio for the used heuristic.
@@ -87,11 +89,13 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
                 `"aa"` - implements Alternating Algorithm heuristic described in arXiv:1707.07057
                     which solves the equivalent Bilinear Assignment Problem (BAP). The algorithm
-                    first generates a feasible solution to the BAP using (TODO: Choose
-                    initialization method) and then performs a coordinate-descent-like refinment by
-                    solving Linear Assignment Problem (LAP) with one of the permutations fixed;
-                    until convergence. Time complexity of this method is O(N * (nv**3 + nc**3))
-                    where N is the number of iterations it takes for the algorithm to converge.
+                    first generates a feasible solution to the BAP by sampling from a uniform
+                    distribution two permutations σ, v and then performs a coordinate-descent-like
+                    refinment by interchangeably fixing one of the permutations, solving the
+                    corresponding Linear Assignment Problem (LAP) and updating the other permutation
+                    with the matching found in LAP, doing so until convergence. Time complexity of
+                    this method is O(N * (nv**3 + nc**3)) where N is the number of iterations it
+                    takes for the algorithm to converge.
 
                     NOTE: This method is much faster in practice than "bf" but there are no
                     theoretical guarantees on the approximation ratio for the used heuristic.

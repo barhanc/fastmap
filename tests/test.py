@@ -2,7 +2,6 @@ import time
 import numpy as np
 
 import fastmap.example.wrapper as mdist
-import fastmap.isomorphic
 
 from mapel.elections.distances import cppdistances as dist
 
@@ -32,10 +31,9 @@ def hamm_bf(U: np.ndarray[bool | int], V: np.ndarray[bool | int]) -> int:
 
 
 if __name__ == "__main__":
+    print("=" * 60 + "\nSpearman\n" + "=" * 60)
     nv, nc = 10, 10
     print(f"Prob. size : nv={nv}, nc={nc}")
-
-    print("Spearman")
     U = np.array([np.random.permutation(nc) for _ in range(nv)])
     V = np.array([np.random.permutation(nc) for _ in range(nv)])
 
@@ -43,41 +41,49 @@ if __name__ == "__main__":
     stdres = dist.speard(U, V)
     e = time.perf_counter()
     t1 = e - s
-    print(f"Target(C++): res={stdres}, t={e-s:.4f}s")
+    print(f"Mapel  : res={stdres:4d}, t={e-s:.4f}s")
 
-    print()
     s = time.perf_counter()
-    best = float("inf")
-    for _ in range(10):
-        res = mdist.spearman(U, V, method="cd")
-        best = min(best, res)
-        print(f"Custom C   : res={res:4d}, t={e-s:.4f}s")
+    res1 = mdist.spearman(U, V, method="bf")
+    e = time.perf_counter()
+    t1 = e - s
+    print(f"C - bf : res={res1:4d}, t={e-s:.4f}s")
+
+    s = time.perf_counter()
+    res2 = mdist.spearman(U, V, method="aa")
     e = time.perf_counter()
     t2 = e - s
-    print(f"Custom C Best   : {best}")
-    print()
+    print(f"C - aa : res={res2:4d}, t={e-s:.4f}s")
 
-    # s = time.perf_counter()
-    # D = np.abs(np.subtract.outer(U.argsort(), V.argsort())).swapaxes(1, 2)
-    # res = fastmap.isomorphic.bfcm(U, V, D)
-    # e = time.perf_counter()
-    # t3 = e - s
-    # print(f"Numpy      : res={res}, t={e-s:.4f}s")
-
-    print(f"Speed up: {t1 / t2:4.2f}x")
-    print(f"Approx ratio: {best / stdres:.2f}")
+    # print(f"Speed up: {t1 / t2:4.2f}x")
+    # print(f"Approx ratio: {res2 / res1:.2f}")
 
     # ==============================================================================================
 
-    nv, nc = 4, 3
-    print(f"Prob. size : nv={nv}, nc={nc}")
-    print("Hamming")
+    # print("\n\n" + "=" * 60 + "\nHamming\n" + "=" * 60)
+    # nv, nc = 1000, 1000
+    # print(f"Prob. size : nv={nv}, nc={nc}")
+    # U = np.array([np.random.randint(0, 2, size=nc) for _ in range(nv)])
+    # V = np.array([np.random.randint(0, 2, size=nc) for _ in range(nv)])
 
-    U = np.array([np.random.randint(0, 2, size=nc) for _ in range(nv)])
-    V = np.array([np.random.randint(0, 2, size=nc) for _ in range(nv)])
+    # s = time.time()
+    # res = mdist.hamming(U, V, method="aa")
+    # e = time.time()
+    # print(f"C - bf     : res={res:4d}, t={e-s:.4f}s")
 
-    res = mdist.hamming(U, V)
-    print(res)
+    # # res = hamm_bf(U, V)
+    # # print(res)
 
-    res = hamm_bf(U, V)
-    print(res)
+    # print()
+    # t2 = 0
+    # best = float("inf")
+    # for _ in range(10):
+    #     s = time.perf_counter()
+    #     res = mdist.hamming(U, V, method="aa")
+    #     e = time.perf_counter()
+    #     best = min(best, res)
+    #     t2 += e - s
+    #     print(f"C - aa     : res={res:4d}, t={e-s:.4f}s")
+    # print("-" * 40)
+    # print(f"C - aa Best: res={best:4d}")
+    # print()

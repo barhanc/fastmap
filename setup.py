@@ -34,6 +34,12 @@ setup(
             extra_compile_args=["-Ofast"],
             include_dirs=["fastmap/lap/", "fastmap/bap/"],
         ),
+        Extension(
+            name="fastmap._swap",
+            sources=["fastmap/example/pyswap.c"],
+            extra_compile_args=["-Ofast"],
+            include_dirs=["fastmap/lap/", "fastmap/bap/"],
+        ),
     ],
     include_dirs=[numpy.get_include()],
 )

@@ -118,3 +118,39 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         V.astype(np.int64),
         {"bf": 0, "aa": 1}[method],
     )
+
+def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
+    """Computes Isomorphic Swap distance between approval elections U and V defined as
+
+        idk_lmao_lol_todoiguess_schizo
+
+    Args:
+        U: Approval Election matrix s.t. U[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
+        U election contains j-th candidate and 0 otherwise. Shape (nv, nc).
+
+        V: Approval Election matrix s.t. V[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
+        V election contains j-th candidate and 0 otherwise. Shape (nv, nc).
+
+        method: Method used to compute the distance. Should be one of the
+                `"bf"` -  brute force. Hard limit for 10 votes/candidates.
+                `"aa"` - not implemented yet.
+    Returns:
+        Isomorphic Swap distance between U and V.
+    """
+    import fastmap._swap
+
+    assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
+    assert U.shape == V.shape, "Expected arrays to have the same shape"
+    assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
+
+    nv, nc = U.shape
+    # if nv > nc:
+    #     pos_U, pos_V = U.argsort().T, V.argsort().T
+    # else:
+    #     pos_U, pos_V = U.argsort().T, V.argsort().T
+
+    return fastmap._swap.swap(
+        U.astype(np.int64),
+        V.astype(np.int64),
+        {"bf": 0, "aa": 1}[method],
+    )

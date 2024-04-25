@@ -129,9 +129,9 @@ find_umins_avx2(idx_t dim, idx_t i, const cost *restrict costmatrix, const cost 
 }
 
 always_inline void
-find_umins(idx_t dim, idx_t i, const cost *restrict costmatrix, bool hasAVX2, const cost *restrict v, cost* umin, cost* usubmin, idx_t *j1, idx_t *j2)
+find_umins(idx_t dim, idx_t i, const cost *restrict costmatrix, const cost *restrict v, cost* umin, cost* usubmin, idx_t *j1, idx_t *j2)
 {
-    if (dim > AVX_MIN_DIM && hasAVX2) 
+    if (dim > AVX_MIN_DIM && SIMDFlags_hasAVX2(&flags)) 
         return find_umins_avx2(dim, i, costmatrix, v, umin, usubmin, j1, j2);
     else
         return find_umins_regular(dim, i, costmatrix, v, umin, usubmin, j1, j2);
@@ -155,13 +155,12 @@ find_umins(idx_t dim, idx_t i, const cost *restrict costmatrix, bool hasAVX2, co
  * @param colsol index of smallest number in each collumn
  * @param u values for optimal column reduction
  * @param v values for optimal row reduction
- * @param hasAVX2 true if platform supports avx2 simd commands
  * @return int32_t
  */
 static cost
-lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict colsol, cost *restrict u, cost *restrict v, bool hasAVX2)
+lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict colsol, cost *restrict u, cost *restrict v)
 {
-    bool debug = false;
+    SIMDFlags_init(&flags);
 
     idx_t* free     = (idx_t*) malloc(dim * sizeof(idx_t));
     idx_t* collist  = (idx_t*) malloc(dim * sizeof(idx_t));
@@ -238,7 +237,7 @@ lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict 
             cost umin, usubmin;
             idx_t j1, j2;
 
-            find_umins(dim, i, costmatrix, v, hasAVX2, &umin, &usubmin, &j1, &j2);
+            find_umins(dim, i, costmatrix, v, &umin, &usubmin, &j1, &j2);
 
             idx_t i0 = colsol[j1];
             cost vj1_new = v[j1] - (usubmin - umin);

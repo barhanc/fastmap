@@ -25,13 +25,13 @@ setup(
         Extension(
             name="fastmap._spear",
             sources=["fastmap/example/pyspear.c"],
-            extra_compile_args=["-Ofast"],
+            extra_compile_args=["-Ofast", "-march=native"],
             include_dirs=["fastmap/lap/", "fastmap/bap/"],
         ),
         Extension(
             name="fastmap._hamm",
             sources=["fastmap/example/pyhamm.c"],
-            extra_compile_args=["-Ofast"],
+            extra_compile_args=["-Ofast", "-march=native"],
             include_dirs=["fastmap/lap/", "fastmap/bap/"],
         ),
     ],

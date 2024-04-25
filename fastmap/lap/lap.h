@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <immintrin.h>
 
-#include "cpuid.h"
-
 typedef int32_t cost;
 typedef int32_t idx_t;
 
@@ -27,8 +25,6 @@ typedef int32_t idx_t;
 #define always_inline inline
 #define restrict
 #endif
-
-SIMDFlags flags;
 
 always_inline void
 find_umins_regular(idx_t dim, idx_t i, const cost *restrict costmatrix, const cost *restrict v, cost* umin, cost* usubmin, idx_t *j1, idx_t *j2)
@@ -131,10 +127,16 @@ find_umins_avx2(idx_t dim, idx_t i, const cost *restrict costmatrix, const cost 
 always_inline void
 find_umins(idx_t dim, idx_t i, const cost *restrict costmatrix, const cost *restrict v, cost* umin, cost* usubmin, idx_t *j1, idx_t *j2)
 {
-    if (dim > AVX_MIN_DIM && SIMDFlags_hasAVX2(&flags)) 
-        return find_umins_avx2(dim, i, costmatrix, v, umin, usubmin, j1, j2);
-    else
-        return find_umins_regular(dim, i, costmatrix, v, umin, usubmin, j1, j2);
+#ifdef __AVX2__
+
+    if (dim > AVX_MIN_DIM) return find_umins_avx2(dim, i, costmatrix, v, umin, usubmin, j1, j2);
+    else return find_umins_regular(dim, i, costmatrix, v, umin, usubmin, j1, j2);
+    
+#else
+
+    return find_umins_regular(dim, i, costmatrix, v, umin, usubmin, j1, j2);
+
+#endif
 }
 
 
@@ -160,9 +162,9 @@ find_umins(idx_t dim, idx_t i, const cost *restrict costmatrix, const cost *rest
 static cost
 lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict colsol, cost *restrict u, cost *restrict v)
 {
-    SIMDFlags_init(&flags);
+    bool debug = false;
 
-    idx_t* free     = (idx_t*) malloc(dim * sizeof(idx_t));
+    idx_t* freelist = (idx_t*) malloc(dim * sizeof(idx_t));
     idx_t* collist  = (idx_t*) malloc(dim * sizeof(idx_t));
     idx_t* matches  = (idx_t*) malloc(dim * sizeof(idx_t));
     cost*  d        = (cost*)  malloc(dim * sizeof(idx_t));
@@ -200,14 +202,14 @@ lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict 
 
     if (debug) printf("LAP: COLUMN REDUCTION finished\n");
 
-    idx_t numfree = 0;
+    idx_t numfreelist = 0;
     for(idx_t i=0 ; i<dim; i++)
     {
         const cost *l_cost = &cost(i, 0);
 
         if (matches[i] == 0) 
         {
-            free[numfree++] = i;
+            freelist[numfreelist++] = i;
         }
         else if (matches[i] == 1)
         {
@@ -233,7 +235,7 @@ lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict 
 
         while (k < prevnumfree)
         {
-            idx_t i = free[k++];
+            idx_t i = freelist[k++];
             cost umin, usubmin;
             idx_t j1, j2;
 
@@ -255,8 +257,8 @@ lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict 
 
             if (i0 >= 0)
             {
-                if (vj1_lowers) free[--k] = i0;
-                else free[numfree++] = i0;
+                if (vj1_lowers) freelist[--k] = i0;
+                else freelist[numfree++] = i0;
             }
         }
 
@@ -267,7 +269,7 @@ lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict 
     for (idx_t f = 0; f < numfree; f++) 
     {
         idx_t endofpath;
-        idx_t freerow = free[f];
+        idx_t freerow = freelist[f];
         if (debug) printf("lapjv: AUGMENT SOLUTION row %d [%d / %d]\n", freerow, f + 1, numfree);
 
         #if _OPENMP >= 201307
@@ -395,7 +397,7 @@ lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict 
 
     if (debug) printf("lapjv: optimal cost calculated\n");
 
-    free(free);
+    free(freelist);
     free(collist);
     free(matches);
     free(d);
@@ -403,6 +405,3 @@ lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict 
 
     return lapcost;
 }
-
-
-

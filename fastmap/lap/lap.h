@@ -155,7 +155,7 @@ find_umins(idx_t dim, idx_t i, const cost *restrict costmatrix, bool hasAVX2, co
  * @param colsol index of smallest number in each collumn
  * @param u values for optimal column reduction
  * @param v values for optimal row reduction
- * @param debug prints each step when set to true
+ * @param hasAVX2 true if platform supports avx2 simd commands
  * @return int32_t
  */
 static cost

@@ -128,6 +128,7 @@ bap_bf (const size_t nv, const size_t nc)
 static int32_t
 bap_aa (const size_t nv, const size_t nc)
 {
+    
     // Cost matrices for LAP
     int32_t *cost_nv = calloc (nv * nv, sizeof (int32_t));
     int32_t *cost_nc = calloc (nc * nc, sizeof (int32_t));

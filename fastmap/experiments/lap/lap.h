@@ -160,7 +160,7 @@ find_umins(idx_t dim, idx_t i, const cost *restrict costmatrix, const cost *rest
  * @return int32_t
  */
 static cost
-lap_(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict colsol, cost *restrict u, cost *restrict v)
+lap(int dim, cost *restrict costmatrix, idx_t *restrict rowsol, idx_t *restrict colsol, cost *restrict u, cost *restrict v)
 {
     bool debug = false;
 

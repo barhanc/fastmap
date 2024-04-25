@@ -32,4 +32,4 @@ $ python3 -m venv venv
 $ source ./venv/bin/activate
 (venv) $ pip install -e .
 ```
-The package should work as intended on Linux and macOS, for Windows users we recommend using
+The package should work as intended on Linux and macOS, for Windows users we recommend using WSL2.

@@ -28,13 +28,13 @@
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
- * @return int64_t
+ * @return int32_t
  */
-static int64_t
+static int32_t
 bap_bf (const size_t nv, const size_t nc)
 {
     // Cost matrix for LAP
-    int64_t *cost = calloc (nv * nv, sizeof (int64_t));
+    int32_t *cost = calloc (nv * nv, sizeof (int32_t));
     for (size_t i = 0; i < nv; i++)
         for (size_t j = 0; j < nv; j++)
             for (size_t k = 0; k < nc; k++)
@@ -50,12 +50,12 @@ bap_bf (const size_t nv, const size_t nc)
         sigma[i] = i;
 
     // Auxiliary variables required for J-V LAP algorithm
-    int64_t *a = calloc (nv, sizeof (int64_t));
-    int64_t *b = calloc (nv, sizeof (int64_t));
-    int64_t *x = calloc (nv, sizeof (int64_t));
-    int64_t *y = calloc (nv, sizeof (int64_t));
+    int32_t *a = calloc (nv, sizeof (int32_t));
+    int32_t *b = calloc (nv, sizeof (int32_t));
+    int32_t *x = calloc (nv, sizeof (int32_t));
+    int32_t *y = calloc (nv, sizeof (int32_t));
 
-    int64_t best_res = lap (nv, cost, a, b, x, y);
+    int32_t best_res = lap (nv, cost, a, b, x, y);
 
     while (alpha < nc)
     {
@@ -82,7 +82,7 @@ bap_bf (const size_t nv, const size_t nc)
                 swap (size_t, sigma[alpha], sigma[stack[alpha]]);
             }
 
-            int64_t res = lap (nv, cost, a, b, x, y);
+            int32_t res = lap (nv, cost, a, b, x, y);
             best_res = res < best_res ? res : best_res;
             stack[alpha]++;
             alpha = 1;
@@ -123,24 +123,24 @@ bap_bf (const size_t nv, const size_t nc)
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
- * @return int64_t
+ * @return int32_t
  */
-static int64_t
+static int32_t
 bap_aa (const size_t nv, const size_t nc)
 {
     // Cost matrices for LAP
-    int64_t *cost_nv = calloc (nv * nv, sizeof (int64_t));
-    int64_t *cost_nc = calloc (nc * nc, sizeof (int64_t));
+    int32_t *cost_nv = calloc (nv * nv, sizeof (int32_t));
+    int32_t *cost_nc = calloc (nc * nc, sizeof (int32_t));
 
     // Auxiliary variables required for J-V LAP algorithm
-    int64_t *rowsol_nv = calloc (nv, sizeof (int64_t));
-    int64_t *colsol_nv = calloc (nv, sizeof (int64_t));
-    int64_t *rowsol_nc = calloc (nc, sizeof (int64_t));
-    int64_t *colsol_nc = calloc (nc, sizeof (int64_t));
-    int64_t *x_nv = calloc (nv, sizeof (int64_t));
-    int64_t *y_nv = calloc (nv, sizeof (int64_t));
-    int64_t *x_nc = calloc (nc, sizeof (int64_t));
-    int64_t *y_nc = calloc (nc, sizeof (int64_t));
+    int32_t *rowsol_nv = calloc (nv, sizeof (int32_t));
+    int32_t *colsol_nv = calloc (nv, sizeof (int32_t));
+    int32_t *rowsol_nc = calloc (nc, sizeof (int32_t));
+    int32_t *colsol_nc = calloc (nc, sizeof (int32_t));
+    int32_t *x_nv = calloc (nv, sizeof (int32_t));
+    int32_t *y_nv = calloc (nv, sizeof (int32_t));
+    int32_t *x_nc = calloc (nc, sizeof (int32_t));
+    int32_t *y_nc = calloc (nc, sizeof (int32_t));
 
     // Permutation arrays randomly initialized
     size_t *sigma_nv = calloc (nv, sizeof (size_t));
@@ -164,7 +164,7 @@ bap_aa (const size_t nv, const size_t nc)
     }
 
     // Minimum costs found in the previous and current iteration
-    int64_t res_prev = 0, res_curr = -1;
+    int32_t res_prev = 0, res_curr = -1;
     for (size_t i = 0; i < nv; i++)
         for (size_t k = 0; k < nc; k++)
             res_prev += d (i, sigma_nv[i], k, sigma_nc[k]);

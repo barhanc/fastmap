@@ -41,8 +41,10 @@ qap_faq (const size_t nc, const size_t maxiter)
 
         // 4:  Compute the direction Q(i)
         lapres = lap (nc, grad_f, rowsol_nc, colsol_nc, x_nc, y_nc);
+
+        memset (Q, 0, nc * nc * sizeof (*Q));
         for (size_t i = 0; i < nc; i++)
-            Q[colsol_nc[i]] = 1.0;
+            Q[i * nc + colsol_nc[i]] = 1.0;
 
         // 5: Compute the step size alpha(i)
         double a = 0, b = 0, alpha = 0;

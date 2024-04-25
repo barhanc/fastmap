@@ -1,85 +1,68 @@
 import time
 import numpy as np
 
-import fastmap.example.wrapper as mdist
-from mapel.elections.distances import cppdistances as dist
-
-
-def hamm_bf(U: np.ndarray[bool | int], V: np.ndarray[bool | int]) -> int:
-    from itertools import permutations
-
-    assert U.shape == V.shape
-    assert len(U.shape) == 2
-
-    nv, nc = U.shape
-    candidates = np.arange(nc)
-    U, V = U.astype(bool), V.astype(bool)
-
-    best_res = float("inf")
-    for nu in permutations(range(nv)):
-        for sigma in permutations(range(nc)):
-            sigma = np.array(sigma)
-            res = 0
-            for i in range(nv):
-                u = set(sigma[candidates[U[i]]])
-                v = set(candidates[V[nu[i]]])
-                res += len(u.symmetric_difference(v))
-            best_res = min(best_res, res)
-
-    return best_res
+import mapel.elections as mapel
+import fastmap.example.wrapper as cdist
 
 
 if __name__ == "__main__":
-    print("=" * 60 + "\nSpearman\n" + "=" * 60)
     nv, nc = 10, 10
-    print(f"Prob. size : nv={nv}, nc={nc}\n")
-    U = np.array([np.random.permutation(nc) for _ in range(nv)])
-    V = np.array([np.random.permutation(nc) for _ in range(nv)])
+    culture_id = "ic"
+    print(f"\nCandidates {nc} :: Votes {nv} :: Culture {culture_id}\n")
 
-    t1 = time.perf_counter()
-    res1 = dist.speard(U, V)
-    t1 = time.perf_counter() - t1
-    print(f"Mapel           : res={res1:4d}, t={t1:.4f}s")
+    U = mapel.generate_ordinal_election(culture_id=culture_id, num_candidates=nc, num_voters=nv)
+    V = mapel.generate_ordinal_election(culture_id=culture_id, num_candidates=nc, num_voters=nv)
 
-    t2 = time.perf_counter()
-    res2 = mdist.spearman(U, V, method="bf")
-    t2 = time.perf_counter() - t2
-    print(f"C - bf          : res={res2:4d}, t={t2:.4f}s")
+    t1 = time.time()
+    d1, _ = mapel.compute_distance(U, V, distance_id="spearman")
+    t1 = time.time() - t1
+    print(f"Mapel :: {d1} :: Time {t1:6.3f}s")
 
-    assert res2 == res1
+    t2 = time.time()
+    d2 = cdist.spearman(U.votes, V.votes, method="bf")
+    t2 = time.time() - t2
+    print(f"C(bf) :: {d2} :: Time {t2:6.3f}s :: Time ratio {t2 / t1:6.3f}")
 
-    t3 = time.perf_counter()
-    mss = 10
-    res3 = min(mdist.spearman(U, V, method="aa") for _ in range(mss))
-    t3 = time.perf_counter() - t3
-    print(f"C - aa mss={mss:5d}: res={res3:4d}, t={t3:.4f}s")
+    assert d1 == d2, "Wrong answer"
 
-    print(f"\nSpeed up Mapel vs C-bf: {t1 / t2:4.2f}x")
-    print(f"\nSpeed up C-bf  vs C-aa: {t2 / t3:4.2f}x")
-    print(f"\nApprox ratio          : {res3 / res2:.2f}")
+    t3 = time.time()
+    restarts = 50
+    d3 = min(results := [cdist.spearman(U.votes, V.votes, method="aa") for _ in range(restarts)])
+    t3 = time.time() - t3
+    print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d1:.3f}")
 
     # ==============================================================================================
+    # ==============================================================================================
+    # ==============================================================================================
+    # ==============================================================================================
 
-    print("\n\n" + "=" * 60 + "\nHamming\n" + "=" * 60)
-    nv, nc = 6, 7
-    print(f"Prob. size : nv={nv}, nc={nc}")
-    U = np.array([np.random.randint(0, 2, size=nc) for _ in range(nv)])
-    V = np.array([np.random.randint(0, 2, size=nc) for _ in range(nv)])
+    nv, nc = 50, 7
+    culture_id = "ic"
+    print(f"\nCandidates {nc} :: Votes {nv} :: Culture {culture_id}\n")
 
-    t1 = time.perf_counter()
-    res1 = hamm_bf(U, V)
-    t1 = time.perf_counter() - t1
-    print(f"Python     : res={res1:4d}, t={t1:.4f}s")
+    U = mapel.generate_approval_election(culture_id=culture_id, num_candidates=nc, num_voters=nv)
+    V = mapel.generate_approval_election(culture_id=culture_id, num_candidates=nc, num_voters=nv)
 
-    t2 = time.perf_counter()
-    res2 = mdist.hamming(U, V, method="bf")
-    t2 = time.perf_counter() - t2
-    print(f"C - bf     : res={res2:4d}, t={t2:.4f}s")
+    t1 = time.time()
+    d1, _ = mapel.compute_distance(U, V, distance_id="l1-approvalwise")
+    t1 = time.time() - t1
+    print(f"Mapel :: {d1*nv:.2f} :: Time {t1:6.3f}s")
 
-    assert res2 == res1
+    oU, oV = np.zeros((nv, nc)), np.zeros((nv, nc))
+    for i, ballot in enumerate(U.votes):
+        oU[i][list(ballot)] = 1
+    for i, ballot in enumerate(V.votes):
+        oV[i][list(ballot)] = 1
 
-    t3 = time.perf_counter()
-    mss = 50
-    res3 = min(mdist.hamming(U, V, method="aa") for _ in range(mss))
-    t3 = time.perf_counter() - t3
-    print(f"C - aa mss={mss:5d}: res={res3:4d}, t={t3:.4f}s")
+    t2 = time.time()
+    d2 = cdist.hamming(oU, oV, method="bf")
+    t2 = time.time() - t2
+    print(f"C(bf) :: {d2:.2f} :: Time {t2:6.3f}s :: Time ratio {t2 / t1:6.3f}")
+
+    t3 = time.time()
+    restarts = 50
+    d3 = min(results := [cdist.hamming(oU, oV, method="aa") for _ in range(restarts)])
+    t3 = time.time() - t3
+    print(
+        f"C(aa) :: {d3:.2f} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d2 if d2 != 0 else 1.0:.3f}"
+    )

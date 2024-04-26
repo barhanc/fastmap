@@ -49,6 +49,10 @@ bap_bf (const size_t nv, const size_t nc)
     for (size_t i = 0; i < nc; i++)
         sigma[i] = i;
 
+    // Indices of elements of permutation sigma which are swapped in the given iteration of Heap's
+    // algorithm
+    size_t p = 0, q = 0;
+
     // Auxiliary variables required for J-V LAP algorithm
     int32_t *a = calloc (nv, sizeof (int32_t));
     int32_t *b = calloc (nv, sizeof (int32_t));
@@ -62,28 +66,20 @@ bap_bf (const size_t nv, const size_t nc)
         if (stack[alpha] < alpha)
         {
             if (alpha % 2 == 0)
-            {
-                for (size_t i = 0; i < nv; i++)
-                    for (size_t j = 0; j < nv; j++)
-                    {
-                        cost[i * nv + j] += d (i, j, alpha, sigma[0]) + d (i, j, 0, sigma[alpha]);
-                        cost[i * nv + j] -= d (i, j, 0, sigma[0]) + d (i, j, alpha, sigma[alpha]);
-                    }
-                swap (size_t, sigma[0], sigma[alpha]);
-            }
+                p = 0, q = alpha;
             else
-            {
-                for (size_t i = 0; i < nv; i++)
-                    for (size_t j = 0; j < nv; j++)
-                    {
-                        cost[i * nv + j] += d (i, j, alpha, sigma[stack[alpha]]) + d (i, j, stack[alpha], sigma[alpha]);
-                        cost[i * nv + j] -= d (i, j, alpha, sigma[alpha]) + d (i, j, stack[alpha], sigma[stack[alpha]]);
-                    }
-                swap (size_t, sigma[alpha], sigma[stack[alpha]]);
-            }
+                p = alpha, q = stack[alpha];
+
+            for (size_t i = 0; i < nv; i++)
+                for (size_t j = 0; j < nv; j++)
+                    cost[i * nv + j] += d (i, j, p, sigma[q]) + d (i, j, q, sigma[p])
+                                        - d (i, j, p, sigma[p]) - d (i, j, q, sigma[q]);
+
+            swap (size_t, sigma[p], sigma[q]);
 
             int32_t res = lap (nv, cost, a, b, x, y);
             best_res = res < best_res ? res : best_res;
+
             stack[alpha]++;
             alpha = 1;
         }

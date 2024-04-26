@@ -1,3 +1,5 @@
+# Brief description
+
 The map of elections framework is a way of visualizing datasets of elections. A single election E =
 (C,V) consists of a set of candidates C and a collection of voters V, where each voter expresses
 preferences about the candidates (in the ordinal setting, the voters rank the candidates from the
@@ -16,3 +18,18 @@ solutions (which might be "good enough" to get initial maps of elections).
 The goal of this project is to provide such highly optimized implementations, as well as heuristics
 for computing the distances. The implementation---if sufficiently good---will become part of the
 Python MapEl package.
+
+# Installation
+
+The current recommended way to install fastmap is from source. Simply do
+```
+$ git clone https://github.com/barhanc/fastmap.git
+$ cd fastmap
+```
+and 
+```
+$ python3 -m venv venv
+$ source ./venv/bin/activate
+(venv) $ pip install -e .
+```
+The package should work as intended on Linux and macOS, for Windows users we recommend using WSL2.

@@ -25,9 +25,9 @@
 
 /*************** TYPES      *******************/
 
-typedef int64_t row;
-typedef int64_t col;
-typedef int64_t cost;
+typedef int32_t row;
+typedef int32_t col;
+typedef int32_t cost;
 
 /*************** FUNCTIONS  *******************/
 #include <stdbool.h>
@@ -38,7 +38,7 @@ typedef int64_t cost;
 
 /*This function is the jv shortest augmenting path algorithm to solve the assignment problem*/
 static cost
-lap (const int64_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
+lap (const int32_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
 
 // input:
 // dim        - problem size
@@ -89,7 +89,7 @@ lap (const int64_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cos
         }
         else if (v[j] < v[rowsol[imin]])
         {
-            int64_t j1 = rowsol[imin];
+            int32_t j1 = rowsol[imin];
             rowsol[imin] = j;
             colsol[j] = imin;
             colsol[j1] = -1;
@@ -114,7 +114,7 @@ lap (const int64_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cos
         }
 
     //   AUGMENTING ROW REDUCTION
-    int64_t loopcnt = 0; // do-loop to be done twice.
+    int32_t loopcnt = 0; // do-loop to be done twice.
     do
     {
         loopcnt++;

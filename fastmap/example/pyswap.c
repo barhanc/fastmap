@@ -8,7 +8,7 @@ Currently limited to 10 candidated per vote
 */
 #define MAP_SIZE 999999999 // 9/10 already identifies a permutation of 10
 
-uint num_of_inversions(int64_t *permutation, uint n) {
+uint num_of_inversions(int32_t *permutation, uint n) {
     uint res = 0;
     for (uint i = 0; i < n - 1; ++i) {
         for (uint j = i + 1; j < n; ++j) {
@@ -27,7 +27,7 @@ uint num_of_inversions(int64_t *permutation, uint n) {
         y = SWAP;        \
     }
 
-int next_permutation(int64_t *p, uint m) {
+int next_permutation(int32_t *p, uint m) {
     for(int i = m - 2; i >= 0; --i) {
         if (p[i] < p[i + 1]) {
 	        for (int j = m - 1; j > i; --j) {
@@ -46,7 +46,7 @@ int next_permutation(int64_t *p, uint m) {
 
 uint *create_id_to_inversions_map(uint candidates_num) {
     uint *lookup = malloc(sizeof(uint) * MAP_SIZE);
-    int64_t *curr_permutation = malloc(sizeof(int64_t) * candidates_num);
+    int32_t *curr_permutation = malloc(sizeof(int32_t) * candidates_num);
 
     for(uint i = 0; i < candidates_num; ++i)
         curr_permutation[i] = i;
@@ -74,23 +74,23 @@ uint *create_id_to_inversions_map(uint candidates_num) {
 /*
 * TODO: this for sure can be done better
 */
-int64_t swapDistance_election(uint votes_num, uint candidates_num, 
-            const int64_t **el_one, const int64_t **el_two, const uint *lookup) {
-    int64_t min_dist = 2 * candidates_num * candidates_num * votes_num;
-    int64_t *mapping = malloc(candidates_num * sizeof(int64_t));
-    int64_t *row_sol = malloc(votes_num * sizeof(int64_t));
-    int64_t *col_sol = malloc(votes_num * sizeof(int64_t));
+int32_t swapDistance_election(uint votes_num, uint candidates_num, 
+            const int32_t **el_one, const int32_t **el_two, const uint *lookup) {
+    int32_t min_dist = 2 * candidates_num * candidates_num * votes_num;
+    int32_t *mapping = malloc(candidates_num * sizeof(int32_t));
+    int32_t *row_sol = malloc(votes_num * sizeof(int32_t));
+    int32_t *col_sol = malloc(votes_num * sizeof(int32_t));
 
-    int64_t *u = malloc(votes_num * sizeof(int64_t));
-    int64_t *v = malloc(votes_num * sizeof(int64_t));
+    int32_t *u = malloc(votes_num * sizeof(int32_t));
+    int32_t *v = malloc(votes_num * sizeof(int32_t));
 
-    int64_t *cost_matrix = malloc(votes_num * votes_num * sizeof(int64_t*));
-    int64_t **e1_mapped_reversed = malloc(votes_num * sizeof(int64_t*));
+    int32_t *cost_matrix = malloc(votes_num * votes_num * sizeof(int32_t*));
+    int32_t **e1_mapped_reversed = malloc(votes_num * sizeof(int32_t*));
 
     for (uint i = 0; i < votes_num; i++) {
-        e1_mapped_reversed[i] = malloc(candidates_num * sizeof(int64_t));
+        e1_mapped_reversed[i] = malloc(candidates_num * sizeof(int32_t));
     }
-    int64_t votecomb = 0;
+    int32_t votecomb = 0;
     for(uint i = 0; i < candidates_num; i++) { mapping[i] = i; }
 
     do {
@@ -113,31 +113,31 @@ int64_t swapDistance_election(uint votes_num, uint candidates_num,
                         break;
                     case 9:
                         for (int k = 0; k <= 7; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int64_t)pow(10, 7 - k);
+                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 7 - k);
                         } break;
                     case 8:
                         for (int k = 0; k <= 6; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int64_t)pow(10, 6 - k);
+                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 6 - k);
                         } break;
                     case 7:
                         for (int k = 0; k <= 5; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int64_t)pow(10, 5 - k);
+                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 5 - k);
                         } break;
                     case 6:
                         for (int k = 0; k <= 4; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int64_t)pow(10, 4 - k);
+                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 4 - k);
                         } break;
                     case 5:
                         for (int k = 0; k <= 3; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int64_t)pow(10, 3 - k);
+                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 3 - k);
                         } break;
                     case 4:
                         for (int k = 0; k <= 2; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int64_t)pow(10, 2 - k);
+                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 2 - k);
                         } break;
                     case 3:
                         for (int k = 0; k <= 1; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int64_t)pow(10, 1 - k);
+                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 1 - k);
                         } break;
                 }
 
@@ -145,7 +145,7 @@ int64_t swapDistance_election(uint votes_num, uint candidates_num,
             }
         }
 
-        int64_t dist = lap(votes_num, cost_matrix, row_sol, col_sol, u, v);
+        int32_t dist = lap(votes_num, cost_matrix, row_sol, col_sol, u, v);
         if (dist < min_dist) {
             min_dist = dist;
         }
@@ -162,7 +162,7 @@ int64_t swapDistance_election(uint votes_num, uint candidates_num,
     return min_dist;
 }
 
-int64_t *X = NULL, *Y = NULL;
+int32_t *X = NULL, *Y = NULL;
 static PyObject *
 py_swap (PyObject *self, PyObject *args) {
 //main_swap_func(uint **el_one, uint **el_two) {
@@ -170,10 +170,10 @@ py_swap (PyObject *self, PyObject *args) {
     int method = 0, N_METHODS = 2;
     if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
         return NULL;
-    PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT64, 0, 0);
-    PyArrayObject *obj_cont_Y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Y, NPY_INT64, 0, 0);
+    PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT32, 0, 0);
+    PyArrayObject *obj_cont_Y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Y, NPY_INT32, 0, 0);
     
-    int64_t res = -1;
+    int32_t res = -1;
     if (!obj_cont_X || !obj_cont_Y)
         return NULL;
 
@@ -188,8 +188,8 @@ py_swap (PyObject *self, PyObject *args) {
         goto cleanup;
     }
 
-    X = (int64_t *) PyArray_DATA (obj_cont_X);
-    Y = (int64_t *) PyArray_DATA (obj_cont_Y);
+    X = (int32_t *) PyArray_DATA (obj_cont_X);
+    Y = (int32_t *) PyArray_DATA (obj_cont_Y);
 
     if (X == NULL || Y == NULL) {
         PyErr_SetString(PyExc_TypeError, "invalid array object");
@@ -208,8 +208,8 @@ py_swap (PyObject *self, PyObject *args) {
     }
 
     uint nc = cols_X, nv = rows_X; 
-    const int64_t **a = malloc(sizeof(int64_t *) * nv);
-    const int64_t **b = malloc(sizeof(int64_t *) * nv);
+    const int32_t **a = malloc(sizeof(int32_t *) * nv);
+    const int32_t **b = malloc(sizeof(int32_t *) * nv);
     for (int i = 0; i < nv; i++) {
         a[i] = X + nc * i;
         b[i] = Y + nc * i;

@@ -143,14 +143,14 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
 
-    nv, nc = U.shape
+    # nv, nc = U.shape
     # if nv > nc:
     #     pos_U, pos_V = U.argsort().T, V.argsort().T
     # else:
     #     pos_U, pos_V = U.argsort().T, V.argsort().T
 
     return fastmap._swap.swap(
-        U.astype(np.int64),
-        V.astype(np.int64),
+        U.astype(np.int32),
+        V.astype(np.int32),
         {"bf": 0, "aa": 1}[method],
     )

@@ -120,20 +120,15 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     )
 
 def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
-    """Computes Isomorphic Swap distance between approval elections U and V defined as
-
-        idk_lmao_lol_todoiguess_schizo
-
+    """Computes Isomorphic Swap distance between ordinal elections U and V.
     Args:
-        U: Approval Election matrix s.t. U[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
-        U election contains j-th candidate and 0 otherwise. Shape (nv, nc).
+        U: Ordinal Election matrix s.t. U[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
+        position in the i-th vote in the U election. Shape (nv, nc).
 
-        V: Approval Election matrix s.t. V[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
-        V election contains j-th candidate and 0 otherwise. Shape (nv, nc).
+        V: Ordinal Election matrix s.t. V[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
+        position in the i-th vote in the V election. Shape (nv, nc).
 
-        method: Method used to compute the distance. Should be one of the
-                `"bf"` -  brute force. Hard limit for 10 votes/candidates.
-                `"aa"` - not implemented yet.
+        method: only "bf" - brute force - so far.
     Returns:
         Isomorphic Swap distance between U and V.
     """

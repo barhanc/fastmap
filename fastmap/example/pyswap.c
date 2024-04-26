@@ -4,7 +4,7 @@
 #include "lap.h"
 
 /*
-Currently limited to 10 candidated per vote
+Currently limited to 10 candidates per vote
 */
 #define MAP_SIZE 999999999 // 9/10 already identifies a permutation of 10
 
@@ -42,6 +42,76 @@ int next_permutation(int32_t *p, uint m) {
         }
     }
     return -1;
+}
+
+int32_t *merge_sort_inv(int32_t *array, uint length) {
+    if (length == 1) {
+        int32_t *res = malloc(sizeof(int32_t) * 2);
+        res[0] = 0;
+        res[1] = array[0];
+        return res;
+    }
+    uint mid = length / 2;
+    int32_t *left_res = merge_sort_inv(array, length / 2 + length % 2);
+    int32_t inversions1 = left_res[0];
+    int32_t *left = left_res + 1;
+
+    int32_t *right_res = merge_sort_inv(array + mid + length % 2, length / 2);
+    int32_t inversions2 = right_res[0];
+    int32_t *right = right_res + 1;
+
+    int32_t *sorted_array = malloc(sizeof(int32_t) * (length + 1));
+    uint i = 0;
+    uint j = 0;
+    uint idx = 1;
+    uint invs = 0;
+    while (i < length / 2 + length % 2 && j < length / 2) {
+        if (left[i] > right[j]) {
+            sorted_array[idx++] = right[j++];
+            invs += mid + length % 2 - i;
+        } else {
+            sorted_array[idx++] = left[i++];
+        }
+    }
+    while (i < length / 2) {
+        sorted_array[idx++] = left[i++];
+    }
+    while (j < length / 2) {
+        sorted_array[idx++] = right[j++];
+    }
+
+    sorted_array[0] = invs + inversions1 + inversions2;
+    free(left_res);
+    free(right_res);
+    return sorted_array;
+}
+
+uint num_of_inversions_merge_sort(int32_t *array, uint length) {
+    if (length == 1)
+        return 0;
+
+    uint mid = length / 2;
+    int32_t *left_res = merge_sort_inv(array, length / 2 + length % 2);
+    int32_t inversions1 = left_res[0];
+    int32_t *left = left_res + 1;
+
+    int32_t *right_res = merge_sort_inv(array + mid + length % 2, length / 2);
+    int32_t inversions2 = right_res[0];
+    int32_t *right = right_res + 1;
+
+    uint i = 0, j = 0, invs = 0;
+    while (i < length / 2 + length % 2 && j < length / 2) {
+        if (left[i] > right[j]) {
+            invs += mid + length % 2 - i;
+            j++;
+        } else {
+            i++;
+        }
+    }
+    free(left_res);
+    free(right_res);
+
+    return inversions1 + inversions2 + invs;
 }
 
 uint *create_id_to_inversions_map(uint candidates_num) {
@@ -84,7 +154,7 @@ int32_t swapDistance_election(uint votes_num, uint candidates_num,
     int32_t *u = malloc(votes_num * sizeof(int32_t));
     int32_t *v = malloc(votes_num * sizeof(int32_t));
 
-    int32_t *cost_matrix = malloc(votes_num * votes_num * sizeof(int32_t*));
+    int32_t *cost_matrix = malloc(votes_num * votes_num * sizeof(int32_t));
     int32_t **e1_mapped_reversed = malloc(votes_num * sizeof(int32_t*));
 
     for (uint i = 0; i < votes_num; i++) {
@@ -105,12 +175,15 @@ int32_t swapDistance_election(uint votes_num, uint candidates_num,
                 votecomb = 0;
                 switch(candidates_num) {
                     case 10:
-                        votecomb = e1_mapped_reversed[i][el_two[j][0]] * 100000000 + e1_mapped_reversed[i][el_two[j][1]] * 10000000 
-                            + e1_mapped_reversed[i][el_two[j][2]] * 1000000 +e1_mapped_reversed[i][el_two[j][3]] * 100000
-                            + e1_mapped_reversed[i][el_two[j][4]] * 10000 +e1_mapped_reversed[i][el_two[j][5]] * 1000
-                            + e1_mapped_reversed[i][el_two[j][6]] * 100 +e1_mapped_reversed[i][el_two[j][7]] * 10
-                            + e1_mapped_reversed[i][el_two[j][8]];
-                        break;
+                        // votecomb = e1_mapped_reversed[i][el_two[j][0]] * 100000000 + e1_mapped_reversed[i][el_two[j][1]] * 10000000 
+                        //     + e1_mapped_reversed[i][el_two[j][2]] * 1000000 +e1_mapped_reversed[i][el_two[j][3]] * 100000
+                        //     + e1_mapped_reversed[i][el_two[j][4]] * 10000 +e1_mapped_reversed[i][el_two[j][5]] * 1000
+                        //     + e1_mapped_reversed[i][el_two[j][6]] * 100 +e1_mapped_reversed[i][el_two[j][7]] * 10
+                        //     + e1_mapped_reversed[i][el_two[j][8]];
+                        // break;
+                        for (int k = 0; k <= 8; k++) {
+                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 8 - k);
+                        } break;
                     case 9:
                         for (int k = 0; k <= 7; k++) {
                             votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 7 - k);
@@ -165,7 +238,6 @@ int32_t swapDistance_election(uint votes_num, uint candidates_num,
 int32_t *X = NULL, *Y = NULL;
 static PyObject *
 py_swap (PyObject *self, PyObject *args) {
-//main_swap_func(uint **el_one, uint **el_two) {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
     int method = 0, N_METHODS = 2;
     if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))

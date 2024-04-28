@@ -1,24 +1,12 @@
 #include <Python.h>
-#define NPY_NO_DEPRECATED_API NPY_1_17_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
+
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "lap.h"
-
-/*
-Currently limited to 10 candidates per vote
-*/
-#define MAP_SIZE 999999999 // 9/10 already identifies a permutation of 10
-
-uint num_of_inversions(int32_t *permutation, uint n) {
-    uint res = 0;
-    for (uint i = 0; i < n - 1; ++i) {
-        for (uint j = i + 1; j < n; ++j) {
-            if (permutation[i] > permutation[j]) {
-                res++;
-            }
-        }
-    }
-    return res;
-}
 
 #define swap(type, x, y) \
     {                    \
@@ -27,285 +15,381 @@ uint num_of_inversions(int32_t *permutation, uint n) {
         y = SWAP;        \
     }
 
-int next_permutation(int32_t *p, uint m) {
-    for(int i = m - 2; i >= 0; --i) {
-        if (p[i] < p[i + 1]) {
-	        for (int j = m - 1; j > i; --j) {
-		        if (p[i] < p[j]) {
-		            swap(uint, p[i], p[j]);
-		            for (uint k = 1; k <= (m - i - 1) / 2; ++k) {
-			            swap(uint, p[i + k], p[m - k]);
-		            }
-            	    return 0;
-		        }
-	        }
-        }
-    }
-    return -1;
-}
-
-int32_t *merge_sort_inv(int32_t *array, uint length) {
-    if (length == 1) {
-        int32_t *res = malloc(sizeof(int32_t) * 2);
-        res[0] = 0;
-        res[1] = array[0];
-        return res;
-    }
-    uint mid = length / 2;
-    int32_t *left_res = merge_sort_inv(array, length / 2 + length % 2);
-    int32_t inversions1 = left_res[0];
-    int32_t *left = left_res + 1;
-
-    int32_t *right_res = merge_sort_inv(array + mid + length % 2, length / 2);
-    int32_t inversions2 = right_res[0];
-    int32_t *right = right_res + 1;
-
-    int32_t *sorted_array = malloc(sizeof(int32_t) * (length + 1));
-    uint i = 0;
-    uint j = 0;
-    uint idx = 1;
-    uint invs = 0;
-    while (i < length / 2 + length % 2 && j < length / 2) {
-        if (left[i] > right[j]) {
-            sorted_array[idx++] = right[j++];
-            invs += mid + length % 2 - i;
-        } else {
-            sorted_array[idx++] = left[i++];
-        }
-    }
-    while (i < length / 2) {
-        sorted_array[idx++] = left[i++];
-    }
-    while (j < length / 2) {
-        sorted_array[idx++] = right[j++];
-    }
-
-    sorted_array[0] = invs + inversions1 + inversions2;
-    free(left_res);
-    free(right_res);
-    return sorted_array;
-}
-
-uint num_of_inversions_merge_sort(int32_t *array, uint length) {
-    if (length == 1)
-        return 0;
-
-    uint mid = length / 2;
-    int32_t *left_res = merge_sort_inv(array, length / 2 + length % 2);
-    int32_t inversions1 = left_res[0];
-    int32_t *left = left_res + 1;
-
-    int32_t *right_res = merge_sort_inv(array + mid + length % 2, length / 2);
-    int32_t inversions2 = right_res[0];
-    int32_t *right = right_res + 1;
-
-    uint i = 0, j = 0, invs = 0;
-    while (i < length / 2 + length % 2 && j < length / 2) {
-        if (left[i] > right[j]) {
-            invs += mid + length % 2 - i;
-            j++;
-        } else {
-            i++;
-        }
-    }
-    free(left_res);
-    free(right_res);
-
-    return inversions1 + inversions2 + invs;
-}
-
-uint *create_id_to_inversions_map(uint candidates_num) {
-    uint *lookup = malloc(sizeof(uint) * MAP_SIZE);
-    int32_t *curr_permutation = malloc(sizeof(int32_t) * candidates_num);
-
-    for(uint i = 0; i < candidates_num; ++i)
-        curr_permutation[i] = i;
-
-    do {
-        uint id = 0;
-        for (uint t = 0; t < candidates_num - 1; ++t) {
-            id += curr_permutation[t] * pow(10, candidates_num - t - 2);
-        }
-        lookup[id] = num_of_inversions(curr_permutation, candidates_num);
-    } while (next_permutation(curr_permutation, candidates_num) > -1);
-
-    free(curr_permutation);
-    return lookup;
-}
-
-#define free_2d_array(arr, length) \
-{ \
-    for (int i = 0; i < length; i++) { \
-        free(arr[i]); \
-    } \
-    free(arr); \
-}
-
-/*
-* TODO: this for sure can be done better
-*/
-int32_t swapDistance_election(uint votes_num, uint candidates_num, 
-            const int32_t **el_one, const int32_t **el_two, const uint *lookup) {
-    int32_t min_dist = 2 * candidates_num * candidates_num * votes_num;
-    int32_t *mapping = malloc(candidates_num * sizeof(int32_t));
-    int32_t *row_sol = malloc(votes_num * sizeof(int32_t));
-    int32_t *col_sol = malloc(votes_num * sizeof(int32_t));
-
-    int32_t *u = malloc(votes_num * sizeof(int32_t));
-    int32_t *v = malloc(votes_num * sizeof(int32_t));
-
-    int32_t *cost_matrix = malloc(votes_num * votes_num * sizeof(int32_t));
-    int32_t **e1_mapped_reversed = malloc(votes_num * sizeof(int32_t*));
-
-    for (uint i = 0; i < votes_num; i++) {
-        e1_mapped_reversed[i] = malloc(candidates_num * sizeof(int32_t));
-    }
-    int32_t votecomb = 0;
-    for(uint i = 0; i < candidates_num; i++) { mapping[i] = i; }
-
-    do {
-        for (uint i = 0; i < votes_num; i++) {
-            for (uint j = 0; j < candidates_num; j++) {
-                e1_mapped_reversed[i][ mapping[ el_one[i][j] ] ] = j;
+/**
+ * @brief TODO: Write a docstring
+ *
+ * @param pos_U
+ * @param pos_V
+ * @param nv
+ * @param nc
+ * @return int32_t
+ */
+static int32_t
+swap_bf (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size_t nc)
+{
+    // Cost matrix for LAP
+    int32_t *cost = calloc (nv * nv, sizeof (int32_t));
+    for (size_t k = 0; k < nc; k++)
+        for (size_t l = k; l < nc; l++)
+            for (size_t i = 0; i < nv; i++)
+            {
+                register int32_t r1 = pos_U[(i) + (k)*nv] - pos_U[(i) + (l)*nv];
+                for (size_t j = 0; j < nv; j++)
+                    cost[i * nv + j] += (r1 * (pos_V[(j) + (k)*nv] - pos_V[(j) + (l)*nv]) < 0);
             }
-        }
 
-        for (uint i = 0; i < votes_num; i++) {
-            for (uint j = 0; j < votes_num; j++) {
-                votecomb = 0;
-                switch(candidates_num) {
-                    case 10:
-                        // votecomb = e1_mapped_reversed[i][el_two[j][0]] * 100000000 + e1_mapped_reversed[i][el_two[j][1]] * 10000000 
-                        //     + e1_mapped_reversed[i][el_two[j][2]] * 1000000 +e1_mapped_reversed[i][el_two[j][3]] * 100000
-                        //     + e1_mapped_reversed[i][el_two[j][4]] * 10000 +e1_mapped_reversed[i][el_two[j][5]] * 1000
-                        //     + e1_mapped_reversed[i][el_two[j][6]] * 100 +e1_mapped_reversed[i][el_two[j][7]] * 10
-                        //     + e1_mapped_reversed[i][el_two[j][8]];
-                        // break;
-                        for (int k = 0; k <= 8; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 8 - k);
-                        } break;
-                    case 9:
-                        for (int k = 0; k <= 7; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 7 - k);
-                        } break;
-                    case 8:
-                        for (int k = 0; k <= 6; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 6 - k);
-                        } break;
-                    case 7:
-                        for (int k = 0; k <= 5; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 5 - k);
-                        } break;
-                    case 6:
-                        for (int k = 0; k <= 4; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 4 - k);
-                        } break;
-                    case 5:
-                        for (int k = 0; k <= 3; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 3 - k);
-                        } break;
-                    case 4:
-                        for (int k = 0; k <= 2; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 2 - k);
-                        } break;
-                    case 3:
-                        for (int k = 0; k <= 1; k++) {
-                            votecomb += e1_mapped_reversed[i][el_two[j][k]] * (int32_t)pow(10, 1 - k);
-                        } break;
+    // Stack pointer and encoding of the stack in iterative version of Heap's algorithm. See:
+    // https://en.wikipedia.org/wiki/Heap%27s_algorithm
+    size_t alpha = 1, *stack = calloc (nc, sizeof (size_t));
+
+    // Permutation array initialized to identity permutation
+    size_t *sigma = calloc (nc, sizeof (size_t));
+    for (size_t i = 0; i < nc; i++)
+        sigma[i] = i;
+
+    // Indices of elements of permutation sigma which are swapped in the given iteration of Heap's
+    // algorithm
+    size_t p = 0, q = 0;
+
+    // Auxiliary variables required for J-V LAP algorithm
+    int32_t *a = calloc (nv, sizeof (int32_t));
+    int32_t *b = calloc (nv, sizeof (int32_t));
+    int32_t *x = calloc (nv, sizeof (int32_t));
+    int32_t *y = calloc (nv, sizeof (int32_t));
+
+    int32_t best_res = lap (nv, cost, a, b, x, y);
+
+    while (alpha < nc)
+    {
+        if (stack[alpha] < alpha)
+        {
+            if (alpha % 2 == 0)
+                p = 0, q = alpha;
+            else
+                p = alpha, q = stack[alpha];
+
+            for (size_t k = 0; k < nc; k++)
+                for (size_t i = 0; i < nv; i++)
+                {
+                    register int32_t r1 = pos_U[i + p * nv] - pos_U[i + k * nv];
+                    register int32_t r2 = pos_U[i + q * nv] - pos_U[i + k * nv];
+
+                    for (size_t j = 0; j < nv; j++)
+                    {
+                        int32_t r3 = pos_V[j + sigma[q] * nv] - pos_V[j + sigma[k] * nv];
+                        int32_t r4 = pos_V[j + sigma[p] * nv] - pos_V[j + sigma[k] * nv];
+
+                        cost[i * nv + j] += (r1 * r3 < 0) + (r2 * r4 < 0) - (r1 * r4 < 0) - (r2 * r3 < 0);
+                    }
                 }
 
-                cost_matrix[i * votes_num + j] = lookup[votecomb];
+            for (size_t i = 0; i < nv; i++)
+            {
+                register int32_t r1 = pos_U[i + q * nv] - pos_U[i + p * nv];
+
+                for (size_t j = 0; j < nv; j++)
+                {
+                    int32_t r2 = pos_V[j + sigma[q] * nv] - pos_V[j + sigma[p] * nv];
+                    cost[i * nv + j] += (r1 * r2 < 0) + (r1 * r2 > 0);
+                }
             }
+
+            swap (size_t, sigma[p], sigma[q]);
+
+            int32_t res = lap (nv, cost, a, b, x, y);
+            best_res = res < best_res ? res : best_res;
+
+            stack[alpha]++;
+            alpha = 1;
         }
-
-        int32_t dist = lap(votes_num, cost_matrix, row_sol, col_sol, u, v);
-        if (dist < min_dist) {
-            min_dist = dist;
+        else
+        {
+            stack[alpha] = 0;
+            alpha++;
         }
-    } while(next_permutation(mapping, candidates_num) > -1);
+    }
 
-    free_2d_array(e1_mapped_reversed, votes_num);
-    free(mapping);
-    free(row_sol);
-    free(col_sol);
-    free(cost_matrix);
-    free(u);
-    free(v);
+    free (cost);
+    free (stack);
+    free (sigma);
+    free (a);
+    free (b);
+    free (x);
+    free (y);
 
-    return min_dist;
+    return best_res;
 }
 
-int32_t *X = NULL, *Y = NULL;
+static const size_t pow10[] = {
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000,
+};
+
+/**
+ * @brief Computes number of inversions (see:
+ * https://en.wikipedia.org/wiki/Inversion_(discrete_mathematics)) for every permutation p of set
+ * {0,..,n-1} and stores the result in `mem` array under index E(p) where E is an encoding of p
+ * ```
+ *  E(p) := 10**0 * p[0] + 10**1 * p[1] + ... + 10**(n-2) * p[n-2] .
+ * ```
+ * Notice here that specifying n-1 elements of p already uniquely defines p.
+ * NOTE: we assume that n <= 10, otherwise the encoding E would not be unique. Notice also that we
+ * could use a larger base (e.g. 11, 12) but for n=10 we already need to alocate 10**9B = 1GB
+ * memory, thus using this method for larger permutations would require too much memory.
+ *
+ * @param n number of elements of permutation
+ * @param mem pointer to an array used as a lookup table
+ */
+static void
+mem_inversion_cnt (size_t n, uint8_t *mem)
+{
+    // Stack pointer and encoding of the stack in iterative version of Heap's algorithm. See:
+    // https://en.wikipedia.org/wiki/Heap%27s_algorithm
+    size_t alpha = 1, *stack = calloc (n, sizeof (size_t));
+
+    // Permutation array initialized to identity permutation
+    size_t *sigma = calloc (n, sizeof (size_t));
+    for (size_t i = 0; i < n; i++)
+        sigma[i] = i;
+
+    // Indices of elements of permutation sigma which are swapped in the given iteration of Heap's
+    // algorithm
+    size_t p = 0, q = 0;
+
+    while (alpha < n)
+    {
+        if (stack[alpha] < alpha)
+        {
+            if (alpha % 2 == 0)
+                p = 0, q = alpha;
+            else
+                p = alpha, q = stack[alpha];
+
+            swap (size_t, sigma[p], sigma[q]);
+
+            uint8_t inversions = 0;
+            for (size_t i = 0; i < n - 1; i++)
+                for (size_t j = i + 1; j < n; j++)
+                    inversions += sigma[i] > sigma[j] ? 1 : 0;
+
+            size_t key = 0;
+            for (size_t i = 0; i < n - 1; i++)
+                key += sigma[i] * pow10[i];
+            mem[key] = inversions;
+
+            stack[alpha]++;
+            alpha = 1;
+        }
+        else
+        {
+            stack[alpha] = 0;
+            alpha++;
+        }
+    }
+
+    free (stack);
+    free (sigma);
+
+    return;
+}
+/**
+ * @brief TODO: Writer a docstring
+ *
+ * @param pos_U
+ * @param nv
+ * @param nc
+ * @return int32_t
+ */
+static int32_t
+swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size_t nc)
+{
+    // Ordinal Election matrix of the 2nd election (V) constructed from position matrix pos_V
+    int32_t *V = calloc (nv * nc, sizeof (size_t));
+    for (size_t i = 0; i < nv; i++)
+        for (size_t j = 0; j < nc; j++)
+            V[i + nv * pos_V[i + nv * j]] = j;
+
+    // A lookup table storing inversion counts for every permutation of set {0,..,nc-1}. The key to
+    // the table is an encoded permutation.
+    uint8_t *mem = calloc (pow10[nc - 1], sizeof (uint8_t));
+    mem_inversion_cnt (nc, mem);
+
+    // Cost matrix for LAP
+    int32_t *cost = calloc (nv * nv, sizeof (int32_t));
+
+    // Matrix of keys to the lookup table for every pair of votes. We utilize the fact that in every
+    // iteration of Heap's algorihtm only two elements are swapped thus we can update key[i,j] in
+    // O(1) and thus update cost[i,j] in O(1) instead of O(nc).
+    size_t *key = calloc (nv * nv, sizeof (size_t));
+
+    for (size_t i = 0; i < nv; i++)
+        for (size_t j = 0; j < nv; j++)
+        {
+            for (size_t k = 0; k < nc - 1; k++)
+                key[i * nv + j] += pos_U[i + nv * V[j + nv * k]] * pow10[k];
+            cost[i * nv + j] = mem[key[i * nv + j]];
+        }
+
+    // Stack pointer and encoding of the stack in iterative version of Heap's algorithm. See:
+    // https://en.wikipedia.org/wiki/Heap%27s_algorithm
+    size_t alpha = 1, *stack = calloc (nc, sizeof (size_t));
+
+    // Permutation array initialized to identity permutation
+    size_t *sigma = calloc (nc, sizeof (size_t));
+    for (size_t i = 0; i < nc; i++)
+        sigma[i] = i;
+
+    // Indices of elements of permutation sigma which are swapped in the given iteration of Heap's
+    // algorithm
+    size_t p = 0, q = 0;
+
+    // Auxiliary variables required for J-V LAP algorithm
+    int32_t *a = calloc (nv, sizeof (int32_t));
+    int32_t *b = calloc (nv, sizeof (int32_t));
+    int32_t *x = calloc (nv, sizeof (int32_t));
+    int32_t *y = calloc (nv, sizeof (int32_t));
+
+    int32_t best_res = lap (nv, cost, a, b, x, y);
+
+    while (alpha < nc)
+    {
+        if (stack[alpha] < alpha)
+        {
+            if (alpha % 2 == 0)
+                p = 0, q = alpha;
+            else
+                p = alpha, q = stack[alpha];
+
+            for (size_t i = 0; i < nv; i++)
+            {
+                register int32_t r1 = pos_U[i + nv * q];
+                register int32_t r2 = pos_U[i + nv * p];
+
+                for (size_t j = 0; j < nv; j++)
+                {
+                    size_t pos_p = pos_V[j + nv * sigma[p]];
+                    size_t pos_q = pos_V[j + nv * sigma[q]];
+
+                    if (pos_p < nc - 1)
+                        key[i * nv + j] += r1 * pow10[pos_p] - r2 * pow10[pos_p];
+
+                    if (pos_q < nc - 1)
+                        key[i * nv + j] += r2 * pow10[pos_q] - r1 * pow10[pos_q];
+
+                    cost[i * nv + j] = mem[key[i * nv + j]];
+                }
+            }
+
+            swap (size_t, sigma[p], sigma[q]);
+
+            int32_t res = lap (nv, cost, a, b, x, y);
+            best_res = res < best_res ? res : best_res;
+
+            stack[alpha]++;
+            alpha = 1;
+        }
+        else
+        {
+            stack[alpha] = 0;
+            alpha++;
+        }
+    }
+
+    free (V);
+    free (key);
+    free (mem);
+    free (cost);
+    free (stack);
+    free (sigma);
+    free (a);
+    free (b);
+    free (x);
+    free (y);
+
+    return best_res;
+}
+
+// =================================================================================================
+// =================================================================================================
+
 static PyObject *
-py_swap (PyObject *self, PyObject *args) {
+py_swap (PyObject *self, PyObject *args)
+{
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0, N_METHODS = 2;
+    int method = 0, N_METHODS = 1;
     if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
         return NULL;
+
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT32, 0, 0);
     PyArrayObject *obj_cont_Y = (PyArrayObject *)PyArray_ContiguousFromAny (obj_Y, NPY_INT32, 0, 0);
-    
-    int32_t res = -1;
     if (!obj_cont_X || !obj_cont_Y)
         return NULL;
 
-    if (method < 0 || method >= N_METHODS) {
+    if (method < 0 || method >= N_METHODS)
+    {
         PyErr_Format (PyExc_ValueError, "expected method to be an int between 0 and %d", N_METHODS - 1);
         goto cleanup;
     }
 
-    if (PyArray_NDIM (obj_cont_X) != 2 || PyArray_NDIM (obj_cont_Y) != 2) {
-        PyErr_Format (PyExc_ValueError, "expected 2-D arrays, got a %d-D and a %d-D array",
-                PyArray_NDIM (obj_cont_X), PyArray_NDIM (obj_cont_Y));
+    if (PyArray_NDIM (obj_cont_X) != 2 || PyArray_NDIM (obj_cont_Y) != 2)
+    {
+        PyErr_Format (PyExc_ValueError, "expected 2-D arrays, got a %d-D and %d-D array",
+                      PyArray_NDIM (obj_cont_X), PyArray_NDIM (obj_cont_Y));
         goto cleanup;
     }
 
-    X = (int32_t *) PyArray_DATA (obj_cont_X);
-    Y = (int32_t *) PyArray_DATA (obj_cont_Y);
-
-    if (X == NULL || Y == NULL) {
-        PyErr_SetString(PyExc_TypeError, "invalid array object");
+    int32_t *pos_U = (int32_t *)PyArray_DATA (obj_cont_X);
+    int32_t *pos_V = (int32_t *)PyArray_DATA (obj_cont_Y);
+    if (pos_U == NULL || pos_V == NULL)
+    {
+        PyErr_SetString (PyExc_TypeError, "invalid array object");
         goto cleanup;
     }
+
     npy_intp rows_X = PyArray_DIM (obj_cont_X, 0), cols_X = PyArray_DIM (obj_cont_X, 1);
     npy_intp rows_Y = PyArray_DIM (obj_cont_Y, 0), cols_Y = PyArray_DIM (obj_cont_Y, 1);
-    if (rows_X != rows_Y || cols_X != cols_Y) {
+    if (rows_X != rows_Y || cols_X != cols_Y)
+    {
         PyErr_SetString (PyExc_TypeError, "expected arrays to have the same shape");
         goto cleanup;
     }
 
-    if (method == 1) {
-        PyErr_SetString (PyExc_NotImplementedError, "Only brute force (0) so far");
-        goto cleanup;
-    }
+    size_t nc = rows_X, nv = cols_X;
+    int32_t ret = -1;
 
-    uint nc = cols_X, nv = rows_X; 
-    const int32_t **a = malloc(sizeof(int32_t *) * nv);
-    const int32_t **b = malloc(sizeof(int32_t *) * nv);
-    for (int i = 0; i < nv; i++) {
-        a[i] = X + nc * i;
-        b[i] = Y + nc * i;
-    }
-    fflush(stdout);
     Py_BEGIN_ALLOW_THREADS;
-    uint *swap_lookup = create_id_to_inversions_map(nc);
-    res = swapDistance_election(nv, nc, a, b, swap_lookup);
-    free(swap_lookup);
+    switch (method)
+    {
+    case 0:
+        if (nc <= 10) // See NOTE in the docstring of mem_inversion_cnt()
+            ret = swap_bf_mem (pos_U, pos_V, nv, nc);
+        else
+            ret = swap_bf (pos_U, pos_V, nv, nc);
+        break;
+    default:
+        break;
+    }
     Py_END_ALLOW_THREADS;
-    free(a);
-    free(b);
 
-    result = PyLong_FromLong (res);
+    result = PyLong_FromLong (ret);
+
 cleanup:
     Py_XDECREF ((PyObject *)obj_cont_X);
     Py_XDECREF ((PyObject *)obj_cont_Y);
-
-    return result; // distance
+    return result;
 }
 
 static PyMethodDef methods[] = {
     { "swap", (PyCFunction)py_swap, METH_VARARGS, "Swap distance.\n" },
-    {NULL, NULL, 0, NULL}
+    { NULL, NULL, 0, NULL }
 };
 
 static struct PyModuleDef moduledef = {
@@ -313,7 +397,9 @@ static struct PyModuleDef moduledef = {
     NULL, NULL, NULL, NULL
 };
 
-PyMODINIT_FUNC PyInit__swap (void) {
-    import_array();
-    return PyModule_Create(&moduledef);
+PyMODINIT_FUNC
+PyInit__swap (void)
+{
+    import_array ();
+    return PyModule_Create (&moduledef);
 }

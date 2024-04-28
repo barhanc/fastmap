@@ -20,7 +20,7 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
         method: Method used to compute the distance. Should be one of the
                 `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
-                    Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
+                    Generates all permutations σ of the set {0,..,min(nv-1,nc-1)} using Heap's algorithm
                     and for each generated permutation σ solves the Linear Assignment Problem (LAP)
                     to obtain the optimal permutation v of {0,..,max(nv-1,nc-1)}. Time complexity of
                     this method is O(min(nv,nc)! * max(nv,nc)**3)

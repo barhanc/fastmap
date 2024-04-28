@@ -77,5 +77,13 @@ qap_faq (const size_t nc, const size_t maxiter)
         for (size_t j = 0; j < nc; j++)
             res += d (i, j, colsol_nc[i], colsol_nc[j]);
 
+    free (rowsol_nc);
+    free (colsol_nc);
+    free (x_nc);
+    free (y_nc);
+    free (grad_f);
+    free (Q);
+    free (P);
+
     return res;
 }

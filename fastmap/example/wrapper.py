@@ -4,24 +4,25 @@ import numpy as np
 def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     """Computes Isomorphic Spearman distance between ordinal elections U and V defined as
 
-        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
+        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
 
     where d(i,j,k,l) := |pos_U[i,k] - pos_V[j,l]|, nc is the number of candidates, nv is the number
     of voters, pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election
-    and S_n denotes the set of all permutations of the set {1,..,n}.
+    and S_n denotes the set of all permutations of the set {0,..,n-1}. This function is a Python
+    wrapper around C extension.
 
     Args:
-        U: Ordinal Election matrix s.t. U[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
+        U: Ordinal Election matrix s.t. U[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
         position in the i-th vote in the U election. Shape (nv, nc).
 
-        V: Ordinal Election matrix s.t. V[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
+        V: Ordinal Election matrix s.t. V[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
         position in the i-th vote in the V election. Shape (nv, nc).
 
         method: Method used to compute the distance. Should be one of the
                 `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
                     Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
                     and for each generated permutation σ solves the Linear Assignment Problem (LAP)
-                    to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
+                    to obtain the optimal permutation v of {0,..,max(nv-1,nc-1)}. Time complexity of
                     this method is O(min(nv,nc)! * max(nv,nc)**3)
 
                     NOTE: This method returns exact value but if one of the nv, nc is greater than
@@ -43,13 +44,20 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     Returns:
         Isomorphic Spearman distance between U and V.
     """
-    import fastmap._spear
+    try:
+        import fastmap._spear
+    except ImportError:
+        raise ImportError("C extension module for computing Isomorphic Spearman distance not found")
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
 
     nv, nc = U.shape
+    # Transpose matrices if necessary i.e. so that num of rows is min(nv,nc). This makes for a
+    # better memory access pattern. We also want to exhaustively search over smaller set of
+    # permutations utilising the symmetry between voters and candidates matching and in the C
+    # extension implementation we always exhaustively search over rows matching.
     if nv > nc:
         pos_U, pos_V = U.argsort().T, V.argsort().T
     else:
@@ -65,10 +73,11 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     """Computes Isomorphic Hamming distance between approval elections U and V defined as
 
-        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
+        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
 
     where d(i,j,k,l) := U[i,k] xor V[j,l], nc is the number of candidates, nv is the number of
-    voters and S_n denotes the set of all permutations of the set {1,..,n}.
+    voters and S_n denotes the set of all permutations of the set {0,..,n-1}. This function is a
+    Python wrapper around C extension.
 
     Args:
         U: Approval Election matrix s.t. U[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
@@ -81,7 +90,7 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                 `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
                     Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
                     and for each generated permutation σ solves the Linear Assignment Problem (LAP)
-                    to obtain the optimal permutation v of {1,..,max(nv,nc)}. Time complexity of
+                    to obtain the optimal permutation v of {0,..,max(nv-1,nc-1)}. Time complexity of
                     this method is O(min(nv,nc)! * max(nv,nc)**3)
 
                     NOTE: This method returns exact value but if one of the nv, nc is greater than
@@ -103,13 +112,20 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     Returns:
         Isomorphic Hamming distance between U and V.
     """
-    import fastmap._hamm
+    try:
+        import fastmap._hamm
+    except ImportError:
+        raise ImportError("C extension module for computing Isomorphic Hamming distance not found")
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
 
     nv, nc = U.shape
+    # Transpose matrices if necessary i.e. so that num of rows is min(nv,nc). This makes for a
+    # better memory access pattern. We also want to exhaustively search over smaller set of
+    # permutations utilising the symmetry between voters and candidates matching and in the C
+    # extension implementation we always exhaustively search over rows matching.
     if nv > nc:
         U, V = U.T, V.T
 
@@ -119,33 +135,37 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         {"bf": 0, "aa": 1}[method],
     )
 
+
 def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     """Computes Isomorphic Swap distance between ordinal elections U and V.
     Args:
-        U: Ordinal Election matrix s.t. U[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
+        U: Ordinal Election matrix s.t. U[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
         position in the i-th vote in the U election. Shape (nv, nc).
 
-        V: Ordinal Election matrix s.t. V[i,j] ∈ {1,..,nc} is the candidate's number on the j-th
+        V: Ordinal Election matrix s.t. V[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
         position in the i-th vote in the V election. Shape (nv, nc).
 
         method: only "bf" - brute force - so far.
     Returns:
         Isomorphic Swap distance between U and V.
     """
-    import fastmap._swap
+    try:
+        import fastmap._swap
+    except ImportError:
+        raise ImportError("C extension module for computing Isomorphic swap distance not found")
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
-
-    # nv, nc = U.shape
-    # if nv > nc:
-    #     pos_U, pos_V = U.argsort().T, V.argsort().T
-    # else:
-    #     pos_U, pos_V = U.argsort().T, V.argsort().T
 
     return fastmap._swap.swap(
         U.astype(np.int32),
         V.astype(np.int32),
         {"bf": 0, "aa": 1}[method],
     )
+
+    # return fastmap._swap.swap(
+    #     U.argsort().astype(np.int32),
+    #     V.argsort().astype(np.int32),
+    #     {"bf": 0, "aa": 1}[method],
+    # )

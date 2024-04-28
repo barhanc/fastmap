@@ -72,8 +72,10 @@ bap_bf (const size_t nv, const size_t nc)
 
             for (size_t i = 0; i < nv; i++)
                 for (size_t j = 0; j < nv; j++)
-                    cost[i * nv + j] += d (i, j, p, sigma[q]) + d (i, j, q, sigma[p])
-                                        - d (i, j, p, sigma[p]) - d (i, j, q, sigma[q]);
+                    cost[i * nv + j] += d (i, j, p, sigma[q])
+                                        + d (i, j, q, sigma[p])
+                                        - d (i, j, p, sigma[p])
+                                        - d (i, j, q, sigma[q]);
 
             swap (size_t, sigma[p], sigma[q]);
 
@@ -124,7 +126,6 @@ bap_bf (const size_t nv, const size_t nc)
 static int32_t
 bap_aa (const size_t nv, const size_t nc)
 {
-
     // Cost matrices for LAP
     int32_t *cost_nv = calloc (nv * nv, sizeof (int32_t));
     int32_t *cost_nc = calloc (nc * nc, sizeof (int32_t));

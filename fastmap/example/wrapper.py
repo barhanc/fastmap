@@ -137,7 +137,10 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
 
 def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
-    """Computes Isomorphic Swap distance between ordinal elections U and V.
+    """
+    TODO: Fix this docstring
+
+    Computes Isomorphic Swap distance between ordinal elections U and V.
     Args:
         U: Ordinal Election matrix s.t. U[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
         position in the i-th vote in the U election. Shape (nv, nc).
@@ -158,14 +161,11 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
 
+    # We transpose the matrices so that the memory access pattern is better
+    pos_U, pos_V = U.argsort().T, V.argsort().T
+
     return fastmap._swap.swap(
-        U.astype(np.int32),
-        V.astype(np.int32),
+        pos_U.astype(np.int32),
+        pos_V.astype(np.int32),
         {"bf": 0, "aa": 1}[method],
     )
-
-    # return fastmap._swap.swap(
-    #     U.argsort().astype(np.int32),
-    #     V.argsort().astype(np.int32),
-    #     {"bf": 0, "aa": 1}[method],
-    # )

@@ -270,19 +270,18 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
 
             for (size_t i = 0; i < nv; i++)
             {
-                register int32_t r1 = pos_U[i + nv * q];
-                register int32_t r2 = pos_U[i + nv * p];
+                register int32_t r1 = pos_U[i + nv * sigma[p]] - pos_U[i + nv * sigma[q]];
 
                 for (size_t j = 0; j < nv; j++)
                 {
-                    size_t pos_p = pos_V[j + nv * sigma[p]];
-                    size_t pos_q = pos_V[j + nv * sigma[q]];
+                    size_t pos_p = pos_V[j + nv * p];
+                    size_t pos_q = pos_V[j + nv * q];
 
                     if (pos_p < nc - 1)
-                        key[i * nv + j] += r1 * pow10[pos_p] - r2 * pow10[pos_p];
+                        key[i * nv + j] -= r1 * pow10[pos_p];
 
                     if (pos_q < nc - 1)
-                        key[i * nv + j] += r2 * pow10[pos_q] - r1 * pow10[pos_q];
+                        key[i * nv + j] += r1 * pow10[pos_q];
 
                     cost[i * nv + j] = mem[key[i * nv + j]];
                 }

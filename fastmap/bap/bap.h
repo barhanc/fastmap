@@ -28,7 +28,7 @@
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
- * @return int32_t
+ * @return minimal value of the cost function
  */
 static int32_t
 bap_bf (const size_t nv, const size_t nc)
@@ -77,11 +77,10 @@ bap_bf (const size_t nv, const size_t nc)
                                         - d (i, j, p, sigma[p])
                                         - d (i, j, q, sigma[q]);
 
-            swap (size_t, sigma[p], sigma[q]);
-
             int32_t res = lap (nv, cost, a, b, x, y);
             best_res = res < best_res ? res : best_res;
 
+            swap (size_t, sigma[p], sigma[q]);
             stack[alpha]++;
             alpha = 1;
         }
@@ -121,7 +120,7 @@ bap_bf (const size_t nv, const size_t nc)
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
- * @return int32_t
+ * @return approximation of the minimal value of the cost function
  */
 static int32_t
 bap_aa (const size_t nv, const size_t nc)

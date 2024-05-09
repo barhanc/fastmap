@@ -6,10 +6,11 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
 
-    where d(i,j,k,l) := |pos_U[i,k] - pos_V[j,l]|, nc is the number of candidates, nv is the number
-    of voters, pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election
-    and S_n denotes the set of all permutations of the set {0,..,n-1}. This function is a Python
-    wrapper around C extension.
+    where d(i,j,k,l) := abs(pos_U[i,k] - pos_V[j,l]), nc is the number of candidates, nv is the
+    number of voters, pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U
+    election and S_n denotes the set of all permutations of the set {0,..,n-1}.
+    NOTE: This function is a Python wrapper around C extension. For implementation details see
+    'pyspear.c' and 'bap.h' files.
 
     Args:
         U: Ordinal Election matrix s.t. U[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
@@ -46,8 +47,8 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     """
     try:
         import fastmap._spear
-    except ImportError:
-        raise ImportError("C extension module for computing Isomorphic Spearman distance not found")
+    except ImportError as e:
+        raise ImportError("C extension module for computing Isomorphic Spearman distance not found") from e
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
@@ -76,8 +77,9 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
 
     where d(i,j,k,l) := U[i,k] xor V[j,l], nc is the number of candidates, nv is the number of
-    voters and S_n denotes the set of all permutations of the set {0,..,n-1}. This function is a
-    Python wrapper around C extension.
+    voters and S_n denotes the set of all permutations of the set {0,..,n-1}.
+    NOTE: This function is a Python wrapper around C extension. For implementation details see
+    'pyhamm.c' and 'bap.h' files.
 
     Args:
         U: Approval Election matrix s.t. U[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
@@ -114,8 +116,8 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     """
     try:
         import fastmap._hamm
-    except ImportError:
-        raise ImportError("C extension module for computing Isomorphic Hamming distance not found")
+    except ImportError as e:
+        raise ImportError("C extension module for computing Isomorphic Hamming distance not found") from e
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
@@ -138,9 +140,17 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
 def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     """
-    TODO: Fix this docstring
+    Computes Isomorphic swap distance between ordinal elections U and V defined as
 
-    Computes Isomorphic Swap distance between ordinal elections U and V.
+        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
+
+    where d(i,j,k,l,m,n) := 1/2 * { (pos_U[i,k] - pos_U[i,l]) * (pos_V[j,m] - pos_V[j,n]) < 0 }
+    ({...} denoting here the Iverson bracket), nc is the number of candidates, nv is the number of
+    voters, pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election and
+    S_n denotes the set of all permutations of the set {0,..,n-1}.
+    NOTE: This function is a Python wrapper around C extension. For implementation details see
+    'pyswap.c' file.
+
     Args:
         U: Ordinal Election matrix s.t. U[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
         position in the i-th vote in the U election. Shape (nv, nc).
@@ -148,14 +158,20 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         V: Ordinal Election matrix s.t. V[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
         position in the i-th vote in the V election. Shape (nv, nc).
 
-        method: only "bf" - brute force - so far.
+        method: Method used to compute the distance. Should be one of the
+                `"bf"` - TODO:...
+
+                `"aa"` - TODO:...
+
+                `"faq"` - TODO:...
+
     Returns:
-        Isomorphic Swap distance between U and V.
+        Isomorphic swap distance between U and V.
     """
     try:
         import fastmap._swap
-    except ImportError:
-        raise ImportError("C extension module for computing Isomorphic swap distance not found")
+    except ImportError as e:
+        raise ImportError("C extension module for computing Isomorphic swap distance not found") from e
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"

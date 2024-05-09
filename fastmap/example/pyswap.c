@@ -605,7 +605,7 @@ py_swap (PyObject *self, PyObject *args)
     switch (method)
     {
     case 0:
-        if (nc < 10) // See NOTE in the docstring of mem_inversion_cnt()
+        if (nc <= 10) // See NOTE in the docstring of mem_inversion_cnt()
             ret = swap_bf_mem (pos_U, pos_V, nv, nc);
         else
             ret = swap_bf (pos_U, pos_V, nv, nc);

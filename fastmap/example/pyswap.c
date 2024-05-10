@@ -294,6 +294,7 @@ mem_inversion_cnt (size_t n, uint8_t *mem)
  * S_n denotes the set of all permutations of the set {0,..,n-1}. The algorithm generates all
  * permutations of S_nc using Heap's algorithm and for every generated permutation σ solves the
  * corresponding Linear Assignment Problem (LAP) in order to find the optimal permutation v.
+ * TODO:...
  *
  * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
  * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election. NOTE:
@@ -418,7 +419,8 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
 #define d(i, j, k, l, m, n) ((pos_U[(i) + nv * (k)] - pos_U[(i) + nv * (l)]) * (pos_V[(j) + nv * (m)] - pos_V[(j) + nv * (n)]) < 0)
 
 /**
- * @brief TODO: Write a docstring
+ * @brief TODO: Write a docstring. Try to cook some proof why this even works (based on reduction of
+ * QAP to BAP)
  *
  * @param pos_V
  * @param pos_U
@@ -431,8 +433,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
 {
     // Cost matrices for LAP
     int32_t *cost_nv = calloc (nv * nv, sizeof (int32_t));
-    int32_t *cost_nc_1 = calloc (nc * nc, sizeof (int32_t));
-    int32_t *cost_nc_2 = calloc (nc * nc, sizeof (int32_t));
+    int32_t *cost_nc = calloc (nc * nc, sizeof (int32_t));
 
     // Auxiliary variables required for J-V LAP algorithm
     int32_t *rowsol_nv = calloc (nv, sizeof (int32_t));
@@ -494,26 +495,26 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
             sigma_nv[i] = rowsol_nv[i];
 
         // TODO: Memory access pattern + vectorization. Expand macros and put data into registers.
-        memset (cost_nc_1, 0, nc * nc * sizeof (*cost_nc_1));
+        memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
         for (size_t i = 0; i < nc; i++)
             for (size_t j = 0; j < nc; j++)
                 for (size_t l = 0; l < nc; l++)
                     for (size_t k = 0; k < nv; k++)
-                        cost_nc_1[i * nc + j] += d (k, sigma_nv[k], i, l, j, sigma_nc_2[l]);
+                        cost_nc[i * nc + j] += d (k, sigma_nv[k], i, l, j, sigma_nc_2[l]);
 
-        res_curr = lap (nc, cost_nc_1, rowsol_nc, colsol_nc, x_nc, y_nc);
+        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc_1[i] = rowsol_nc[i];
 
         // TODO: Memory access pattern + vectorization. Expand macros and put data into registers.
-        memset (cost_nc_2, 0, nc * nc * sizeof (*cost_nc_2));
+        memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
         for (size_t i = 0; i < nc; i++)
             for (size_t j = 0; j < nc; j++)
                 for (size_t l = 0; l < nc; l++)
                     for (size_t k = 0; k < nv; k++)
-                        cost_nc_2[i * nc + j] += d (k, sigma_nv[k], l, i, sigma_nc_1[l], j);
+                        cost_nc[i * nc + j] += d (k, sigma_nv[k], l, i, sigma_nc_1[l], j);
 
-        res_curr = lap (nc, cost_nc_2, rowsol_nc, colsol_nc, x_nc, y_nc);
+        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc_2[i] = rowsol_nc[i];
 
@@ -539,8 +540,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     free (sigma_nc_1);
     free (sigma_nc_2);
     free (cost_nv);
-    free (cost_nc_1);
-    free (cost_nc_2);
+    free (cost_nc);
     free (rowsol_nv);
     free (rowsol_nc);
     free (colsol_nv);

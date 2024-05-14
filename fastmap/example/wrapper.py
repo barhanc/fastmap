@@ -9,6 +9,7 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     where d(i,j,k,l) := abs(pos_U[i,k] - pos_V[j,l]), nc is the number of candidates, nv is the
     number of voters, pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U
     election and S_n denotes the set of all permutations of the set {0,..,n-1}.
+
     NOTE: This function is a Python wrapper around C extension. For implementation details see
     'pyspear.c' and 'bap.h' files.
 
@@ -44,6 +45,8 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
     Returns:
         Isomorphic Spearman distance between U and V.
+
+    Raises: ImportError: Raises exception if extension module not found.
     """
     try:
         import fastmap._spear
@@ -78,6 +81,7 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
     where d(i,j,k,l) := U[i,k] xor V[j,l], nc is the number of candidates, nv is the number of
     voters and S_n denotes the set of all permutations of the set {0,..,n-1}.
+
     NOTE: This function is a Python wrapper around C extension. For implementation details see
     'pyhamm.c' and 'bap.h' files.
 
@@ -113,6 +117,8 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
     Returns:
         Isomorphic Hamming distance between U and V.
+
+    Raises: ImportError: Raises exception if extension module not found.
     """
     try:
         import fastmap._hamm
@@ -148,6 +154,7 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     ({...} denoting here the Iverson bracket), nc is the number of candidates, nv is the number of
     voters, pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election and
     S_n denotes the set of all permutations of the set {0,..,n-1}.
+
     NOTE: This function is a Python wrapper around C extension. For implementation details see
     'pyswap.c' file.
 
@@ -167,6 +174,8 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
     Returns:
         Isomorphic swap distance between U and V.
+
+    Raises: ImportError: Raises exception if extension module not found.
     """
     try:
         import fastmap._swap

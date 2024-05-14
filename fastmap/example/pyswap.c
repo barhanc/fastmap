@@ -36,7 +36,12 @@
  * of the cost matrix in two subsequent iterations of Heap's algorithm then (for simplicity we drop
  * the i,j when writing the element of the cost array d(i,j,k,l,m,n))
  * ```
- *  c' = sum_{k=0,..,nc-1} [ sum_{l=0,..,nc-1} d(k,l,s'(k),s(l)) - d(k,p,s'(k),s(p)) - d(k,q,s'(k),s(q)) + d(k,p,s'(k),s(q)) + d(k,q,s'(k),s(p))]
+ *  c' = sum_{k=0,..,nc-1} [
+ *          sum_{l=0,..,nc-1} d(k,l,s'(k),s(l))
+ *          - d(k,p,s'(k),s(p))
+ *          - d(k,q,s'(k),s(q))
+ *          + d(k,p,s'(k),s(q))
+ *          + d(k,q,s'(k),s(p)) ]
  * ```
  * and doing some simple but tedious algebra we obtain (1)
  * ```
@@ -81,24 +86,23 @@
  * ```
  * Thus we can see that we can calculate element (i,j) of the matrix cost' as
  * ```
- * cost'[i,j] = cost[i,j] + sum_{k=0,..,nc-1}[
- *                                   {(pos_U[i,p] - pos_U[i,k]) * (pos_V[j,s(q)] - pos_V[j,s(k)]) < 0}
+ * cost'[i,j] = cost[i,j]
+ *              + sum_{k=0,..,nc-1}[ {(pos_U[i,p] - pos_U[i,k]) * (pos_V[j,s(q)] - pos_V[j,s(k)]) < 0}
  *                                   + {(pos_U[i,q] - pos_U[i,k]) * (pos_V[j,s(p)] - pos_V[j,s(k)]) < 0}
  *                                   - {(pos_U[i,p] - pos_U[i,k]) * (pos_V[j,s(p)] - pos_V[j,s(k)]) < 0}
- *                                   - {(pos_U[i,q] - pos_U[i,k]) * (pos_V[j,s(q)] - pos_V[j,s(k)]) < 0}
- *                                  ]
+ *                                   - {(pos_U[i,q] - pos_U[i,k]) * (pos_V[j,s(q)] - pos_V[j,s(k)]) < 0} ]
  *               + {(pos_U[i,p] - pos_U[i,q]) * (pos_V[j,s(p)] - pos_V[j,s(q)]) < 0}
  *               + {(pos_U[i,p] - pos_U[i,q]) * (pos_V[j,s(p)] - pos_V[j,s(q)]) > 0}
  * ```
  * and thus we can update the whole `cost` matrix in O(nv**2 * nc).
  *
  * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
- * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election. NOTE:
- * we assume that the elements of matrix are stored in column-major order.
+ * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election.
+ * NOTE: we assume that the elements of matrix are stored in column-major order.
  *
  * @param pos_V pointer to the linearized position matrix of the 2nd (V) election i.e. a matrix such
- * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election. NOTE:
- * we assume that the elements of matrix are stored in column-major order.
+ * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election.
+ * NOTE: we assume that the elements of matrix are stored in column-major order.
  *
  * @param nv number of votes
  * @param nc number of candidates
@@ -222,6 +226,7 @@ static const size_t pow10[] = {
  *  E(p) := 10**0 * p[0] + 10**1 * p[1] + ... + 10**(n-2) * p[n-2] .
  * ```
  * Notice here that specifying n-1 elements of p already uniquely defines p.
+ *
  * NOTE: we assume that n <= 10, otherwise the encoding E would not be unique. Notice also that we
  * could use a larger base (e.g. 11, 12) but for n=10 we already need to alocate 10**9B = 1GB
  * memory, thus using this method for larger permutations would require too much memory.
@@ -297,12 +302,12 @@ mem_inversion_cnt (size_t n, uint8_t *mem)
  * TODO:...
  *
  * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
- * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election. NOTE:
- * we assume that the elements of matrix are stored in column-major order.
+ * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election.
+ * NOTE: we assume that the elements of matrix are stored in column-major order.
  *
  * @param pos_V pointer to the linearized position matrix of the 2nd (V) election i.e. a matrix such
- * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election. NOTE:
- * we assume that the elements of matrix are stored in column-major order.
+ * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election.
+ * NOTE: we assume that the elements of matrix are stored in column-major order.
  *
  * @param nv number of votes
  * @param nc number of candidates

@@ -3,6 +3,6 @@
 TODO:...
 """
 
-from fastmap.example.wrapper import spearman
-from fastmap.example.wrapper import hamming
-from fastmap.example.wrapper import swap
+from fastmap.wrapper import spearman
+from fastmap.wrapper import hamming
+from fastmap.wrapper import swap

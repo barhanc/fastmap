@@ -24,19 +24,19 @@ setup(
     ext_modules=[
         Extension(
             name="fastmap._spear",
-            sources=["fastmap/example/pyspear.c"],
+            sources=["fastmap/pyspear.c"],
             extra_compile_args=["-Ofast"],
             include_dirs=["fastmap/lap/", "fastmap/bap/"],
         ),
         Extension(
             name="fastmap._hamm",
-            sources=["fastmap/example/pyhamm.c"],
+            sources=["fastmap/pyhamm.c"],
             extra_compile_args=["-Ofast"],
             include_dirs=["fastmap/lap/", "fastmap/bap/"],
         ),
         Extension(
             name="fastmap._swap",
-            sources=["fastmap/example/pyswap.c"],
+            sources=["fastmap/pyswap.c"],
             extra_compile_args=["-Ofast"],
             include_dirs=["fastmap/lap/"],
         ),

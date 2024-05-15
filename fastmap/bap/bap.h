@@ -24,7 +24,7 @@
  *   min_{v ∈ S_nv} sum_{i=1,..,nv} ( sum_{k=1,..,nc} d(i,v(i),k,σ(k)) ) .
  * ```
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
- * used to compute the cost tensor (see: fastmap/example/).
+ * used to compute the cost tensor.
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
@@ -116,7 +116,7 @@ bap_bf (const size_t nv, const size_t nc)
  * permutation with the matching found in LAP doing so until convergence.
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
- * used to compute the cost tensor (see: fastmap/example/).
+ * used to compute the cost tensor.
  *
  * @param nv problem size parameter
  * @param nc problem size parameter

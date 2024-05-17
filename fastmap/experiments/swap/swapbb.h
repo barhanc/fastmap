@@ -6,6 +6,8 @@
 #include "lap.h"
 #include "queue.h"
 
+#define d(i, j, k, l, m, n) ((pos_U[(i) + nv * (k)] - pos_U[(i) + nv * (l)]) * (pos_V[(j) + nv * (m)] - pos_V[(j) + nv * (n)]) < 0)
+
 typedef struct Node
 {
     bool *available;

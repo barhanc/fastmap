@@ -7,7 +7,7 @@ import fastmap
 
 if __name__ == "__main__":
     print("ISOMORPHIC SPEARMAN\n")
-    nv, nc = 200, 8
+    nv, nc = 10, 10
     culture_id = "ic"
     print(f"Candidates {nc} :: Votes {nv} :: Culture {culture_id}\n")
 

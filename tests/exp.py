@@ -1,6 +1,13 @@
-import time, random
+import sys
+import csv
+import time
+
+import numpy as np
 import fastmap
 import mapel.elections as mapel
+
+from itertools import product
+from tqdm import tqdm
 
 ORDINAL_CULTURES = [
     {"id": "ic", "params": {}},
@@ -16,18 +23,17 @@ ORDINAL_CULTURES = [
     {"id": "walsh", "params": {}},
 ]
 
-if __name__ == "__main__":
-    print("ISOMORPHIC SWAP\n")
-    nv, nc = 10, 10
-    culture = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
-    print(f"Candidates {nc} :: Votes {nv} :: Culture {culture['id']}\n")
+nv, nc = 50, 8
 
+for culture1, culture2 in product(ORDINAL_CULTURES, ORDINAL_CULTURES):
     U = mapel.generate_ordinal_election(
-        culture_id=culture["id"], num_candidates=nc, num_voters=nv, **culture["params"]
+        culture_id=culture1["id"], num_candidates=nc, num_voters=nv, **culture1["params"]
     )
     V = mapel.generate_ordinal_election(
-        culture_id=culture["id"], num_candidates=nc, num_voters=nv, **culture["params"]
+        culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"]
     )
+
+    print(f"{culture1['id']}{culture1['params']}, {culture2['id']}{culture2['params']}")
 
     t1 = time.time()
     d1, _ = mapel.compute_distance(U, V, distance_id="swap")
@@ -41,7 +47,9 @@ if __name__ == "__main__":
 
     assert d1 == d2, "Wrong answer"
 
-    # t3 = time.time()
-    # d3 = min(fastmap.swap(U.votes, V.votes, method="aa") for _ in range(50))
-    # t3 = time.time() - t3
-    # print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")
+    t3 = time.time()
+    d3 = min(fastmap.swap(U.votes, V.votes, method="aa") for _ in range(50))
+    t3 = time.time() - t3
+    print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")
+    print("=" * 60)
+    print()

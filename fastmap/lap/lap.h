@@ -1,310 +1,447 @@
-/************************************************************************
- * Taken from:
- * https://github.com/yongyanghz/LAPJV-algorithm-c
- ************************************************************************/
+/**
+ * Source: https://github.com/gatagat/lap
+ *
+ * Copyright (c) 2012-2017, Tomas Kazmar All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted
+ * provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list of conditions
+ * and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+ * and the following disclaimer in the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+ * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
 
-/************************************************************************
-*
-*  lap.h
-   version 1.0 - 21 june 1996
-   author  Roy Jonker, MagicLogic Optimization Inc.
-
-   header file for LAP
-*
-      pyLAPJV by Harold Cooper (hbc@mit.edu)
-      2004-08-13:
-          -- fixed Jonker's function declarations to actually use row, col,
-             and cost types
-          -- row, col, and cost now based on basic types
-*
-**************************************************************************/
-
-/*************** CONSTANTS  *******************/
-
-#define BIG 100000
-
-/*************** TYPES      *******************/
-
-typedef int32_t row;
-typedef int32_t col;
-typedef int32_t cost;
-
-/*************** FUNCTIONS  *******************/
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define _assigncost_(i, j) assigncost[(i) * dim + (j)]
+#define LARGE 1000000
 
-/*This function is the jv shortest augmenting path algorithm to solve the assignment problem*/
-static cost
-lap (const int32_t dim, cost *assigncost, col *rowsol, row *colsol, cost *u, cost *v)
+#define NEW(x, t, n)                               \
+    if ((x = (t *)malloc (sizeof (t) * (n))) == 0) \
+    {                                              \
+        return -1;                                 \
+    }
+#define FREE(x)   \
+    if (x != 0)   \
+    {             \
+        free (x); \
+        x = 0;    \
+    }
+#define SWAP_INDICES(a, b)       \
+    {                            \
+        int32_t _temp_index = a; \
+        a = b;                   \
+        b = _temp_index;         \
+    }
 
-// input:
-// dim        - problem size
-// assigncost - cost matrix
+#define ASSERT(cond)
+#define PRINTF(fmt, ...)
+#define PRINT_COST_ARRAY(a, n)
+#define PRINT_INDEX_ARRAY(a, n)
 
-// output:
-// rowsol     - column assigned to row in solution
-// colsol     - row assigned to column in solution
-// u          - dual variables, row reduction numbers
-// v          - dual variables, column reduction numbers
+typedef int32_t cost_t;
 
+/** Column-reduction and reduction transfer for a dense cost matrix.
+ */
+int32_t
+_ccrrt_dense (const size_t n, cost_t *cost,
+              int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
 {
-    bool unassignedfound;
-    row i, imin, numfree = 0, prvnumfree, f, i0, k, freerow;
-    col j, j1, j2 = -1, endofpath, last = -1, low, up;
-    cost min = BIG, h, umin, usubmin, v2;
+    int32_t n_free_rows;
+    bool *unique;
 
-    row free[dim],    // list of unassigned rows.
-        pred[dim];    // row-predecessor of column in augmenting/alternating path.
-    col collist[dim], // list of columns to be scanned in various ways.
-        matches[dim]; // counts how many times a row could be assigned.
-    cost d[dim];      // 'cost-distance' in augmenting path calculation.
-
-    memset (free, 0, sizeof free);
-    memset (pred, 0, sizeof pred);
-    memset (collist, 0, sizeof collist);
-    memset (matches, 0, sizeof matches);
-    memset (d, 0, sizeof d);
-
-    // COLUMN REDUCTION
-    for (j = dim; j--;) // reverse order gives better results.
+    for (size_t i = 0; i < n; i++)
     {
-        // find minimum cost over rows.
-        min = _assigncost_ (0, j);
-        imin = 0;
-        for (i = 1; i < dim; i++)
-            if (_assigncost_ (i, j) < min)
+        x[i] = -1;
+        v[i] = LARGE;
+        y[i] = 0;
+    }
+    for (size_t i = 0; i < n; i++)
+    {
+        for (size_t j = 0; j < n; j++)
+        {
+            const cost_t c = cost[i * n + j];
+            if (c < v[j])
             {
-                min = _assigncost_ (i, j);
-                imin = i;
+                v[j] = c;
+                y[j] = i;
             }
-        v[j] = min;
-        if (++matches[imin] == 1)
-        {
-            // init assignment if minimum row assigned for first time.
-            rowsol[imin] = j;
-            colsol[j] = imin;
+            PRINTF ("i=%d, j=%d, c[i,j]=%f, v[j]=%f y[j]=%d\n", i, j, c, v[j], y[j]);
         }
-        else if (v[j] < v[rowsol[imin]])
+    }
+    PRINT_COST_ARRAY (v, n);
+    PRINT_INDEX_ARRAY (y, n);
+    NEW (unique, bool, n);
+    memset (unique, true, n);
+    {
+        int32_t j = n;
+        do
         {
-            int32_t j1 = rowsol[imin];
-            rowsol[imin] = j;
-            colsol[j] = imin;
-            colsol[j1] = -1;
+            j--;
+            const int32_t i = y[j];
+            if (x[i] < 0)
+            {
+                x[i] = j;
+            }
+            else
+            {
+                unique[i] = false;
+                y[j] = -1;
+            }
+        } while (j > 0);
+    }
+    n_free_rows = 0;
+    for (size_t i = 0; i < n; i++)
+    {
+        if (x[i] < 0)
+        {
+            free_rows[n_free_rows++] = i;
+        }
+        else if (unique[i])
+        {
+            const int32_t j = x[i];
+            cost_t min = LARGE;
+            for (size_t j2 = 0; j2 < n; j2++)
+            {
+                if (j2 == (size_t)j)
+                {
+                    continue;
+                }
+                const cost_t c = cost[i * n + j2] - v[j2];
+                if (c < min)
+                {
+                    min = c;
+                }
+            }
+            PRINTF ("v[%d] = %f - %f\n", j, v[j], min);
+            v[j] -= min;
+        }
+    }
+    FREE (unique);
+    return n_free_rows;
+}
+
+/** Augmenting row reduction for a dense cost matrix.
+ */
+int32_t
+_carr_dense (
+    const size_t n, cost_t *cost,
+    const size_t n_free_rows,
+    int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
+{
+    size_t current = 0;
+    int32_t new_free_rows = 0;
+    size_t rr_cnt = 0;
+    PRINT_INDEX_ARRAY (x, n);
+    PRINT_INDEX_ARRAY (y, n);
+    PRINT_COST_ARRAY (v, n);
+    PRINT_INDEX_ARRAY (free_rows, n_free_rows);
+    while (current < n_free_rows)
+    {
+        int32_t i0;
+        int32_t j1, j2;
+        cost_t v1, v2, v1_new;
+        bool v1_lowers;
+
+        rr_cnt++;
+        PRINTF ("current = %d rr_cnt = %d\n", current, rr_cnt);
+        const int32_t free_i = free_rows[current++];
+        j1 = 0;
+        v1 = cost[free_i * n + 0] - v[0];
+        j2 = -1;
+        v2 = LARGE;
+        for (size_t j = 1; j < n; j++)
+        {
+            PRINTF ("%d = %f %d = %f\n", j1, v1, j2, v2);
+            const cost_t c = cost[free_i * n + j] - v[j];
+            if (c < v2)
+            {
+                if (c >= v1)
+                {
+                    v2 = c;
+                    j2 = j;
+                }
+                else
+                {
+                    v2 = v1;
+                    v1 = c;
+                    j2 = j1;
+                    j1 = j;
+                }
+            }
+        }
+        i0 = y[j1];
+        v1_new = v[j1] - (v2 - v1);
+        v1_lowers = v1_new < v[j1];
+        PRINTF ("%d %d 1=%d,%f 2=%d,%f v1'=%f(%d,%g) \n", free_i, i0, j1, v1, j2, v2, v1_new, v1_lowers, v[j1] - v1_new);
+        if (rr_cnt < current * n)
+        {
+            if (v1_lowers)
+            {
+                v[j1] = v1_new;
+            }
+            else if (i0 >= 0 && j2 >= 0)
+            {
+                j1 = j2;
+                i0 = y[j2];
+            }
+            if (i0 >= 0)
+            {
+                if (v1_lowers)
+                {
+                    free_rows[--current] = i0;
+                }
+                else
+                {
+                    free_rows[new_free_rows++] = i0;
+                }
+            }
         }
         else
-            colsol[j] = -1; // row already assigned, column not assigned.
+        {
+            PRINTF ("rr_cnt=%d >= %d (current=%d * n=%d)\n", rr_cnt, current * n, current, n);
+            if (i0 >= 0)
+            {
+                free_rows[new_free_rows++] = i0;
+            }
+        }
+        x[free_i] = j1;
+        y[j1] = free_i;
+    }
+    return new_free_rows;
+}
+
+/** Find columns with minimum d[j] and put them on the SCAN list.
+ */
+size_t
+_find_dense (const size_t n, size_t lo, cost_t *d, int32_t *cols, int32_t *y)
+{
+    size_t hi = lo + 1;
+    cost_t mind = d[cols[lo]];
+    for (size_t k = hi; k < n; k++)
+    {
+        int32_t j = cols[k];
+        if (d[j] <= mind)
+        {
+            if (d[j] < mind)
+            {
+                hi = lo;
+                mind = d[j];
+            }
+            cols[k] = cols[hi];
+            cols[hi++] = j;
+        }
+    }
+    return hi;
+}
+
+// Scan all columns in TODO starting from arbitrary column in SCAN
+// and try to decrease d of the TODO columns using the SCAN column.
+int32_t
+_scan_dense (const size_t n, cost_t *cost,
+             size_t *plo, size_t *phi,
+             cost_t *d, int32_t *cols, int32_t *pred,
+             int32_t *y, cost_t *v)
+{
+    size_t lo = *plo;
+    size_t hi = *phi;
+    cost_t h, cred_ij;
+
+    while (lo != hi)
+    {
+        int32_t j = cols[lo++];
+        const int32_t i = y[j];
+        const cost_t mind = d[j];
+        h = cost[i * n + j] - v[j] - mind;
+        PRINTF ("i=%d j=%d h=%f\n", i, j, h);
+        // For all columns in TODO
+        for (size_t k = hi; k < n; k++)
+        {
+            j = cols[k];
+            cred_ij = cost[i * n + j] - v[j] - h;
+            if (cred_ij < d[j])
+            {
+                d[j] = cred_ij;
+                pred[j] = i;
+                if (cred_ij == mind)
+                {
+                    if (y[j] < 0)
+                    {
+                        return j;
+                    }
+                    cols[k] = cols[hi];
+                    cols[hi++] = j;
+                }
+            }
+        }
+    }
+    *plo = lo;
+    *phi = hi;
+    return -1;
+}
+
+/** Single iteration of modified Dijkstra shortest path algorithm as explained in the JV paper.
+ *
+ * This is a dense matrix version.
+ *
+ * \return The closest free column index.
+ */
+int32_t
+find_path_dense (
+    const size_t n, cost_t *cost,
+    const int32_t start_i,
+    int32_t *y, cost_t *v,
+    int32_t *pred)
+{
+    size_t lo = 0, hi = 0;
+    int32_t final_j = -1;
+    size_t n_ready = 0;
+    int32_t *cols;
+    cost_t *d;
+
+    NEW (cols, int32_t, n);
+    NEW (d, cost_t, n);
+
+    for (size_t i = 0; i < n; i++)
+    {
+        cols[i] = i;
+        pred[i] = start_i;
+        d[i] = cost[start_i * n + i] - v[i];
+    }
+    PRINT_COST_ARRAY (d, n);
+    while (final_j == -1)
+    {
+        // No columns left on the SCAN list.
+        if (lo == hi)
+        {
+            PRINTF ("%d..%d -> find\n", lo, hi);
+            n_ready = lo;
+            hi = _find_dense (n, lo, d, cols, y);
+            PRINTF ("check %d..%d\n", lo, hi);
+            PRINT_INDEX_ARRAY (cols, n);
+            for (size_t k = lo; k < hi; k++)
+            {
+                const int32_t j = cols[k];
+                if (y[j] < 0)
+                {
+                    final_j = j;
+                }
+            }
+        }
+        if (final_j == -1)
+        {
+            PRINTF ("%d..%d -> scan\n", lo, hi);
+            final_j = _scan_dense (
+                n, cost, &lo, &hi, d, cols, pred, y, v);
+            PRINT_COST_ARRAY (d, n);
+            PRINT_INDEX_ARRAY (cols, n);
+            PRINT_INDEX_ARRAY (pred, n);
+        }
     }
 
-    // REDUCTION TRANSFER
-    for (i = 0; i < dim; i++)
-        if (matches[i] == 0) // fill list of unassigned 'free' rows.
-            free[numfree++] = i;
-        else if (matches[i] == 1) // transfer reduction from rows that are assigned once.
-        {
-            j1 = rowsol[i];
-            min = BIG;
-            for (j = 0; j < dim; j++)
-                if (j != j1)
-                    if (_assigncost_ (i, j) - v[j] < min)
-                        min = _assigncost_ (i, j) - v[j];
-            v[j1] = v[j1] - min;
-        }
-
-    //   AUGMENTING ROW REDUCTION
-    int32_t loopcnt = 0; // do-loop to be done twice.
-    do
+    PRINTF ("found final_j=%d\n", final_j);
+    PRINT_INDEX_ARRAY (cols, n);
     {
-        loopcnt++;
-
-        //     scan all free rows.
-        //     in some cases, a free row may be replaced with another one to be scanned next.
-        k = 0;
-        prvnumfree = numfree;
-        numfree = 0; // start list of rows still free after augmenting row reduction.
-        while (k < prvnumfree)
+        const cost_t mind = d[cols[lo]];
+        for (size_t k = 0; k < n_ready; k++)
         {
-            i = free[k];
+            const int32_t j = cols[k];
+            v[j] += d[j] - mind;
+        }
+    }
+
+    FREE (cols);
+    FREE (d);
+
+    return final_j;
+}
+
+/** Augment for a dense cost matrix.
+ */
+int32_t
+_ca_dense (
+    const size_t n, cost_t *cost,
+    const size_t n_free_rows,
+    int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
+{
+    int32_t *pred;
+
+    NEW (pred, int32_t, n);
+
+    for (int32_t *pfree_i = free_rows; pfree_i < free_rows + n_free_rows; pfree_i++)
+    {
+        int32_t i = -1, j;
+        size_t k = 0;
+
+        PRINTF ("looking at free_i=%d\n", *pfree_i);
+        j = find_path_dense (n, cost, *pfree_i, y, v, pred);
+        ASSERT (j >= 0);
+        ASSERT (j < n);
+        while (i != *pfree_i)
+        {
+            PRINTF ("augment %d\n", j);
+            PRINT_INDEX_ARRAY (pred, n);
+            i = pred[j];
+            PRINTF ("y[%d]=%d -> %d\n", j, y[j], i);
+            y[j] = i;
+            PRINT_INDEX_ARRAY (x, n);
+            SWAP_INDICES (j, x[i]);
             k++;
-
-            //       find minimum and second minimum reduced cost over columns.
-            umin = _assigncost_ (i, 0) - v[0];
-            j1 = 0;
-            usubmin = BIG;
-            for (j = 1; j < dim; j++)
+            if (k >= n)
             {
-                h = _assigncost_ (i, j) - v[j];
-                if (h < usubmin)
-                {
-                    if (h >= umin)
-                    {
-                        usubmin = h;
-                        j2 = j;
-                    }
-                    else
-                    {
-                        usubmin = umin;
-                        umin = h;
-                        j2 = j1;
-                        j1 = j;
-                    }
-                }
-            }
-
-            i0 = colsol[j1];
-            if (umin < usubmin)
-                //         change the reduction of the minimum column to increase the minimum
-                //         reduced cost in the row to the subminimum.
-                v[j1] = v[j1] - (usubmin - umin);
-            else             // minimum and subminimum equal.
-                if (i0 > -1) // minimum column j1 is assigned.
-                {
-                    //           swap columns j1 and j2, as j2 may be unassigned.
-                    j1 = j2;
-                    i0 = colsol[j2];
-                }
-
-            //       (re-)assign i to j1, possibly de-assigning an i0.
-            rowsol[i] = j1;
-            colsol[j1] = i;
-
-            if (i0 > -1)
-            { // minimum column j1 assigned earlier.
-                if (umin < usubmin)
-                    //           put in current k, and go back to that k.
-                    //           continue augmenting path i - j1 with i0.
-                    free[--k] = i0;
-                else
-                    //           no further augmenting reduction possible.
-                    //           store i0 in list of free rows for next phase.
-                    free[numfree++] = i0;
+                ASSERT (FALSE);
             }
         }
-    } while (loopcnt < 2); // repeat once.
-
-    // AUGMENT SOLUTION for each free row.
-    for (f = 0; f < numfree; f++)
-    {
-        freerow = free[f]; // start row of augmenting path.
-
-        // Dijkstra shortest path algorithm.
-        // runs until unassigned column added to shortest path tree.
-        for (j = dim; j--;)
-        {
-            d[j] = _assigncost_ (freerow, j) - v[j];
-            pred[j] = freerow;
-            collist[j] = j; // init column list.
-        }
-
-        low = 0; // columns in 0..low-1 are ready, now none.
-        up = 0;  // columns in low..up-1 are to be scanned for current minimum, now none.
-                 // columns in up..dim-1 are to be considered later to find new minimum,
-                 // at this stage the list simply contains all columns
-        unassignedfound = false;
-        do
-        {
-            if (up == low) // no more columns to be scanned for current minimum.
-            {
-                last = low - 1;
-
-                // scan columns for up..dim-1 to find all indices for which new minimum occurs.
-                // store these indices between low..up-1 (increasing up).
-                min = d[collist[up++]];
-                for (k = up; k < dim; k++)
-                {
-                    j = collist[k];
-                    h = d[j];
-                    if (h <= min)
-                    {
-                        if (h < min) // new minimum.
-                        {
-                            up = low; // restart list at index low.
-                            min = h;
-                        }
-                        // new index with same minimum, put on undex up, and extend list.
-                        collist[k] = collist[up];
-                        collist[up++] = j;
-                    }
-                }
-                // check if any of the minimum columns happens to be unassigned.
-                // if so, we have an augmenting path right away.
-                for (k = low; k < up; k++)
-                    if (colsol[collist[k]] < 0)
-                    {
-                        endofpath = collist[k];
-                        unassignedfound = true;
-                        break;
-                    }
-            }
-
-            if (!unassignedfound)
-            {
-                // update 'distances' between freerow and all unscanned columns, via next scanned
-                // column.
-                j1 = collist[low];
-                low++;
-                i = colsol[j1];
-                h = _assigncost_ (i, j1) - v[j1] - min;
-
-                for (k = up; k < dim; k++)
-                {
-                    j = collist[k];
-                    v2 = _assigncost_ (i, j) - v[j] - h;
-                    if (v2 < d[j])
-                    {
-                        pred[j] = i;
-                        if (v2 == min)
-                        { // new column found at same minimum value
-                            if (colsol[j] < 0)
-                            {
-                                // if unassigned, shortest augmenting path is complete.
-                                endofpath = j;
-                                unassignedfound = true;
-                                break;
-                            }
-                            // else add to list to be scanned right away.
-                            else
-                            {
-                                collist[k] = collist[up];
-                                collist[up++] = j;
-                            }
-                        }
-                        d[j] = v2;
-                    }
-                }
-            }
-        } while (!unassignedfound);
-
-        // update column prices.
-        for (k = last + 1; k--;)
-        {
-            j1 = collist[k];
-            v[j1] = v[j1] + d[j1] - min;
-        }
-
-        // reset row and column assignments along the alternating path.
-        do
-        {
-            i = pred[endofpath];
-            colsol[endofpath] = i;
-            j1 = endofpath;
-            endofpath = rowsol[i];
-            rowsol[i] = j1;
-        } while (i != freerow);
     }
+    FREE (pred);
+    return 0;
+}
 
-    // calculate optimal cost.
-    cost lapcost = 0;
-    //  for (i = 0; i < dim; i++)
-    for (i = dim; i--;)
+/** Solve dense sparse LAP.
+ */
+int
+lap (const size_t n, cost_t *cost, int32_t *x, int32_t *y, int32_t *a, int32_t *b)
+{
+    int ret;
+    int32_t *free_rows;
+    cost_t *v;
+
+    NEW (free_rows, int32_t, n);
+    NEW (v, cost_t, n);
+    ret = _ccrrt_dense (n, cost, free_rows, x, y, v);
+    int i = 0;
+    while (ret > 0 && i < 2)
     {
-        j = rowsol[i];
-        u[i] = _assigncost_ (i, j) - v[j];
-        lapcost = lapcost + _assigncost_ (i, j);
+        ret = _carr_dense (n, cost, ret, free_rows, x, y, v);
+        i++;
     }
+    if (ret > 0)
+    {
+        ret = _ca_dense (n, cost, ret, free_rows, x, y, v);
+    }
+    FREE (v);
+    FREE (free_rows);
+    if (ret == -1)
+        return ret;
 
-    return lapcost;
+    int32_t res = 0;
+    for (size_t i = 0; i < n; i++)
+        res += cost[i * n + x[i]];
+
+    return res;
 }

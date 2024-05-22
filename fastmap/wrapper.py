@@ -46,7 +46,8 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     Returns:
         Isomorphic Spearman distance between U and V.
 
-    Raises: ImportError: Raises exception if extension module not found.
+    Raises:
+        ImportError: Raises exception if extension module is not found.
     """
     try:
         import fastmap._spear
@@ -118,7 +119,8 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     Returns:
         Isomorphic Hamming distance between U and V.
 
-    Raises: ImportError: Raises exception if extension module not found.
+    Raises:
+        ImportError: Raises exception if extension module is not found.
     """
     try:
         import fastmap._hamm
@@ -175,7 +177,8 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     Returns:
         Isomorphic swap distance between U and V.
 
-    Raises: ImportError: Raises exception if extension module not found.
+    Raises:
+        ImportError: Raises exception if extension module is not found.
     """
     try:
         import fastmap._swap

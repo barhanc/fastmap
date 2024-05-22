@@ -414,7 +414,7 @@ _ca_dense (
 
 /** Solve dense sparse LAP.
  */
-int
+cost_t
 lap (const size_t n, cost_t *cost, int32_t *x, int32_t *y, int32_t *a, int32_t *b)
 {
     int ret;
@@ -434,8 +434,10 @@ lap (const size_t n, cost_t *cost, int32_t *x, int32_t *y, int32_t *a, int32_t *
     {
         ret = _ca_dense (n, cost, ret, free_rows, x, y, v);
     }
+
     FREE (v);
     FREE (free_rows);
+
     if (ret == -1)
         return ret;
 

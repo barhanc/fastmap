@@ -438,10 +438,10 @@ lap (const size_t n, cost_t *cost, int32_t *x, int32_t *y)
     FREE (v);
     FREE (free_rows);
 
-    if (ret == -1)
+    if (ret < 0)
         return ret;
 
-    int32_t res = 0;
+    cost_t res = 0;
     for (size_t i = 0; i < n; i++)
         res += cost[i * n + x[i]];
 

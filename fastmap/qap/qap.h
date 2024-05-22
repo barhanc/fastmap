@@ -12,8 +12,6 @@ qap_faq (const size_t nc, const size_t maxiter)
     // Auxiliary variables required for lap algorithm
     int32_t *rowsol_nc = calloc (nc, sizeof (int32_t));
     int32_t *colsol_nc = calloc (nc, sizeof (int32_t));
-    int32_t *x_nc = calloc (nc, sizeof (int32_t));
-    int32_t *y_nc = calloc (nc, sizeof (int32_t));
     double lapres = 0;
 
     // Gradient of the objective
@@ -40,7 +38,7 @@ qap_faq (const size_t nc, const size_t maxiter)
                         grad_f[x * nc + y] += (d (i, x, j, y) + d (x, i, y, j)) * P[i * nc + j];
 
         // 4:  Compute the direction Q(i)
-        lapres = lap (nc, grad_f, rowsol_nc, colsol_nc, x_nc, y_nc);
+        lapres = lap (nc, grad_f, rowsol_nc, colsol_nc);
 
         memset (Q, 0, nc * nc * sizeof (*Q));
         for (size_t i = 0; i < nc; i++)
@@ -71,7 +69,7 @@ qap_faq (const size_t nc, const size_t maxiter)
     // 7: end while
 
     // 8: Obtain solution
-    lapres = lap (nc, P, rowsol_nc, colsol_nc, x_nc, y_nc);
+    lapres = lap (nc, P, rowsol_nc, colsol_nc);
     int32_t res = 0;
     for (size_t i = 0; i < nc; i++)
         for (size_t j = 0; j < nc; j++)
@@ -79,8 +77,6 @@ qap_faq (const size_t nc, const size_t maxiter)
 
     free (rowsol_nc);
     free (colsol_nc);
-    free (x_nc);
-    free (y_nc);
     free (grad_f);
     free (Q);
     free (P);

@@ -36,8 +36,6 @@ swap_bb (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     // Auxiliary variables required for J-V LAP algorithm
     int32_t *rowsol = calloc (nv, sizeof (int32_t));
     int32_t *colsol = calloc (nv, sizeof (int32_t));
-    int32_t *x = calloc (nv, sizeof (int32_t));
-    int32_t *y = calloc (nv, sizeof (int32_t));
 
     // FIFO queue (see: 'queue.h')
     Queue *q = queue_alloc ();
@@ -87,7 +85,7 @@ swap_bb (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                                 cost[i * nv + j] += d (i, j, k, l, new_node->sigma[k], new_node->sigma[l]);
 
                 calls++;
-                new_node->bound = lap (nv, cost, rowsol, colsol, x, y);
+                new_node->bound = lap (nv, cost, rowsol, colsol);
 
                 if (new_node->bound >= B)
                 {
@@ -111,8 +109,6 @@ swap_bb (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     free (cost);
     free (rowsol);
     free (colsol);
-    free (x);
-    free (y);
 
     printf ("%d\n", calls);
 

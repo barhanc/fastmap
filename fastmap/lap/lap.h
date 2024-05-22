@@ -415,7 +415,7 @@ _ca_dense (
 /** Solve dense sparse LAP.
  */
 cost_t
-lap (const size_t n, cost_t *cost, int32_t *x, int32_t *y, int32_t *a, int32_t *b)
+lap (const size_t n, cost_t *cost, int32_t *x, int32_t *y)
 {
     int ret;
     int32_t *free_rows;

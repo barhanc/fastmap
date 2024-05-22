@@ -137,12 +137,10 @@ swap_bf (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     size_t p = 0, q = 0;
 
     // Auxiliary variables required for J-V LAP algorithm
-    int32_t *a = calloc (nv, sizeof (int32_t));
-    int32_t *b = calloc (nv, sizeof (int32_t));
     int32_t *x = calloc (nv, sizeof (int32_t));
     int32_t *y = calloc (nv, sizeof (int32_t));
 
-    int32_t best_res = lap (nv, cost, a, b, x, y);
+    int32_t best_res = lap (nv, cost, x, y);
 
     while (alpha < nc)
     {
@@ -180,7 +178,7 @@ swap_bf (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                 }
             }
 
-            int32_t res = lap (nv, cost, a, b, x, y);
+            int32_t res = lap (nv, cost, x, y);
             best_res = res < best_res ? res : best_res;
 
             swap (size_t, sigma[p], sigma[q]);
@@ -197,8 +195,6 @@ swap_bf (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     free (cost);
     free (stack);
     free (sigma);
-    free (a);
-    free (b);
     free (x);
     free (y);
 
@@ -358,12 +354,10 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
     size_t p = 0, q = 0;
 
     // Auxiliary variables required for J-V LAP algorithm
-    int32_t *a = calloc (nv, sizeof (int32_t));
-    int32_t *b = calloc (nv, sizeof (int32_t));
     int32_t *x = calloc (nv, sizeof (int32_t));
     int32_t *y = calloc (nv, sizeof (int32_t));
 
-    int32_t best_res = lap (nv, cost, a, b, x, y);
+    int32_t best_res = lap (nv, cost, x, y);
 
     while (alpha < nc)
     {
@@ -393,7 +387,7 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
                 }
             }
 
-            int32_t res = lap (nv, cost, a, b, x, y);
+            int32_t res = lap (nv, cost, x, y);
             best_res = res < best_res ? res : best_res;
 
             swap (size_t, sigma[p], sigma[q]);
@@ -413,8 +407,6 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
     free (cost);
     free (stack);
     free (sigma);
-    free (a);
-    free (b);
     free (x);
     free (y);
 
@@ -445,10 +437,6 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     int32_t *colsol_nv = calloc (nv, sizeof (int32_t));
     int32_t *rowsol_nc = calloc (nc, sizeof (int32_t));
     int32_t *colsol_nc = calloc (nc, sizeof (int32_t));
-    int32_t *x_nv = calloc (nv, sizeof (int32_t));
-    int32_t *y_nv = calloc (nv, sizeof (int32_t));
-    int32_t *x_nc = calloc (nc, sizeof (int32_t));
-    int32_t *y_nc = calloc (nc, sizeof (int32_t));
 
     // Permutation arrays randomly initialized. Note that permutations `sigma_nc_1` and `sigma_nc_2`
     // are initialized to the same random permutation by design.
@@ -495,7 +483,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                     for (size_t j = 0; j < nv; j++)
                         cost_nv[i * nv + j] += d (i, j, k, l, sigma_nc_1[k], sigma_nc_2[l]);
 
-        res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv, x_nv, y_nv);
+        res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv);
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
 
@@ -507,7 +495,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                     for (size_t k = 0; k < nv; k++)
                         cost_nc[i * nc + j] += d (k, sigma_nv[k], i, l, j, sigma_nc_2[l]);
 
-        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
+        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc_1[i] = rowsol_nc[i];
 
@@ -519,7 +507,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                     for (size_t k = 0; k < nv; k++)
                         cost_nc[i * nc + j] += d (k, sigma_nv[k], l, i, sigma_nc_1[l], j);
 
-        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
+        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc_2[i] = rowsol_nc[i];
 
@@ -550,10 +538,6 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     free (rowsol_nc);
     free (colsol_nv);
     free (colsol_nc);
-    free (x_nv);
-    free (y_nv);
-    free (x_nc);
-    free (y_nc);
 
     return best_res_1 < best_res_2 ? best_res_1 : best_res_2;
 }

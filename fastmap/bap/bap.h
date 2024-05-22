@@ -54,12 +54,10 @@ bap_bf (const size_t nv, const size_t nc)
     size_t p = 0, q = 0;
 
     // Auxiliary variables required for J-V LAP algorithm
-    int32_t *a = calloc (nv, sizeof (int32_t));
-    int32_t *b = calloc (nv, sizeof (int32_t));
     int32_t *x = calloc (nv, sizeof (int32_t));
     int32_t *y = calloc (nv, sizeof (int32_t));
 
-    int32_t best_res = lap (nv, cost, a, b, x, y);
+    int32_t best_res = lap (nv, cost, x, y);
 
     while (alpha < nc)
     {
@@ -77,7 +75,7 @@ bap_bf (const size_t nv, const size_t nc)
                                         - d (i, j, p, sigma[p])
                                         - d (i, j, q, sigma[q]);
 
-            int32_t res = lap (nv, cost, a, b, x, y);
+            int32_t res = lap (nv, cost, x, y);
             best_res = res < best_res ? res : best_res;
 
             swap (size_t, sigma[p], sigma[q]);
@@ -94,8 +92,6 @@ bap_bf (const size_t nv, const size_t nc)
     free (cost);
     free (stack);
     free (sigma);
-    free (a);
-    free (b);
     free (x);
     free (y);
 
@@ -134,10 +130,6 @@ bap_aa (const size_t nv, const size_t nc)
     int32_t *colsol_nv = calloc (nv, sizeof (int32_t));
     int32_t *rowsol_nc = calloc (nc, sizeof (int32_t));
     int32_t *colsol_nc = calloc (nc, sizeof (int32_t));
-    int32_t *x_nv = calloc (nv, sizeof (int32_t));
-    int32_t *y_nv = calloc (nv, sizeof (int32_t));
-    int32_t *x_nc = calloc (nc, sizeof (int32_t));
-    int32_t *y_nc = calloc (nc, sizeof (int32_t));
 
     // Permutation arrays randomly initialized
     size_t *sigma_nv = calloc (nv, sizeof (size_t));
@@ -179,7 +171,7 @@ bap_aa (const size_t nv, const size_t nc)
                 for (size_t j = 0; j < nv; j++)
                     cost_nv[i * nv + j] += d (i, j, k, sigma_nc[k]);
 
-        res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv, x_nv, y_nv);
+        res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv);
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
 
@@ -193,7 +185,7 @@ bap_aa (const size_t nv, const size_t nc)
                 for (size_t k = 0; k < nv; k++)
                     cost_nc[i * nc + j] += d (k, sigma_nv[k], i, j);
 
-        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc, x_nc, y_nc);
+        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc[i] = rowsol_nc[i];
 
@@ -203,18 +195,14 @@ bap_aa (const size_t nv, const size_t nc)
         res_prev = res_curr;
     }
 
-    free (sigma_nv);
-    free (sigma_nc);
     free (cost_nv);
     free (cost_nc);
+    free (sigma_nv);
+    free (sigma_nc);
     free (rowsol_nv);
     free (rowsol_nc);
     free (colsol_nv);
     free (colsol_nc);
-    free (x_nv);
-    free (y_nv);
-    free (x_nc);
-    free (y_nc);
 
     return res_curr;
 }

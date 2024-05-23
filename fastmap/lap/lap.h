@@ -58,7 +58,7 @@ typedef int32_t cost_t;
 
 /** Column-reduction and reduction transfer for a dense cost matrix.
  */
-int32_t
+static int32_t
 _ccrrt_dense (const size_t n, cost_t *cost,
               int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
 {
@@ -138,7 +138,7 @@ _ccrrt_dense (const size_t n, cost_t *cost,
 
 /** Augmenting row reduction for a dense cost matrix.
  */
-int32_t
+static int32_t
 _carr_dense (
     const size_t n, cost_t *cost,
     const size_t n_free_rows,
@@ -228,7 +228,7 @@ _carr_dense (
 
 /** Find columns with minimum d[j] and put them on the SCAN list.
  */
-size_t
+static size_t
 _find_dense (const size_t n, size_t lo, cost_t *d, int32_t *cols, int32_t *y)
 {
     size_t hi = lo + 1;
@@ -252,7 +252,7 @@ _find_dense (const size_t n, size_t lo, cost_t *d, int32_t *cols, int32_t *y)
 
 // Scan all columns in TODO starting from arbitrary column in SCAN
 // and try to decrease d of the TODO columns using the SCAN column.
-int32_t
+static int32_t
 _scan_dense (const size_t n, cost_t *cost,
              size_t *plo, size_t *phi,
              cost_t *d, int32_t *cols, int32_t *pred,
@@ -301,7 +301,7 @@ _scan_dense (const size_t n, cost_t *cost,
  *
  * \return The closest free column index.
  */
-int32_t
+static int32_t
 find_path_dense (
     const size_t n, cost_t *cost,
     const int32_t start_i,
@@ -373,7 +373,7 @@ find_path_dense (
 
 /** Augment for a dense cost matrix.
  */
-int32_t
+static int32_t
 _ca_dense (
     const size_t n, cost_t *cost,
     const size_t n_free_rows,
@@ -414,7 +414,7 @@ _ca_dense (
 
 /** Solve dense sparse LAP.
  */
-cost_t
+static cost_t
 lap (const size_t n, cost_t *cost, int32_t *x, int32_t *y)
 {
     int ret;

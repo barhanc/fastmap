@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -205,4 +206,174 @@ bap_aa (const size_t nv, const size_t nc)
     free (colsol_nc);
 
     return res_curr;
+}
+
+#include "queue.h"
+
+typedef struct Node
+{
+    bool *available;
+    int32_t bound;
+    size_t *sigma;
+    size_t n;
+} Node;
+
+/**
+ * @brief Implementation of a branch-and-bound (see: https://en.wikipedia.org/wiki/Branch_and_bound)
+ * algorithm solving Bilinear Assignment Problem (BAP)
+ * ```
+ *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
+ * ```
+ * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
+ * and integers nv, nc describe the size of the problem instance. In the algorithm we first compute
+ * an upper bound on the cost value using Alternating Algorithm heuristic (see: bap_aa() function)
+ * and later perform a search over all permutation prefixes of σ computing the lower bound on the
+ * cost value and pruning the part of the tree that certainly does not contain minimum. The lower
+ * bound is computed as follows. Let C be the minimum cost and assume we are in the node of the tree
+ * having n' < nc elements of permutation σ specified then
+ * ```
+ *  C >= min_{v ∈ S_nv} sum_{i=1,..,nv} cost[i,v(i)]    (1)
+ * ```
+ * where
+ * ```
+ *  cost[i,j] = sum_{k=1,..,n'} d(i,j,k,σ(k)) + min sum_{k=n'+1,..,nc} d(i,j,k,σ(k))    (2)
+ * ```
+ * where in (2) we minimize over possible assignments of the remaining m = nc - n' elements. It's
+ * clear that every element of cost[i,j] can be computed using lap in O(m**3) time and we then may
+ * compute the lower bound (1) also using lap in O(nv**3) time. If the lower bound in the node in
+ * greater than upper bound, we prune this part of the tree. Note that if we were to visit every
+ * node this algorithm takes much more lap calls than simple brute-force (see: bap_bf()) since there
+ * are `sum_{k=1,..,nc} (nc choose k) * k!` nodes and in each node we need to solve one LAP for a
+ * cost matrix of size nv x nv and nv**2 LAPs for cost matrices of size O(nc) x O(nc), while
+ * brute-force needs to solve only nc! LAPs for cost matrices of size nv x nv.
+ *
+ * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
+ * used to compute the cost tensor.
+ *
+ * @param nv problem size parameter
+ * @param nc problem size parameter
+ * @return minimal value of the cost function
+ */
+static int32_t
+bap_bb (const size_t nv, const size_t nc)
+{
+    // Upper bound on cost
+    int32_t B = 0x7FFFFFFF;
+
+    size_t ITERS = 20; // TODO: What should this be...?
+    for (size_t i = 0; i < ITERS; i++)
+    {
+        int32_t bound = bap_aa (nv, nc);
+        B = bound < B ? bound : B;
+    }
+
+    // Cost matrix for LAP
+    int32_t *cost_nv = calloc (nv * nv, sizeof (int32_t));
+
+    // Auxiliary variables required for J-V LAP algorithm
+    int32_t *rowsol_nv = calloc (nv, sizeof (int32_t));
+    int32_t *colsol_nv = calloc (nv, sizeof (int32_t));
+
+    // FIFO queue
+    Queue *q = queue_alloc ();
+
+    // Node of the search tree
+    Node *node = malloc (sizeof (Node));
+    node->n = 0;
+    node->bound = 0;
+    node->sigma = calloc (nc, sizeof (size_t));
+    node->available = malloc (nc * sizeof (bool));
+    memset (node->available, true, nc * sizeof (bool));
+
+    enqueue (q, (void *)node);
+
+    while (q->size > 0)
+    {
+        node = (Node *)dequeue (q);
+
+        if (node->n == nc)
+        {
+            B = node->bound < B ? node->bound : B;
+        }
+        else
+        {
+            for (size_t el = 0; el < nc; el++)
+            {
+                if (!node->available[el])
+                    continue;
+
+                Node *new_node = malloc (sizeof (Node));
+
+                new_node->sigma = calloc (nc, sizeof (size_t));
+                new_node->available = calloc (nc, sizeof (bool));
+
+                memcpy (new_node->sigma, node->sigma, nc * sizeof (size_t));
+                memcpy (new_node->available, node->available, nc * sizeof (bool));
+
+                new_node->n = node->n + 1;
+                new_node->sigma[node->n] = el;
+                new_node->available[el] = false;
+
+                size_t m = nc - new_node->n;
+                int32_t *cost_m = calloc (m * m, sizeof (int32_t));
+                int32_t *rowsol_m = calloc (m, sizeof (int32_t));
+                int32_t *colsol_m = calloc (m, sizeof (int32_t));
+
+                for (size_t i = 0; i < nv; i++)
+                    for (size_t j = 0; j < nv; j++)
+                    {
+                        if (m > 0)
+                        {
+                            size_t l = 0;
+                            for (size_t e = 0; e < nc; e++)
+                            {
+                                if (!new_node->available[e])
+                                    continue;
+
+                                for (size_t k = 0; k < m; k++)
+                                    cost_m[k * m + l] = d (i, j, k + new_node->n, e);
+                                l++;
+                            }
+
+                            cost_nv[i * nv + j] = lap (m, cost_m, rowsol_m, colsol_m);
+                        }
+                        else
+                        {
+                            cost_nv[i * nv + j] = 0;
+                        }
+
+                        for (size_t k = 0; k < new_node->n; k++)
+                            cost_nv[i * nv + j] += d (i, j, k, new_node->sigma[k]);
+                    }
+
+                free (cost_m);
+                free (rowsol_m);
+                free (colsol_m);
+
+                new_node->bound = lap (nv, cost_nv, rowsol_nv, colsol_nv);
+
+                if (new_node->bound >= B)
+                {
+                    free (new_node->available);
+                    free (new_node->sigma);
+                    free (new_node);
+                }
+                else
+                {
+                    enqueue (q, (void *)new_node);
+                }
+            }
+        }
+
+        free (node->available);
+        free (node->sigma);
+        free (node);
+    }
+
+    free (q);
+    free (cost_nv);
+    free (rowsol_nv);
+    free (colsol_nv);
+
+    return B;
 }

@@ -10,7 +10,7 @@ static PyObject *
 py_spear (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0, N_METHODS = 2;
+    int method = 0, N_METHODS = 3;
     if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
         return NULL;
 
@@ -59,6 +59,9 @@ py_spear (PyObject *self, PyObject *args)
         break;
     case 1:
         ret = bap_aa (nv, nc);
+        break;
+    case 2:
+        ret = bap_bb (nv, nc);
         break;
     default:
         break;

@@ -43,6 +43,8 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     NOTE: This method is much faster in practice than "bf" but there are no
                     theoretical guarantees on the approximation ratio for the used heuristic.
 
+                `"bb"` - TODO:...
+
     Returns:
         Isomorphic Spearman distance between U and V.
 
@@ -71,7 +73,7 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     return fastmap._spear.spear(
         pos_U.astype(np.int32),
         pos_V.astype(np.int32),
-        {"bf": 0, "aa": 1}[method],
+        {"bf": 0, "aa": 1, "bb": 2}[method],
     )
 
 
@@ -116,6 +118,8 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
                     NOTE: This method is much faster in practice than "bf" but there are no
                     theoretical guarantees on the approximation ratio for the used heuristic.
 
+                `"bb"` - TODO:...
+
     Returns:
         Isomorphic Hamming distance between U and V.
 
@@ -142,7 +146,7 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     return fastmap._hamm.hamm(
         U.astype(np.int32),
         V.astype(np.int32),
-        {"bf": 0, "aa": 1}[method],
+        {"bf": 0, "aa": 1, "bb": 2}[method],
     )
 
 

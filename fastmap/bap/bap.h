@@ -222,17 +222,18 @@ typedef struct Node
  * @brief Implementation of a branch-and-bound (see: https://en.wikipedia.org/wiki/Branch_and_bound)
  * algorithm solving Bilinear Assignment Problem (BAP)
  * ```
- *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
+ *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))      (0)
  * ```
  * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
  * and integers nv, nc describe the size of the problem instance. In the algorithm we first compute
  * an upper bound on the cost value using Alternating Algorithm heuristic (see: bap_aa() function)
  * and later perform a search over all permutation prefixes of σ computing the lower bound on the
  * cost value and pruning the part of the tree that certainly does not contain minimum. The lower
- * bound is computed as follows. Let C be the minimum cost and assume we are in the node of the tree
- * having n' < nc elements of permutation σ specified then
+ * bound is computed as follows. Assume we are in the node of the tree having a prefix of length
+ * n' < nc of permutation and let C be the minimum cost of (0) for any permutation with the given
+ * prefix then
  * ```
- *  C >= min_{v ∈ S_nv} sum_{i=1,..,nv} cost[i,v(i)]    (1)
+ *  C >= min_{v ∈ S_nv} sum_{i=1,..,nv} cost[i,v(i)]                                    (1)
  * ```
  * where
  * ```
@@ -240,9 +241,9 @@ typedef struct Node
  * ```
  * where in (2) we minimize over possible assignments of the remaining m = nc - n' elements. It's
  * clear that every element of cost[i,j] can be computed using lap in O(m**3) time and we then may
- * compute the lower bound (1) also using lap in O(nv**3) time. If the lower bound in the node in
+ * compute the lower bound (1) also using lap in O(nv**3) time. If the lower bound in the node is
  * greater than upper bound, we prune this part of the tree. Note that if we were to visit every
- * node this algorithm takes much more lap calls than simple brute-force (see: bap_bf()) since there
+ * node this algorithm needs much more lap calls than simple brute-force (see: bap_bf()) since there
  * are `sum_{k=1,..,nc} (nc choose k) * k!` nodes and in each node we need to solve one LAP for a
  * cost matrix of size nv x nv and nv**2 LAPs for cost matrices of size O(nc) x O(nc), while
  * brute-force needs to solve only nc! LAPs for cost matrices of size nv x nv.

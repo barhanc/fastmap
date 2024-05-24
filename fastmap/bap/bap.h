@@ -260,6 +260,10 @@ bap_bb (const size_t nv, const size_t nc)
     // Upper bound on cost
     int32_t B = 0x7FFFFFFF;
 
+    //  1. Using a heuristic, find a solution to the optimization problem. Store its value in B. B
+    //     will denote the best solution found so far, and will be used as an upper bound on
+    //     candidate solutions.
+
     size_t ITERS = 20; // TODO: What should this be...?
     for (size_t i = 0; i < ITERS; i++)
     {
@@ -274,11 +278,12 @@ bap_bb (const size_t nv, const size_t nc)
     int32_t *rowsol_nv = calloc (nv, sizeof (int32_t));
     int32_t *colsol_nv = calloc (nv, sizeof (int32_t));
 
-    // FIFO queue
-    Queue *q = queue_alloc ();
+    // 2. Initialize a queue to hold a partial solution with none of the variables of the problem
+    //    assigned.
 
-    // Node of the search tree
-    Node *node = malloc (sizeof (Node));
+    Queue *q = queue_alloc ();           // FIFO queue
+    Node *node = malloc (sizeof (Node)); // Node of the search tree
+
     node->n = 0;
     node->bound = 0;
     node->sigma = calloc (nc, sizeof (size_t));
@@ -287,14 +292,19 @@ bap_bb (const size_t nv, const size_t nc)
 
     enqueue (q, (void *)node);
 
+    // 3. Loop until the queue is empty:
     while (q->size > 0)
     {
+        // 1. Take a node N off the queue.
         node = (Node *)dequeue (q);
 
+        // 2. If N represents a single candidate solution x and cost(x) < B, then x is the best
+        //    solution so far. Record it and set B = f(x).
         if (node->n == nc)
         {
             B = node->bound < B ? node->bound : B;
         }
+        // 3. Else, branch on N to produce new nodes Ni.
         else
         {
             for (size_t el = 0; el < nc; el++)
@@ -352,12 +362,16 @@ bap_bb (const size_t nv, const size_t nc)
 
                 new_node->bound = lap (nv, cost_nv, rowsol_nv, colsol_nv);
 
+                // 1. If bound(Ni) > B, do nothing; since the lower bound on this node is greater
+                //    than the upper bound of the problem, it will never lead to the optimal
+                //    solution, and can be discarded.
                 if (new_node->bound >= B)
                 {
                     free (new_node->available);
                     free (new_node->sigma);
                     free (new_node);
                 }
+                // 2. Else, store Ni on the queue.
                 else
                 {
                     enqueue (q, (void *)new_node);

@@ -15,12 +15,14 @@ setup(
     ],
     install_requires=[
         "numpy",
-        "scipy",
-        "tqdm",
-        "cvxpy",  # For development only
-        "mapel",  # For comparison only
     ],
     python_requires=">=3.10",
+    extras_require={
+        "testing": [
+            "mapel",
+            "tqdm",
+        ]
+    },
     ext_modules=[
         Extension(
             name="fastmap._spear",
@@ -38,7 +40,7 @@ setup(
             name="fastmap._swap",
             sources=["fastmap/pyswap.c"],
             extra_compile_args=["-Ofast"],
-            include_dirs=["fastmap/lap/"],
+            include_dirs=["fastmap/experiments/lap/"],
         ),
     ],
     include_dirs=[numpy.get_include()],

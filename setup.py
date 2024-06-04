@@ -40,7 +40,7 @@ setup(
             name="fastmap._swap",
             sources=["fastmap/pyswap.c"],
             extra_compile_args=["-Ofast"],
-            include_dirs=["fastmap/experiments/lap/"],
+            include_dirs=["fastmap/lap/"],
         ),
     ],
     include_dirs=[numpy.get_include()],

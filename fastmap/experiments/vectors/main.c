@@ -67,11 +67,12 @@ main ()
         if (fabs (C[i] - D[i]) > eps || fabs (C[i] - E[i]) > eps)
         {
             printf ("ERROR! %f %f %f\n", C[i], D[i], E[i]);
-            return -1;
+            goto cleanup;
         }
 
     printf ("OK\n");
 
+cleanup:
     free (A);
     free (B);
     free (C);

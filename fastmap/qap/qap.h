@@ -102,7 +102,7 @@ _doubly_stochastic(const size_t nc, double eps)
 /**
  * @brief Approximate algorithm solving Quadratic Assignment Problem (QAP)
  * ```
- *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nc} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
+ *  min_{σ ∈ S_nc} min_{v ∈ S_nc} sum_{i=1,..,nc} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
  * ```
  * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
  * and integer nc describe the size of the problem instance. The algorithm is based on paper 

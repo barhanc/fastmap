@@ -300,7 +300,7 @@ bap_bb (const size_t nv, const size_t nc)
         node = (Node *)dequeue (q);
 
         // 2. If N represents a single candidate solution x and cost(x) < B, then x is the best
-        //    solution so far. Record it and set B = f(x).
+        //    solution so far. Record it and set B = cost(x).
         if (node->n == nc)
         {
             B = node->bound < B ? node->bound : B;

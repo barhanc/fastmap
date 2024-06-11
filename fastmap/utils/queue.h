@@ -12,6 +12,7 @@
  * - `size`: number of elements in the queue
  *
  * Public functions:
+ * - `Queue *queue_alloc()`: allocate memory for the queue and return pointer to it
  * - `void enqueue(Queue *q, void *item)`: add a generic item to the end of the queue
  * - `void *dequeue(Queue *q)`: remove and return the generic item from the front of the queue
  *

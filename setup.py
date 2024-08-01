@@ -42,6 +42,12 @@ setup(
             extra_compile_args=["-Ofast"],
             include_dirs=["fastmap/lap/"],
         ),
+        Extension(
+            name="fastmap._pairwise",
+            sources=["fastmap/pypairwise.c"],
+            extra_compile_args=["-Ofast"],
+            include_dirs=["fastmap/lap/", "fastmap/qap/"],
+        ),
     ],
     include_dirs=[numpy.get_include()],
 )

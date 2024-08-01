@@ -203,3 +203,45 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         pos_V.astype(np.int32),
         {"bf": 0, "aa": 1}[method],
     )
+
+
+def pairwise(M_U: np.ndarray[float], M_V: np.ndarray[float], method: str = "faq") -> float:
+    """Computes pairwise L1 distance between ordinal elections U and V defined as
+
+        min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
+
+    where d(i,j,k,l) := abs(M_V[i,k] - M_V[j,l]), nc is the number of candidates and S_n denotes the
+    set of all permutations of the set {0,..,n-1}. Matrices M_V and M_U are the so called pairwise
+    matrices of elections U and V. Pairwise matrix M of an election U is a matrix whose element
+    M[i,j] is equal to the number of votes in which i-th candidate comes before the j-th one.
+
+    Args:
+        M_U: Pairwise matrix of ordinal election U. Shape (nc, nc).
+
+        M_V: Pairwise matrix of ordinal election V. Shape (nc, nc).
+
+        method: Method used to compute the distance. THe only available options for now is
+                `"faq"` - implements Fast Approximate QAP algorithm described in detail in
+                    https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0121002.
+
+    Returns:
+        Pairwise distance between two elections with pairwise matrices M_U and M_V.
+
+    Raises:
+        ImportError: Raises exception if extension module is not found.
+    """
+    try:
+        import fastmap._pairwise
+    except ImportError as e:
+        raise ImportError("C extension module for computing pairwise distance not found") from e
+
+    assert isinstance(M_U, np.ndarray) and isinstance(M_V, np.ndarray), "Expected numpy arrays"
+    assert M_U.shape == M_V.shape, "Expected arrays to have the same shape"
+    assert (dim := len(M_U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
+    assert M_U.shape[0] == M_U.shape[1], f"Expected pairwise matrix to be a square matrix"
+
+    return fastmap._pairwise.pairwise(
+        M_U.astype(np.double),
+        M_V.astype(np.double),
+        {"faq": 0}[method],
+    )

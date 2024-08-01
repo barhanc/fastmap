@@ -36,7 +36,7 @@ py_spear (PyObject *self, PyObject *args)
     Y = (int32_t *)PyArray_DATA (obj_cont_Y);
     if (X == NULL || Y == NULL)
     {
-        PyErr_SetString (PyExc_TypeError, "invalid array object");
+        PyErr_SetString (PyExc_RuntimeError, "invalid array object");
         goto cleanup;
     }
 
@@ -44,7 +44,7 @@ py_spear (PyObject *self, PyObject *args)
     npy_intp rows_Y = PyArray_DIM (obj_cont_Y, 0), cols_Y = PyArray_DIM (obj_cont_Y, 1);
     if (rows_X != rows_Y || cols_X != cols_Y)
     {
-        PyErr_SetString (PyExc_TypeError, "expected arrays to have the same shape");
+        PyErr_SetString (PyExc_ValueError, "expected arrays to have the same shape");
         goto cleanup;
     }
 

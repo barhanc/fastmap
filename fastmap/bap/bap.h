@@ -15,14 +15,14 @@
 /**
  * @brief Brute-force algorithm solving Bilinear Assignment Problem (BAP)
  * ```
- *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
+ *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```
- * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
- * and integers nv, nc describe the size of the problem instance. The algorithm generates all
- * permutations of S_nc using Heap's algorithm and for every generated permutation σ solves the
+ * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
+ * {0,..,n-1} and integers nv, nc describe the size of the problem instance. The algorithm generates
+ * all permutations of S_nc using Heap's algorithm and for every generated permutation σ solves the
  * following Linear Assignment Problem (LAP) in order to find the optimal permutation v ∈ S_nv
  * ```
- *   min_{v ∈ S_nv} sum_{i=1,..,nv} ( sum_{k=1,..,nc} d(i,v(i),k,σ(k)) ) .
+ *   min_{v ∈ S_nv} sum_{i=0,..,nv-1} ( sum_{k=0,..,nc-1} d(i,v(i),k,σ(k)) ) .
  * ```
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
  * used to compute the cost tensor.
@@ -103,12 +103,12 @@ bap_bf (const size_t nv, const size_t nc)
  * @brief Implementation of the Alternating Algorithm described in arXiv:1707.07057 which is a
  * heuristic to solve the Bilinear Assignment Problem (BAP)
  * ```
- *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))
+ *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```
- * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
- * and integers nv, nc describe the size of the problem instance. The algorithm first generates a
- * feasible solution to the BAP by sampling from a uniform distribution two permutations σ, v and
- * then performs a coordinate-descent-like refinment by interchangeably fixing one of the
+ * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
+ * {0,..,n-1} and integers nv, nc describe the size of the problem instance. The algorithm first
+ * generates a feasible solution to the BAP by sampling from a uniform distribution two permutations
+ * σ, v and then performs a coordinate-descent-like refinment by interchangeably fixing one of the
  * permutations, solving the corresponding Linear Assignment Problem (LAP) and updating the other
  * permutation with the matching found in LAP doing so until convergence.
  *
@@ -222,22 +222,25 @@ typedef struct Node
  * @brief Implementation of a branch-and-bound (see: https://en.wikipedia.org/wiki/Branch_and_bound)
  * algorithm solving Bilinear Assignment Problem (BAP)
  * ```
- *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=1,..,nv} sum_{k=1,..,nc} d(i,v(i),k,σ(k))      (0)
+ *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))    (0)
  * ```
- * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set {1,..,n}
- * and integers nv, nc describe the size of the problem instance. In the algorithm we first compute
- * an upper bound on the cost value using Alternating Algorithm heuristic (see: bap_aa() function)
- * and later perform a search over all permutation prefixes of σ computing the lower bound on the
- * cost value and pruning the part of the tree that certainly does not contain minimum. The lower
- * bound is computed as follows. Assume we are in the node of the tree having a prefix of length
- * n' < nc of permutation and let C be the minimum cost of (0) for any permutation with the given
- * prefix then
+ * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
+ * {0,..,n-1} and integers nv, nc describe the size of the problem instance. In the algorithm we
+ * first compute an upper bound on the cost value using Alternating Algorithm heuristic (see:
+ * bap_aa() function) and later perform a search over all permutation prefixes of σ computing the
+ * lower bound on the cost value and pruning the part of the tree that certainly does not contain
+ * minimum. The lower bound is computed as follows. Assume we are in the node of the tree having a
+ * prefix of length n' < nc of permutation σ and let C be the cost
  * ```
- *  C >= min_{v ∈ S_nv} sum_{i=1,..,nv} cost[i,v(i)]                                    (1)
+ *  min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
+ * ```
+ * for any permutation σ with the given prefix then
+ * ```
+ *  C >= min_{v ∈ S_nv} sum_{i=0,..,nv-1} cost[i,v(i)]                                    (1)
  * ```
  * where
  * ```
- *  cost[i,j] = sum_{k=1,..,n'} d(i,j,k,σ(k)) + min sum_{k=n'+1,..,nc} d(i,j,k,σ(k))    (2)
+ *  cost[i,j] = sum_{k=0,..,n'-1} d(i,j,k,σ(k)) + min sum_{k=n',..,nc-1} d(i,j,k,σ(k))    (2)
  * ```
  * where in (2) we minimize over possible assignments of the remaining m = nc - n' elements. It's
  * clear that every element of cost[i,j] can be computed using lap in O(m**3) time and we then may
@@ -308,9 +311,9 @@ bap_bb (const size_t nv, const size_t nc)
         // 3. Else, branch on N to produce new nodes Ni.
         else
         {
-            for (size_t el = 0; el < nc; el++)
+            for (size_t candidate = 0; candidate < nc; candidate++)
             {
-                if (!node->available[el])
+                if (!node->available[candidate])
                     continue;
 
                 Node *new_node = malloc (sizeof (Node));
@@ -322,8 +325,8 @@ bap_bb (const size_t nv, const size_t nc)
                 memcpy (new_node->available, node->available, nc * sizeof (bool));
 
                 new_node->n = node->n + 1;
-                new_node->sigma[node->n] = el;
-                new_node->available[el] = false;
+                new_node->sigma[node->n] = candidate;
+                new_node->available[candidate] = false;
 
                 size_t m = nc - new_node->n;
                 int32_t *cost_m = calloc (m * m, sizeof (int32_t));
@@ -336,13 +339,13 @@ bap_bb (const size_t nv, const size_t nc)
                         if (m > 0)
                         {
                             size_t l = 0;
-                            for (size_t e = 0; e < nc; e++)
+                            for (size_t c = 0; c < nc; c++)
                             {
-                                if (!new_node->available[e])
+                                if (!new_node->available[c])
                                     continue;
 
                                 for (size_t k = 0; k < m; k++)
-                                    cost_m[k * m + l] = d (i, j, k + new_node->n, e);
+                                    cost_m[k * m + l] = d (i, j, k + new_node->n, c);
                                 l++;
                             }
 

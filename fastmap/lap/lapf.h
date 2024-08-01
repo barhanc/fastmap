@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #define LARGE 1000000
 

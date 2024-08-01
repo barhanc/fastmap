@@ -1,4 +1,5 @@
 import time
+import random
 import numpy as np
 
 import mapel.elections as mapel
@@ -6,13 +7,34 @@ import fastmap
 
 
 if __name__ == "__main__":
-    print("ISOMORPHIC SPEARMAN\n")
-    nv, nc = 10, 10
-    culture_id = "ic"
-    print(f"Candidates {nc} :: Votes {nv} :: Culture {culture_id}\n")
 
-    U = mapel.generate_ordinal_election(culture_id=culture_id, num_candidates=nc, num_voters=nv)
-    V = mapel.generate_ordinal_election(culture_id=culture_id, num_candidates=nc, num_voters=nv)
+    ORDINAL_CULTURES = [
+        {"id": "ic", "params": {}},
+        {"id": "mallows", "params": {"phi": 0.2}},
+        {"id": "mallows", "params": {"phi": 0.5}},
+        {"id": "mallows", "params": {"phi": 0.8}},
+        {"id": "urn", "params": {"alpha": 0.1}},
+        {"id": "urn", "params": {"alpha": 0.2}},
+        {"id": "urn", "params": {"alpha": 0.5}},
+        {"id": "euclidean", "params": {"dim": 1, "space": "uniform"}},
+        {"id": "euclidean", "params": {"dim": 2, "space": "uniform"}},
+        {"id": "conitzer", "params": {}},
+        {"id": "walsh", "params": {}},
+    ]
+
+    nv, nc = 10, 10
+    culture1 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
+    culture2 = ORDINAL_CULTURES[4]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
+
+    print("ISOMORPHIC SPEARMAN\n")
+    print(f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} :: Culture2 {culture2['id']}\n")
+
+    U = mapel.generate_ordinal_election(
+        culture_id=culture1["id"], num_candidates=nc, num_voters=nv, **culture1["params"]
+    )
+    V = mapel.generate_ordinal_election(
+        culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"]
+    )
 
     t1 = time.time()
     d1, _ = mapel.compute_distance(U, V, distance_id="spearman")
@@ -32,16 +54,39 @@ if __name__ == "__main__":
     t3 = time.time() - t3
     print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d1:.3f}")
 
+    t4 = time.time()
+    d4 = fastmap.spearman(U.votes, V.votes, method="bb")
+    t4 = time.time() - t4
+    print(f"C(bb) :: {d4} :: Time {t4:6.3f}s :: Time ratio {t4 / t1:6.3f}")
+
+    assert d1 == d4, "Wrong answer"
+
     # ==============================================================================================
     # ==============================================================================================
+
+    APPROVAL_CULTURES = [
+        {"id": "ic", "params": {"p": 0.1}},
+        {"id": "ic", "params": {"p": 0.2}},
+        {"id": "euclidean", "params": {"dim": 1, "space": "uniform", "radius": 0.05}},
+        {"id": "euclidean", "params": {"dim": 2, "space": "uniform", "radius": 0.20}},
+        {"id": "euclidean", "params": {"dim": 1, "space": "gaussian", "radius": 0.05}},
+        {"id": "euclidean", "params": {"dim": 2, "space": "gaussian", "radius": 0.20}},
+        {"id": "resampling", "params": {"p": 0.10, "phi": 0.50}},
+        {"id": "resampling", "params": {"p": 0.25, "phi": 0.75}},
+    ]
+    nv, nc = 11, 11
+    culture1 = APPROVAL_CULTURES[random.randint(0, len(APPROVAL_CULTURES) - 1)]
+    culture2 = APPROVAL_CULTURES[random.randint(0, len(APPROVAL_CULTURES) - 1)]
 
     print("\n\nISOMORPHIC HAMMING\n")
-    nv, nc = 50, 7
-    culture_id = "ic"
-    print(f"Candidates {nc} :: Votes {nv} :: Culture {culture_id}\n")
+    print(f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} :: Culture2 {culture2['id']}\n")
 
-    U = mapel.generate_approval_election(culture_id=culture_id, num_candidates=nc, num_voters=nv)
-    V = mapel.generate_approval_election(culture_id=culture_id, num_candidates=nc, num_voters=nv)
+    U = mapel.generate_approval_election(
+        culture_id=culture1["id"], num_candidates=nc, num_voters=nv, **culture1["params"]
+    )
+    V = mapel.generate_approval_election(
+        culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"]
+    )
 
     t1 = time.time()
     d1, _ = mapel.compute_distance(U, V, distance_id="l1-approvalwise")
@@ -66,3 +111,10 @@ if __name__ == "__main__":
     print(
         f"C(aa) :: {d3:.2f} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d2 if d2 != 0 else 1.0:.3f}"
     )
+
+    t4 = time.time()
+    d4 = fastmap.hamming(oU, oV, method="bb")
+    t4 = time.time() - t4
+    print(f"C(bb) :: {d4:.2f} :: Time {t4:6.3f}s :: Time ratio {t4 / t1:6.3f}")
+
+    assert d2 == d4, "Wrong answer"

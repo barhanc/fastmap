@@ -2,6 +2,10 @@ import time, random
 import fastmap
 import mapel.elections as mapel
 
+from mapel.elections.distances.main_ordinal_distances import compute_pairwise_distance
+
+import fastmap._pairwise
+
 ORDINAL_CULTURES = [
     {"id": "ic", "params": {}},
     {"id": "mallows", "params": {"phi": 0.2}},
@@ -16,10 +20,31 @@ ORDINAL_CULTURES = [
     {"id": "walsh", "params": {}},
 ]
 
+import numpy as np
+from itertools import permutations
+
+
+def bf(MU, MV):
+    assert MU.shape == MV.shape
+    nc, _ = MU.shape
+    best = float("inf")
+
+    for sigma in permutations(range(nc)):
+        res = 0
+        for i in range(nc):
+            for j in range(nc):
+                res += abs(MU[i, j] - MV[sigma[i], sigma[j]])
+        best = min(best, res)
+
+    return best
+
+
+from scipy.optimize import quadratic_assignment
 
 if __name__ == "__main__":
-    print("ISOMORPHIC SWAP\n")
-    nv, nc = 10, 10
+    print("PAIRWISE\n")
+
+    nv, nc = 100, 8
     culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
     culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
@@ -32,20 +57,12 @@ if __name__ == "__main__":
         culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"]
     )
 
-    t1 = time.time()
-    d1, _ = mapel.compute_distance(U, V, distance_id="swap")
-    t1 = time.time() - t1
-    print(f"Mapel :: {d1} :: Time {t1:6.3f}s")
+    t1 = time.monotonic()
+    d1 = bf(U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix())
+    t1 = time.monotonic() - t1
+    print(f"Python :: {d1:6.3f} :: Time {t1:6.3f}")
 
-    t2 = time.time()
-    d2 = fastmap.swap(U.votes, V.votes, method="bf")
-    t2 = time.time() - t2
-    print(f"C(bf) :: {d2} :: Time {t2:6.3f}s :: Time ratio {t2 / t1:6.3f}")
-
-    assert d1 == d2, "Wrong answer"
-
-    t3 = time.time()
-    repeats = 50
-    d3 = min(fastmap.swap(U.votes, V.votes, method="aa") for _ in range(repeats))
-    t3 = time.time() - t3
-    print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")
+    t2 = time.monotonic()
+    d2 = fastmap.pairwise(U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix(), method="faq")
+    t2 = time.monotonic() - t2
+    print(f"C(faq) :: {d2:6.3f} :: Time {t2:6.3f}s :: Approx. ratio {d2 / d1:.3f}")

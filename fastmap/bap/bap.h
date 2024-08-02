@@ -162,10 +162,6 @@ bap_aa (const size_t nv, const size_t nc)
     // Coordinate-descent-like refinment
     while (1)
     {
-        // TODO: This is too slow (it's 2-3 OoM slower than lap() with the same theoretical time
-        // complexity when nv=nc).
-        // NOTE: It's basically a more advanced matmul. Notice that the structure is the same but we
-        // are actually contracting a 4-D tensor which is defined by a macro.
         memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
         for (size_t k = 0; k < nc; k++)
             for (size_t i = 0; i < nv; i++)
@@ -176,10 +172,6 @@ bap_aa (const size_t nv, const size_t nc)
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
 
-        // TODO: This is too slow (it's 2-3 OoM slower than lap() with the same theoretical time
-        // complexity when nv=nc).
-        // NOTE: It's basically a more advanced matmul. Notice that the structure is the same but we
-        // are actually contracting a 4-D tensor which is defined by a macro.
         memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
         for (size_t i = 0; i < nc; i++)
             for (size_t j = 0; j < nc; j++)

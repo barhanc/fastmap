@@ -268,8 +268,8 @@ bap_bb (const size_t nv, const size_t nc)
     //     will denote the best solution found so far, and will be used as an upper bound on
     //     candidate solutions.
 
-    size_t ITERS = 20; // TODO: What should this be...?
-    for (size_t i = 0; i < ITERS; i++)
+    size_t repeats = 30;
+    for (size_t i = 0; i < repeats; i++)
     {
         int32_t bound = bap_aa (nv, nc);
         B = bound < B ? bound : B;

@@ -1,7 +1,12 @@
 import numpy as np
 
 
-def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats: int = 30) -> int:
+def spearman(
+    U: np.ndarray[int],
+    V: np.ndarray[int],
+    method: str = "bf",
+    repeats: int = 30,
+) -> int:
     """Computes Isomorphic Spearman distance between ordinal elections U and V defined as
 
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
@@ -44,7 +49,14 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats
                     NOTE: This method is much faster in practice than "bf" but there are no
                     theoretical guarantees on the approximation ratio for the used heuristic.
 
-                `"bb"` - TODO:...
+                `"bb"` - implements a branch-and-bound algorithm with problem specific branching
+                    rules and bounding function which solves the corresponding Bilinear Assignment
+                    Problem (BAP). For implementation details see 'bap.h' file.
+
+                    NOTE: This method returns exact value, however the performance may vary greatly
+                    depending on the specific problem instance. In general, due to the implemented
+                    bounding function, it is recommended that nv ~= nc. In asymmetrical case nv >>
+                    nc the "bf" method should provide better performance.
 
         repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
                  starting permutations and then perform coordinate descent) and choose the smallest
@@ -84,7 +96,12 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats
     )
 
 
-def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats: int = 30) -> int:
+def hamming(
+    U: np.ndarray[int],
+    V: np.ndarray[int],
+    method: str = "bf",
+    repeats: int = 30,
+) -> int:
     """Computes Isomorphic Hamming distance between approval elections U and V defined as
 
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
@@ -126,7 +143,14 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats:
                     NOTE: This method is much faster in practice than "bf" but there are no
                     theoretical guarantees on the approximation ratio for the used heuristic.
 
-                `"bb"` - TODO:...
+                `"bb"` - implements a branch-and-bound algorithm with problem specific branching
+                    rules and bounding function which solves the corresponding Bilinear Assignment
+                    Problem (BAP). For implementation details see 'bap.h' file.
+
+                    NOTE: This method returns exact value, however the performance may vary greatly
+                    depending on the specific problem instance. In general, due to the implemented
+                    bounding function, it is recommended that nv ~= nc. In asymmetrical case nv >>
+                    nc the "bf" method should provide better performance.
 
         repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
                  starting permutations and then perform coordinate descent) and choose the smallest
@@ -164,7 +188,12 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats:
     )
 
 
-def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats: int = 30) -> int:
+def swap(
+    U: np.ndarray[int],
+    V: np.ndarray[int],
+    method: str = "bf",
+    repeats: int = 30,
+) -> int:
     """
     Computes Isomorphic swap distance between ordinal elections U and V defined as
 
@@ -259,8 +288,8 @@ def pairwise(
                  method of computing the pairwise distance.
 
         tol: Tolerance for termination in the FAQ method of computing the pairwise distance.
-             Frank-Wolfe iteration terminates when ||P_{i}-P_{i+1}||_Frobenius < tol, where P is the
-             solution to the relaxed QAP and i is the iteration number.
+             Frank-Wolfe iteration terminates when ||P_{i} - P_{i+1}||_Frobenius < tol, where P is
+             the solution to the relaxed QAP and i is the iteration number.
 
     Returns:
         Pairwise distance between two elections with pairwise matrices M_U and M_V.

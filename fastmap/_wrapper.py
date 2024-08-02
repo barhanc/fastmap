@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
+def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats: int = 30) -> int:
     """Computes Isomorphic Spearman distance between ordinal elections U and V defined as
 
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
@@ -46,6 +46,10 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
                 `"bb"` - TODO:...
 
+        repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
+                 starting permutations and then perform coordinate descent) and choose the smallest
+                 value. If method is not "aa" this option is ignored.
+
     Returns:
         Isomorphic Spearman distance between U and V.
 
@@ -75,10 +79,12 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         pos_U.astype(np.int32),
         pos_V.astype(np.int32),
         {"bf": 0, "aa": 1, "bb": 2}[method],
+        # Options
+        repeats,
     )
 
 
-def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
+def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats: int = 30) -> int:
     """Computes Isomorphic Hamming distance between approval elections U and V defined as
 
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
@@ -122,6 +128,10 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
                 `"bb"` - TODO:...
 
+        repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
+                 starting permutations and then perform coordinate descent) and choose the smallest
+                 value. If method is not "aa" this option is ignored.
+
     Returns:
         Isomorphic Hamming distance between U and V.
 
@@ -149,10 +159,12 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         U.astype(np.int32),
         V.astype(np.int32),
         {"bf": 0, "aa": 1, "bb": 2}[method],
+        # Options
+        repeats,
     )
 
 
-def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
+def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf", repeats: int = 30) -> int:
     """
     Computes Isomorphic swap distance between ordinal elections U and V defined as
 
@@ -181,6 +193,10 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
                 `"bb"` - TODO:...
 
+        repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
+                 starting permutations and then perform coordinate descent) and choose the smallest
+                 value. If method is not "aa" this option is ignored.
+
     Returns:
         Isomorphic swap distance between U and V.
 
@@ -203,6 +219,8 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
         pos_U.astype(np.int32),
         pos_V.astype(np.int32),
         {"bf": 0, "aa": 1}[method],
+        # Options
+        repeats,
     )
 
 
@@ -266,6 +284,7 @@ def pairwise(
         M_U.astype(np.double),
         M_V.astype(np.double),
         {"faq": 0}[method],
+        # Options
         maxiter,
         tol,
     )

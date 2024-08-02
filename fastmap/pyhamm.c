@@ -10,8 +10,8 @@ static PyObject *
 py_hamm (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0, N_METHODS = 3;
-    if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
+    int method = 0, N_METHODS = 3, repeats = 0;
+    if (!PyArg_ParseTuple (args, "OOii", &obj_X, &obj_Y, &method, &repeats))
         return NULL;
 
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT32, 0, 0);
@@ -59,6 +59,11 @@ py_hamm (PyObject *self, PyObject *args)
         break;
     case 1:
         ret = bap_aa (nv, nc);
+        for (int i = 0; i < repeats - 1; i++)
+        {
+            int32_t f = bap_aa (nv, nc);
+            ret = ret > f ? f : ret;
+        }
         break;
     case 2:
         ret = bap_bb (nv, nc);

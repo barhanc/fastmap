@@ -549,8 +549,8 @@ static PyObject *
 py_swap (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0, N_METHODS = 2;
-    if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
+    int method = 0, N_METHODS = 2, repeats = 0;
+    if (!PyArg_ParseTuple (args, "OOii", &obj_X, &obj_Y, &method, &repeats))
         return NULL;
 
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT32, 0, 0);
@@ -601,6 +601,11 @@ py_swap (PyObject *self, PyObject *args)
         break;
     case 1:
         ret = swap_aa (pos_U, pos_V, nv, nc);
+        for (int i = 0; i < repeats - 1; i++)
+        {
+            int32_t f = swap_aa (pos_U, pos_V, nv, nc);
+            ret = ret > f ? f : ret;
+        }
         break;
     default:
         break;

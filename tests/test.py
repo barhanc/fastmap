@@ -49,8 +49,7 @@ if __name__ == "__main__":
     assert d1 == d2, "Wrong answer"
 
     t3 = time.time()
-    restarts = 50
-    d3 = min(results := [fastmap.spearman(U.votes, V.votes, method="aa") for _ in range(restarts)])
+    d3 = fastmap.spearman(U.votes, V.votes, method="aa")
     t3 = time.time() - t3
     print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d1:.3f}")
 
@@ -105,12 +104,9 @@ if __name__ == "__main__":
     print(f"C(bf) :: {d2:.2f} :: Time {t2:6.3f}s :: Time ratio {t2 / t1:6.3f}")
 
     t3 = time.time()
-    restarts = 50
-    d3 = min(results := [fastmap.hamming(oU, oV, method="aa") for _ in range(restarts)])
+    d3 = fastmap.hamming(oU, oV, method="aa")
     t3 = time.time() - t3
-    print(
-        f"C(aa) :: {d3:.2f} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d2 if d2 != 0 else 1.0:.3f}"
-    )
+    print(f"C(aa) :: {d3:.2f} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d2:.3f}")
 
     t4 = time.time()
     d4 = fastmap.hamming(oU, oV, method="bb")

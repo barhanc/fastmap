@@ -45,7 +45,6 @@ if __name__ == "__main__":
     assert d1 == d2, "Wrong answer"
 
     t3 = time.time()
-    repeats = 50
-    d3 = min(fastmap.swap(U.votes, V.votes, method="aa") for _ in range(repeats))
+    d3 = fastmap.swap(U.votes, V.votes, method="aa")
     t3 = time.time() - t3
     print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")

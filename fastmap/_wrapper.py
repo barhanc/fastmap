@@ -260,7 +260,7 @@ def pairwise(
 
         tol: Tolerance for termination in the FAQ method of computing the pairwise distance.
              Frank-Wolfe iteration terminates when ||P_{i}-P_{i+1}||_Frobenius < tol, where P is the
-             solution to the relaxed problem and i is the iteration number.
+             solution to the relaxed QAP and i is the iteration number.
 
     Returns:
         Pairwise distance between two elections with pairwise matrices M_U and M_V.

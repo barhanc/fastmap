@@ -15,12 +15,13 @@ def spearman(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
     Args:
         U: Ordinal Election matrix s.t. U[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
-        position in the i-th vote in the U election. Shape (nv, nc).
+           position in the i-th vote in the U election. Shape (nv, nc).
 
         V: Ordinal Election matrix s.t. V[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
-        position in the i-th vote in the V election. Shape (nv, nc).
+           position in the i-th vote in the V election. Shape (nv, nc).
 
         method: Method used to compute the distance. Should be one of the
+
                 `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
                     Generates all permutations σ of the set {0,..,min(nv-1,nc-1)} using Heap's algorithm
                     and for each generated permutation σ solves the Linear Assignment Problem (LAP)
@@ -90,12 +91,13 @@ def hamming(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
     Args:
         U: Approval Election matrix s.t. U[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
-        U election contains j-th candidate and 0 otherwise. Shape (nv, nc).
+           U election contains j-th candidate and 0 otherwise. Shape (nv, nc).
 
         V: Approval Election matrix s.t. V[i,j] ∈ {0,1} is equal to 1 if i-th approval ballot in the
-        V election contains j-th candidate and 0 otherwise. Shape (nv, nc).
+           V election contains j-th candidate and 0 otherwise. Shape (nv, nc).
 
         method: Method used to compute the distance. Should be one of the
+
                 `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
                     Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm
                     and for each generated permutation σ solves the Linear Assignment Problem (LAP)
@@ -166,19 +168,18 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
 
     Args:
         U: Ordinal Election matrix s.t. U[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
-        position in the i-th vote in the U election. Shape (nv, nc).
+           position in the i-th vote in the U election. Shape (nv, nc).
 
         V: Ordinal Election matrix s.t. V[i,j] ∈ {0,..,nc-1} is the candidate's number on the j-th
-        position in the i-th vote in the V election. Shape (nv, nc).
+           position in the i-th vote in the V election. Shape (nv, nc).
 
         method: Method used to compute the distance. Should be one of the
-                `"bf"` - TODO:...
 
-                `"bb"` - TODO:...
+                `"bf"` - TODO:...
 
                 `"aa"` - TODO:...
 
-                `"faq"` - TODO:...
+                `"bb"` - TODO:...
 
     Returns:
         Isomorphic swap distance between U and V.
@@ -205,7 +206,13 @@ def swap(U: np.ndarray[int], V: np.ndarray[int], method: str = "bf") -> int:
     )
 
 
-def pairwise(M_U: np.ndarray[float], M_V: np.ndarray[float], method: str = "faq") -> float:
+def pairwise(
+    M_U: np.ndarray[float],
+    M_V: np.ndarray[float],
+    method: str = "faq",
+    maxiter: int = 30,
+    tol: float = 1e-3,
+) -> float:
     """Computes pairwise L1 distance between ordinal elections U and V defined as
 
         min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
@@ -215,14 +222,27 @@ def pairwise(M_U: np.ndarray[float], M_V: np.ndarray[float], method: str = "faq"
     matrices of elections U and V. Pairwise matrix M of an election U is a matrix whose element
     M[i,j] is equal to the number of votes in which i-th candidate comes before the j-th one.
 
+    NOTE: This function is a Python wrapper around C extension. For implementation details see
+    'qap.h' and 'pypairwise.c' files.
+
     Args:
         M_U: Pairwise matrix of ordinal election U. Shape (nc, nc).
 
         M_V: Pairwise matrix of ordinal election V. Shape (nc, nc).
 
-        method: Method used to compute the distance. THe only available options for now is
-                `"faq"` - implements Fast Approximate QAP algorithm described in detail in
+        method: Method used to compute the distance. Should be one of the
+
+                `"faq"` - implements generalized Fast Approximate QAP (FAQAP) algorithm for
+                    aproximately solving general Lawler QAP (as opposed to more restricted Koopmans
+                    and Beckmann formulation) described in detail in
                     https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0121002.
+
+        maxiter: Integer specifying the max number of Frank-Wolfe iterations performed in the FAQ
+                 method of computing the pairwise distance.
+
+        tol: Tolerance for termination in the FAQ method of computing the pairwise distance.
+             Frank-Wolfe iteration terminates when ||P_{i}-P_{i+1}||_Frobenius < tol, where P is the
+             solution to the relaxed problem and i is the iteration number.
 
     Returns:
         Pairwise distance between two elections with pairwise matrices M_U and M_V.
@@ -238,10 +258,14 @@ def pairwise(M_U: np.ndarray[float], M_V: np.ndarray[float], method: str = "faq"
     assert isinstance(M_U, np.ndarray) and isinstance(M_V, np.ndarray), "Expected numpy arrays"
     assert M_U.shape == M_V.shape, "Expected arrays to have the same shape"
     assert (dim := len(M_U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
-    assert M_U.shape[0] == M_U.shape[1], f"Expected pairwise matrix to be a square matrix"
+    assert M_U.shape[0] == M_U.shape[1], "Expected pairwise matrix to be a square matrix"
+    assert type(maxiter) == int and maxiter > 0, "Expected `maxiter` to be an int greater than 1"
+    assert type(tol) == float and tol > 0, "Expected `tol` to be a float greater than 0"
 
     return fastmap._pairwise.pairwise(
         M_U.astype(np.double),
         M_V.astype(np.double),
         {"faq": 0}[method],
+        maxiter,
+        tol,
     )

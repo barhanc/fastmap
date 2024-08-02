@@ -11,7 +11,10 @@ py_pairwise (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
     int method = 0, N_METHODS = 1;
-    if (!PyArg_ParseTuple (args, "OOi", &obj_X, &obj_Y, &method))
+    size_t maxiter = 0;
+    double tol = 0;
+
+    if (!PyArg_ParseTuple (args, "OOiid", &obj_X, &obj_Y, &method, &maxiter, &tol))
         return NULL;
 
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_DOUBLE, 0, 0);
@@ -61,7 +64,7 @@ py_pairwise (PyObject *self, PyObject *args)
     switch (method)
     {
     case 0:
-        ret = qap_faq (nc, 1000, 1e-9);
+        ret = qap_faq (nc, maxiter, tol);
         break;
     default:
         break;

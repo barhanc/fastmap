@@ -100,7 +100,7 @@ _doubly_stochastic (const size_t nc, double eps)
  *  min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
  * ```
  * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
- * {0,...,n-1} and integer nc describe the size of the problem instance. Using permutation matrix P
+ * {0,..,n-1} and integer nc describe the size of the problem instance. Using permutation matrix P
  * we may write this problem as a minimization of a function f(P)
  * ```
  *  f(P) = sum_{i,j,k,l} d(i,j,k,l) * P[i,j] * P[k,l]   .
@@ -113,7 +113,7 @@ _doubly_stochastic (const size_t nc, double eps)
  *
  * @param nc problem size parameter
  * @param maxiter upper bound on iteration count
- * @param tol stopping condition when ||P_i - P_(i+1)||_Frobenius < tol
+ * @param tol stopping condition when ||P_{i}-P_{i+1}||_Frobenius < tol
  * @return approximation of the minimal value of the cost function
  */
 static double
@@ -133,9 +133,8 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
     double *Q = calloc (nc * nc, sizeof (double));
 
     // 1: Choose an initialization, P = 1 1^T / n (barycenter initialization)
-    for (size_t i = 0; i < nc; i++)
-        for (size_t j = 0; j < nc; j++)
-            P[i * nc + j] = 1 / (double)nc;
+    for (size_t i = 0; i < nc * nc; i++)
+        P[i] = 1 / (double)nc;
 
     // 2: While stopping criteria not met do
     for (size_t iter = maxiter; --iter;)

@@ -120,17 +120,17 @@ static double
 qap_faq (const size_t nc, const size_t maxiter, const double tol)
 {
     // Auxiliary variables required for lap algorithm
-    int32_t *rowsol_nc = (int32_t *)calloc (nc, sizeof (int32_t));
-    int32_t *colsol_nc = (int32_t *)calloc (nc, sizeof (int32_t));
+    int32_t *rowsol_nc = calloc (nc, sizeof (int32_t));
+    int32_t *colsol_nc = calloc (nc, sizeof (int32_t));
 
     // Gradient of the objective
-    double *grad_f = (double *)calloc (nc * nc, sizeof (double));
+    double *grad_f = calloc (nc * nc, sizeof (double));
 
     // Doubly stochastic matrix being a solution to the relaxed problem (rQAP)
-    double *P = (double *)calloc (nc * nc, sizeof (double));
+    double *P = calloc (nc * nc, sizeof (double));
 
     // Point minimizing the linear approximation of the objective in Frank--Wolfe algorithm
-    double *Q = (double *)calloc (nc * nc, sizeof (double));
+    double *Q = calloc (nc * nc, sizeof (double));
 
     // 1: Choose an initialization, P = 1 1^T / n (barycenter initialization)
     for (size_t i = 0; i < nc; i++)

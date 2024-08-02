@@ -170,10 +170,8 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
                         b += d (i, j, k, l) * (R_ij * P[k * nc + l] + R_kl * P[i * nc + j]);
                     }
 
-        double vertex = -b / (2 * a);
-
-        if (a > 0 && 0 <= vertex && vertex <= 1)
-            alpha = vertex;
+        if (a > 0 && 0 <= -b / (2 * a) && -b / (2 * a) <= 1)
+            alpha = -b / (2 * a);
         else
             alpha = a + b > 0 ? 0 : 1;
 

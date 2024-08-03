@@ -325,28 +325,24 @@ bap_bb (const size_t nv, const size_t nc)
                 int32_t *rowsol_m = calloc (m, sizeof (int32_t));
                 int32_t *colsol_m = calloc (m, sizeof (int32_t));
 
+                memset (cost_nv, 0, nv * nv * sizeof (int32_t));
+
                 for (size_t i = 0; i < nv; i++)
                     for (size_t j = 0; j < nv; j++)
                     {
+                        size_t l = 0;
+                        for (size_t c = 0; c < nc; c++)
+                        {
+                            if (!new_node->available[c])
+                                continue;
+
+                            for (size_t k = 0; k < m; k++)
+                                cost_m[k * m + l] = d (i, j, k + new_node->n, c);
+                            l++;
+                        }
+
                         if (m > 0)
-                        {
-                            size_t l = 0;
-                            for (size_t c = 0; c < nc; c++)
-                            {
-                                if (!new_node->available[c])
-                                    continue;
-
-                                for (size_t k = 0; k < m; k++)
-                                    cost_m[k * m + l] = d (i, j, k + new_node->n, c);
-                                l++;
-                            }
-
                             cost_nv[i * nv + j] = lap (m, cost_m, rowsol_m, colsol_m);
-                        }
-                        else
-                        {
-                            cost_nv[i * nv + j] = 0;
-                        }
 
                         for (size_t k = 0; k < new_node->n; k++)
                             cost_nv[i * nv + j] += d (i, j, k, new_node->sigma[k]);

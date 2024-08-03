@@ -313,7 +313,7 @@ def pairwise(
     assert M_U.shape == M_V.shape, "Expected arrays to have the same shape"
     assert (dim := len(M_U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
     assert M_U.shape[0] == M_U.shape[1], "Expected pairwise matrix to be a square matrix"
-    assert type(maxiter) == int and maxiter > 0, "Expected `maxiter` to be an int greater than 1"
+    assert type(maxiter) == int and maxiter > 0, "Expected `maxiter` to be an int greater than 0"
     assert type(tol) == float and tol > 0, "Expected `tol` to be a float greater than 0"
 
     return fastmap._pairwise.pairwise(

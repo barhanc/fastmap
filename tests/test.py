@@ -19,7 +19,7 @@ ORDINAL_CULTURES = [
 
 if __name__ == "__main__":
     nv, nc = 100, 8
-    random.seed(42)
+    # random.seed(42)
     culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
     culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
 

@@ -18,8 +18,8 @@ ORDINAL_CULTURES = [
 
 
 if __name__ == "__main__":
-    nv, nc = 10, 10
-    random.seed(42)
+    nv, nc = 100, 9
+    # random.seed(42)
     culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
     culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
@@ -35,19 +35,19 @@ if __name__ == "__main__":
         culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"]
     )
 
-    t1 = time.time()
+    t1 = time.monotonic()
     d1, _ = mapel.compute_distance(U, V, distance_id="swap")
-    t1 = time.time() - t1
+    t1 = time.monotonic() - t1
     print(f"Mapel :: {d1} :: Time {t1:6.3f}s")
 
-    t2 = time.time()
+    t2 = time.monotonic()
     d2 = fastmap.swap(U.votes, V.votes, method="bf")
-    t2 = time.time() - t2
+    t2 = time.monotonic() - t2
     print(f"C(bf) :: {d2} :: Time {t2:6.3f}s :: Time ratio {t2 / t1:6.3f}")
 
     assert d1 == d2, "Wrong answer"
 
-    # t3 = time.time()
+    # t3 = time.monotonic()
     # d3 = fastmap.swap(U.votes, V.votes, method="aa")
-    # t3 = time.time() - t3
+    # t3 = time.monotonic() - t3
     # print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")

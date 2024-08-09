@@ -156,8 +156,8 @@ def hamming(
 
                     NOTE: This method returns exact value, however the performance may vary greatly
                     depending on the specific problem instance. In general, due to the implemented
-                    bounding function, it is recommended that nv ~= nc. In asymmetrical case nv >>
-                    nc the "bf" method should provide better performance.
+                    bounding function, it is recommended to use this method if nv ≈ nc. In
+                    asymmetrical case nv >> nc the "bf" method should provide better performance.
 
         repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
                  starting permutations and then perform coordinate descent) and choose the smallest
@@ -204,7 +204,8 @@ def swap(
     """
     Computes Isomorphic swap distance between ordinal elections U and V defined as
 
-        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
+        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1}
+        d(i,v(i),k,l,σ(k),σ(l))
 
     where d(i,j,k,l,m,n) := 1/2 * { (pos_U[i,k] - pos_U[i,l]) * (pos_V[j,m] - pos_V[j,n]) < 0 }
     ({...} denoting here the Iverson bracket), nc is the number of candidates, nv is the number of
@@ -223,7 +224,14 @@ def swap(
 
         method: Method used to compute the distance. Should be one of the
 
-                `"bf"` - TODO:...
+                `"bf"` - uses a brute-force approach which generates all permutations of S_nc using
+                    Heap's algorithm and for every generated permutation σ solves the corresponding
+                    Linear Assignment Problem (LAP) in order to find the optimal permutation v.
+                    Depending on the number of candidates nc it either uses a dynamic approach to
+                    compute the cost matrix for LAP or uses a special, precomputed lookup table and
+                    dynamically computes the appropriate key to this lookup table to obtain cost
+                    matrix. The latter method is more efficient but has large memory requirements
+                    thus it is only used for up to nc=10. For details see 'pyswap.c' file.
 
                 `"aa"` - TODO:...
 

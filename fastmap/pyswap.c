@@ -43,48 +43,20 @@
  *          + d(k,p,s'(k),s(q))
  *          + d(k,q,s'(k),s(p)) ]
  * ```
- * and doing some simple but tedious algebra we obtain (1)
+ * and doing some simple but tedious algebra we obtain
  * ```
- * = sum_{l=0,..,nc-1}[ sum_{k=0,..,nc-1} d(k,l,s'(k),s(l)) ]
- *   - sum_{k=0,..,nc-1} d(k,p,s'(k),s(p))
- *   - sum_{k=0,..,nc-1} d(k,q,s'(k),s(q))
- *   + sum_{k=0,..,nc-1} d(k,p,s'(k),s(q))
- *   + sum_{k=0,..,nc-1} d(k,q,s'(k),s(p))
+ * c' = c
+ *      - 2 * sum_{l=0,..,nc-1} [ d(p,l,s(p),s(l)) + d(q,l,s(q),s(l)) ]
+ *      + 2 * sum_{l=0,..,nc-1} [ d(p,l,s(q),s(l)) + d(q,l,s(p),s(l)) ]
+ *      + 2 * d(p,q,s(p),s(q))
+ *      + 2 * d(p,q,s(q),s(p))
  * ```
- * (2)
- * ```
- * = sum_{l=0,..,nc-1}[ sum_{k=0,..,nc-1} d(k,l,s(k),s(l)) - d(p,l,s(p),s(l) - d(q,l,s(q),s(l)) + d(p,l,s(q),s(l)) + d(q,l,s(p),s(l))) ]
- *   - [ sum_{k=0,..,nc-1} d(k,p,s(k),s(p)) - d(p,p,s(p),s(p)) - d(q,p,s(q),s(p)) + d(p,p,s(q),s(p)) + d(q,p,s(p),s(p)) ]
- *   - [ sum_{k=0,..,nc-1} d(k,q,s(k),s(q)) - d(p,q,s(p),s(q)) - d(q,q,s(q),s(q)) + d(p,q,s(q),s(q)) + d(q,q,s(p),s(q)) ]
- *   + [ sum_{k=0,..,nc-1} d(k,p,s(k),s(q)) - d(p,p,s(p),s(q)) - d(q,p,s(q),s(q)) + d(p,p,s(q),s(q)) + d(q,p,s(p),s(q)) ]
- *   + [ sum_{k=0,..,nc-1} d(k,q,s(k),s(p)) - d(p,q,s(p),s(p)) - d(q,q,s(q),s(p)) + d(p,q,s(q),s(p)) + d(q,q,s(p),s(p)) ]
- * ```
- * (3)
- * ```
- * = sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(k,l,s(k),s(l))
- *   - sum_{l=0,..,nc-1} [ d(p,l,s(p),s(l)) + d(q,l,s(q),s(l)) ]
- *   + sum_{l=0,..,nc-1} [ d(p,l,s(q),s(l)) + d(q,l,s(p),s(l)) ]
- *   - sum_{k=0,..,nc-1} [ d(k,p,s(k),s(p)) + d(k,q,s(k),s(q)) ]
- *   + sum_{k=0,..,nc-1} [ d(k,p,s(k),s(q)) + d(k,q,s(k),s(p)) ]
- *   + d(p,p,s(p),s(p)) + d(q,p,s(q),s(p)) - d(p,p,s(q),s(p)) - d(q,p,s(p),s(p))
- *   + d(p,q,s(p),s(q)) + d(q,q,s(q),s(q)) - d(p,q,s(q),s(q)) - d(q,q,s(p),s(q))
- *   - d(p,p,s(p),s(q)) - d(q,p,s(q),s(q)) + d(p,p,s(q),s(q)) + d(q,p,s(p),s(q))
- *   - d(p,q,s(p),s(p)) - d(q,q,s(q),s(p)) + d(p,q,s(q),s(p)) + d(q,q,s(p),s(p))
- * ```
- * (4)
- * ```
- * = c
- *   - 2 * sum_{l=0,..,nc-1} [ d(p,l,s(p),s(l)) + d(q,l,s(q),s(l)) ]
- *   + 2 * sum_{l=0,..,nc-1} [ d(p,l,s(q),s(l)) + d(q,l,s(p),s(l)) ]
- *   + 2 * d(p,q,s(p),s(q))
- *   + 2 * d(p,q,s(q),s(p))
- * ```
- * where between (3) and (4) we used the following properties of the 6-D array d(i,j,k,l,m,n) namely
+ * where we used the following properties of the 6-D array d(i,j,k,l,m,n)
  * ```
  * forall i,j,k,l,m,n : d(i,j,k,l,m,n) = d(i,j,l,k,n,m)
  * forall i,j,k,l,x   : d(i,j,x,x,k,l) = d(i,j,k,l,x,x) = 0
  * ```
- * Thus we can see that we can calculate element (i,j) of the matrix cost' as
+ * Therefore we can see that we can calculate element (i,j) of the matrix cost' as
  * ```
  * cost'[i,j] = cost[i,j]
  *              + sum_{k=0,..,nc-1}[ {(pos_U[i,p] - pos_U[i,k]) * (pos_V[j,s(q)] - pos_V[j,s(k)]) < 0}
@@ -94,15 +66,15 @@
  *               + {(pos_U[i,p] - pos_U[i,q]) * (pos_V[j,s(p)] - pos_V[j,s(q)]) < 0}
  *               + {(pos_U[i,p] - pos_U[i,q]) * (pos_V[j,s(p)] - pos_V[j,s(q)]) > 0}
  * ```
- * and thus we can update the whole `cost` matrix in O(nv**2 * nc).
+ * and thus can update the whole `cost` matrix in O(nv**2 * nc).
  *
  * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
- * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election.
- * NOTE: we assume that the elements of matrix are stored in column-major order.
+ * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election. NOTE:
+ * we assume that the elements of matrix are stored in column-major order.
  *
  * @param pos_V pointer to the linearized position matrix of the 2nd (V) election i.e. a matrix such
- * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election.
- * NOTE: we assume that the elements of matrix are stored in column-major order.
+ * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election. NOTE:
+ * we assume that the elements of matrix are stored in column-major order.
  *
  * @param nv number of votes
  * @param nc number of candidates
@@ -295,15 +267,70 @@ mem_inversion_cnt (size_t n, uint8_t *mem)
  * S_n denotes the set of all permutations of the set {0,..,n-1}. The algorithm generates all
  * permutations of S_nc using Heap's algorithm and for every generated permutation σ solves the
  * corresponding Linear Assignment Problem (LAP) in order to find the optimal permutation v.
- * TODO:...
+ *
+ * This implementation is different from `swap_bf()` in that it uses a precomputed lookup table
+ * which allows for O(nv**2) update of the `cost` matrix. Let's first notice that the expression for
+ * (i,j) element of cost matrix (given candidates' permutation s) is permutation invariant, namely
+ * for any permutation π ∈ S_nc we have
+ * ```
+ *  cost[i,j] = sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} 1/2 * {(pos_U[i, k   ] - pos_U[i, l   ]) * (pos_V[j, s(k)   ] - pos_V[j, s(l)   ]) < 0}
+ *            = sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} 1/2 * {(pos_U[i, π(k)] - pos_U[i, π(l)]) * (pos_V[j, s(π(k))] - pos_V[j, s(π(l))]) < 0} .
+ * ```
+ * Indeed in both cases we sum the expression d(i,j,k,l,s(k),s(l)) over all pairs (k,l), however in
+ * the first case we do it in the (0,0), (0,1), ..., (nc-1, nc-1) order and in the second case in
+ * the (π(0), π(0)), (π(0), π(1)), ..., (π(nc-1), π(nc-1)) order. Therefore using π = U[i,:] we can
+ * write
+ * ```
+ *  cost[i,j] = sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} 1/2 * {(k - l) * (pos_V[j, s(U[i,k])] - pos_V[j, s(U[i,l])]) < 0}
+ *            = sum_{k=0,..,nc-1} sum_{l=k+1,..,nc-1} { pos_V[j,s(U[i, k])] < pos_V[j, s(U[i,l])] } .
+ * ```
+ * where we observed that pos_U[i, U[i,k]] = k and also note the changed limits of the summation
+ * over l. We are therefore looking for a number of inversions of the permutation
+ * ```
+ * ( pos_U[i,:] o s^-1 o V[j,:] ) ∈ S_nc
+ * ```
+ * for every i,j and fixed permutation s (note here that since we are exhaustively searching over
+ * all permutations s, we don't really have to invert this permutation and can use s in place of
+ * s^-1). We can however precompute the number of inversions for every permutation in S_nc and store
+ * them in the lookup table mem. We only need an appropriate encoding of the permutation σ ∈ S_nc as
+ * an key (index) to mem array. We use a simple encoding is
+ * ```
+ *  key(σ) = nc**0 * σ(0) + nc**1 * σ(1) + ... + nc**(nc-1) * σ(nc-1) .
+ * ```
+ * Note however that this requires O(nc) operations to compute naively and thus as such would not
+ * bring any improvement over `swap_bf()`. We can however compute the array
+ * ```
+ * key[i,j] = key( pos_U[i,:] o s o V[j,:] )
+ * ```
+ * dynamically. Indeed let s and s' be two subsequent permutations generated by Heap's algorithm
+ * then there are two indices p!=q such that
+ * ```
+ * forall r=0,..,nc-1, r!=p, r!=q : s'(r) = s(r)
+ * ```
+ * and s'(p) = s(q) and s'(q) = s(p). Thus
+ * ```
+ *  key'[i,j] = key[i,j] - nc**a * pos_U[i,s(p)] - nc**b * pos_U[i,s(q)]
+ *                       + nc**a * pos_U[i,s(q)] + nc**b * pos_U[i,s(p)]
+ * ```
+ * where a and b satisfy V[j,a] = p and V[j,b] = q and thus may be computed as
+ * ```
+ * a = pos_V[j,p], b = pos_V[j,q] .
+ * ```
+ * We can therefore update `key` matrix in O(nv**2) and since cost[i,j] = mem[key[i,j]] we can also
+ * compute `cost` matrix in O(nv**2). In the actual implementation we use
+ * ```
+ *  key(σ) = σ(0) + 10 * σ(1) + ... + 10**(nc-1) * σ(nc-2)
+ * ```
+ * independent of nc (thus we only support nc <= 10) and use only the first nc-1 elements of
+ * permutation σ as they uniquely define a permutation.
  *
  * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
- * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election.
- * NOTE: we assume that the elements of matrix are stored in column-major order.
+ * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election. NOTE:
+ * we assume that the elements of matrix are stored in column-major order.
  *
  * @param pos_V pointer to the linearized position matrix of the 2nd (V) election i.e. a matrix such
- * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election.
- * NOTE: we assume that the elements of matrix are stored in column-major order.
+ * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election. NOTE:
+ * we assume that the elements of matrix are stored in column-major order.
  *
  * @param nv number of votes
  * @param nc number of candidates
@@ -319,7 +346,7 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
             V[i + nv * pos_V[i + nv * j]] = j;
 
     // A lookup table storing inversion counts for every permutation of set {0,..,nc-1}. The key to
-    // the table is an encoded permutation.
+    // the table is an encoded permutation, see docstring of the `mem_inversion_cnt()` function.
     uint8_t *mem = calloc (pow10[nc - 1], sizeof (uint8_t));
     mem_inversion_cnt (nc, mem);
 
@@ -377,11 +404,13 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
                     size_t pos_p = pos_V[j + nv * p];
                     size_t pos_q = pos_V[j + nv * q];
 
-                    if (pos_p < nc - 1)
-                        key[i * nv + j] -= r1 * pow10[pos_p];
+                    key[i * nv + j] += r1 * ((pos_q < nc - 1) * pow10[pos_q] - (pos_p < nc - 1) * pow10[pos_p]);
 
-                    if (pos_q < nc - 1)
-                        key[i * nv + j] += r1 * pow10[pos_q];
+                    // if (pos_p < nc - 1)
+                    //     key[i * nv + j] -= r1 * pow10[pos_p];
+
+                    // if (pos_q < nc - 1)
+                    //     key[i * nv + j] += r1 * pow10[pos_q];
 
                     cost[i * nv + j] = mem[key[i * nv + j]];
                 }

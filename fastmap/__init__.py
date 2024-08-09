@@ -204,8 +204,7 @@ def swap(
     """
     Computes Isomorphic swap distance between ordinal elections U and V defined as
 
-        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1}
-        d(i,v(i),k,l,σ(k),σ(l))
+        min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
 
     where d(i,j,k,l,m,n) := 1/2 * { (pos_U[i,k] - pos_U[i,l]) * (pos_V[j,m] - pos_V[j,n]) < 0 }
     ({...} denoting here the Iverson bracket), nc is the number of candidates, nv is the number of

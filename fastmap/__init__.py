@@ -233,7 +233,14 @@ def swap(
                     matrix. The latter method is more efficient but has large memory requirements
                     thus it is only used for up to nc=10. For details see 'pyswap.c' file.
 
-                `"aa"` - TODO:...
+                `"aa"` - implements a coordinate-descent heuristic, analogous to the Alternating
+                    Algorithm for BAP problem (see docs for the fastmap.hamming or fastmap.spearman
+                    function). Time complexity of this method is O(N * (nv**3 + nc**3 * nv + nv**2 *
+                    nc**2)) where N is the number of iterations it takes for the algorithm to
+                    converge.
+
+                    NOTE: This method is much faster in practice than "bf" but there are no
+                    theoretical guarantees on the approximation ratio for the used heuristic.
 
                 `"bb"` - TODO:...
 

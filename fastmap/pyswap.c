@@ -445,14 +445,42 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
 #define d(i, j, k, l, m, n) ((pos_U[(i) + nv * (k)] - pos_U[(i) + nv * (l)]) * (pos_V[(j) + nv * (m)] - pos_V[(j) + nv * (n)]) < 0)
 
 /**
- * @brief TODO: Write a docstring. Try to cook some proof why this even works (based on reduction of
- * QAP to BAP)
+ * @brief Implementation of a coordinate-descent heuristic (analogous to the Alternating Algorithm
+ * for BAP problem, see 'bap.h' file) solving the following combinatorial optimization problem
+ * equivalent to computing isomorphic swap distance
+ * ```
+ *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
+ * ```
+ * where d(i,j,k,l,m,n) := 1/2 * { (pos_U[i,k] - pos_U[i,l]) * (pos_V[j,m] - pos_V[j,n]) < 0 }
+ * ({...} denoting here the Iverson bracket), nc is the number of candidates, nv is the number of
+ * voters, pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election and
+ * S_n denotes the set of all permutations of the set {0,..,n-1}. The algorithm actually solves
+ * heuristically a Trilinear Assignment Problem (TAP)
+ * ```
+ *  min_{v ∈ S_nv} min_{σ ∈ S_nc} min_{π ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),π(l))
+ * ```
+ * by the following procedure: we first sample uniformly two permutations from S_nc and initialize
+ * v, σ, π so that σ and π are equal; we then perform a coordinate-descent by cyclically fixing two
+ * of the three permutation, solving the corresponding Linear Assignment Problem (LAP) and updating
+ * the non-fixed permutation, doing so until convergence. After that we return the smaller of the
+ * values
+ * ```
+ *  sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
+ *  sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,π(k),π(l))
+ * ```
+ * which provides a heuristic approximation of the isomorphic swap distance.
  *
- * @param pos_V
- * @param pos_U
- * @param nc
- * @param nv
- * @return
+ * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
+ * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election. NOTE:
+ * we assume that the elements of matrix are stored in column-major order.
+ *
+ * @param pos_V pointer to the linearized position matrix of the 2nd (V) election i.e. a matrix such
+ * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election. NOTE:
+ * we assume that the elements of matrix are stored in column-major order.
+ *
+ * @param nv number of votes
+ * @param nc number of candidates
+ * @return heuristic approximation of isomorphic swap distance
  */
 static int32_t
 swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size_t nc)

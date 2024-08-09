@@ -18,12 +18,15 @@ ORDINAL_CULTURES = [
 
 
 if __name__ == "__main__":
-    print("ISOMORPHIC SWAP\n")
     nv, nc = 10, 10
+    random.seed(42)
     culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
     culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
-    print(f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} :: Culture2 {culture2['id']}\n")
+    print("ISOMORPHIC SWAP\n")
+    print(
+        f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} {culture1['params']} :: Culture2 {culture2['id']} {culture2['params']}\n"
+    )
 
     U = mapel.generate_ordinal_election(
         culture_id=culture1["id"], num_candidates=nc, num_voters=nv, **culture1["params"]
@@ -44,7 +47,7 @@ if __name__ == "__main__":
 
     assert d1 == d2, "Wrong answer"
 
-    t3 = time.time()
-    d3 = fastmap.swap(U.votes, V.votes, method="aa")
-    t3 = time.time() - t3
-    print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")
+    # t3 = time.time()
+    # d3 = fastmap.swap(U.votes, V.votes, method="aa")
+    # t3 = time.time() - t3
+    # print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")

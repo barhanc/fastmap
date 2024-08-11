@@ -325,12 +325,12 @@ mem_inversion_cnt (size_t n, uint8_t *mem)
  * permutation σ as they uniquely define a permutation.
  *
  * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
- * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election. NOTE:
- * we assume that the elements of matrix are stored in column-major order.
+ * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election.
+ * NOTE: we assume that the elements of matrix are stored in column-major order.
  *
  * @param pos_V pointer to the linearized position matrix of the 2nd (V) election i.e. a matrix such
- * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election. NOTE:
- * we assume that the elements of matrix are stored in column-major order.
+ * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election.
+ * NOTE: we assume that the elements of matrix are stored in column-major order.
  *
  * @param nv number of votes
  * @param nc number of candidates
@@ -471,12 +471,12 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
  * which provides a heuristic approximation of the isomorphic swap distance.
  *
  * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
- * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election. NOTE:
- * we assume that the elements of matrix are stored in column-major order.
+ * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election.
+ * NOTE: we assume that the elements of matrix are stored in column-major order.
  *
  * @param pos_V pointer to the linearized position matrix of the 2nd (V) election i.e. a matrix such
- * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election. NOTE:
- * we assume that the elements of matrix are stored in column-major order.
+ * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election.
+ * NOTE: we assume that the elements of matrix are stored in column-major order.
  *
  * @param nv number of votes
  * @param nc number of candidates
@@ -532,7 +532,6 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     // Coordinate-descent-like refinment
     while (1)
     {
-        // TODO: Memory access pattern + vectorization. Expand macros and put data into registers.
         memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
         for (size_t l = 0; l < nc; l++)
             for (size_t k = 0; k < nc; k++)
@@ -544,7 +543,6 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
 
-        // TODO: Memory access pattern + vectorization. Expand macros and put data into registers.
         memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
         for (size_t i = 0; i < nc; i++)
             for (size_t j = 0; j < nc; j++)
@@ -556,7 +554,6 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
         for (size_t i = 0; i < nc; i++)
             sigma_nc_1[i] = rowsol_nc[i];
 
-        // TODO: Memory access pattern + vectorization. Expand macros and put data into registers.
         memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
         for (size_t i = 0; i < nc; i++)
             for (size_t j = 0; j < nc; j++)

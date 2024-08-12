@@ -18,7 +18,7 @@ ORDINAL_CULTURES = [
 
 
 if __name__ == "__main__":
-    nv, nc = 100, 8
+    nv, nc = 10, 10
     # random.seed(42)
     culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
     culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
@@ -47,17 +47,17 @@ if __name__ == "__main__":
 
     assert d1 == d2, "Wrong answer"
 
-    # t3 = time.monotonic()
-    # d3 = fastmap.spearman(U.votes, V.votes, method="aa", repeats=300)
-    # t3 = time.monotonic() - t3
-    # print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d1:.3f}")
+    t3 = time.monotonic()
+    d3 = fastmap.spearman(U.votes, V.votes, method="aa", repeats=300)
+    t3 = time.monotonic() - t3
+    print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d1:.3f}")
 
-    # t4 = time.monotonic()
-    # d4 = fastmap.spearman(U.votes, V.votes, method="bb")
-    # t4 = time.monotonic() - t4
-    # print(f"C(bb) :: {d4} :: Time {t4:6.3f}s :: Time ratio {t4 / t1:6.3f}")
+    t4 = time.monotonic()
+    d4 = fastmap.spearman(U.votes, V.votes, method="bb")
+    t4 = time.monotonic() - t4
+    print(f"C(bb) :: {d4} :: Time {t4:6.3f}s :: Time ratio {t4 / t1:6.3f}")
 
-    # assert d1 == d4, "Wrong answer"
+    assert d1 == d4, "Wrong answer"
 
     # # ==============================================================================================
     # # ==============================================================================================

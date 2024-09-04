@@ -248,6 +248,7 @@ typedef struct Node
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
+ * @param repeats number of times we compute initial upper bound using "aa" heuristic
  * @return minimal value of the cost function
  */
 static int32_t

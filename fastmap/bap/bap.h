@@ -200,7 +200,7 @@ bap_aa (const size_t nv, const size_t nc)
     return res_curr;
 }
 
-#include "queue.h"
+#include "stack.h"
 
 typedef struct Node
 {
@@ -226,7 +226,7 @@ typedef struct Node
  * ```
  *  C(σ) = min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```
- * for any permutation σ with the given prefix then it is easy to see that
+ * for any permutation σ with the given prefix. It is easy to see that
  * ```
  *  forall σ : C(σ) >= min_{v ∈ S_nv} sum_{i=0,..,nv-1} cost[i,v(i)]                      (1)
  * ```
@@ -239,8 +239,8 @@ typedef struct Node
  * compute the lower bound (1) also using lap in O(nv**3) time. If the lower bound in the node is
  * greater than upper bound, we prune this part of the tree. Note that if we were to visit every
  * node this algorithm needs much more lap calls than simple brute-force (see: bap_bf()) since there
- * are `sum_{k=1,..,nc} (nc choose k) * k!` nodes and in each node we need to solve one LAP for a
- * cost matrix of size nv x nv and nv**2 LAPs for cost matrices of size O(nc) x O(nc), while
+ * are `sum_{k=1,..,nc} (nc choose k) * k! > nc!` nodes and in each node we need to solve one LAP
+ * for a cost matrix of size nv x nv and nv**2 LAPs for cost matrices of size O(nc) x O(nc), while
  * brute-force needs to solve only nc! LAPs for cost matrices of size nv x nv.
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
@@ -249,6 +249,7 @@ typedef struct Node
  * @param nv problem size parameter
  * @param nc problem size parameter
  * @param repeats number of times we compute initial upper bound using "aa" heuristic
+ * @param max_evals TODO:...
  * @return minimal value of the cost function
  */
 static int32_t
@@ -269,15 +270,18 @@ bap_bb (const size_t nv, const size_t nc, const int repeats)
 
     // Cost matrix for LAP
     int32_t *cost_nv = calloc (nv * nv, sizeof (int32_t));
+    int32_t *cost_m = calloc (nc * nc, sizeof (int32_t));
 
     // Auxiliary variables required for J-V LAP algorithm
     int32_t *rowsol_nv = calloc (nv, sizeof (int32_t));
     int32_t *colsol_nv = calloc (nv, sizeof (int32_t));
+    int32_t *rowsol_m = calloc (nc, sizeof (int32_t));
+    int32_t *colsol_m = calloc (nc, sizeof (int32_t));
 
     // 2. Initialize a queue to hold a partial solution with none of the variables of the problem
     //    assigned.
 
-    Queue *queue = queue_alloc ();       // FIFO queue
+    Stack *stack = stack_alloc ();       // LIFO queue
     Node *node = malloc (sizeof (Node)); // Node of the search tree
 
     node->n = 0;
@@ -286,13 +290,13 @@ bap_bb (const size_t nv, const size_t nc, const int repeats)
     node->available = malloc (nc * sizeof (bool));
     memset (node->available, true, nc * sizeof (bool));
 
-    enqueue (queue, (void *)node);
+    push (stack, (void *)node);
 
     // 3. Loop until the queue is empty:
-    while (queue->size > 0)
+    while (stack->size > 0)
     {
         // 1. Take a node N off the queue.
-        node = (Node *)dequeue (queue);
+        node = (Node *)pop (stack);
 
         // 2. If N represents a single candidate solution x and cost(x) < B, then x is the best
         //    solution so far. Record it and set B = cost(x).
@@ -321,11 +325,11 @@ bap_bb (const size_t nv, const size_t nc, const int repeats)
                 new_node->available[candidate] = false;
 
                 size_t m = nc - new_node->n;
-                int32_t *cost_m = calloc (m * m, sizeof (int32_t));
-                int32_t *rowsol_m = calloc (m, sizeof (int32_t));
-                int32_t *colsol_m = calloc (m, sizeof (int32_t));
 
                 memset (cost_nv, 0, nv * nv * sizeof (int32_t));
+                memset (cost_m, 0, nc * nc * sizeof (int32_t));
+                memset (rowsol_m, 0, nc * sizeof (int32_t));
+                memset (colsol_m, 0, nc * sizeof (int32_t));
 
                 for (size_t i = 0; i < nv; i++)
                     for (size_t j = 0; j < nv; j++)
@@ -348,10 +352,6 @@ bap_bb (const size_t nv, const size_t nc, const int repeats)
                             cost_nv[i * nv + j] += d (i, j, k, new_node->sigma[k]);
                     }
 
-                free (cost_m);
-                free (rowsol_m);
-                free (colsol_m);
-
                 new_node->bound = lap (nv, cost_nv, rowsol_nv, colsol_nv);
 
                 // 1. If bound(Ni) > B, do nothing; since the lower bound on this node is greater
@@ -366,7 +366,7 @@ bap_bb (const size_t nv, const size_t nc, const int repeats)
                 // 2. Else, store Ni on the queue.
                 else
                 {
-                    enqueue (queue, (void *)new_node);
+                    push (stack, (void *)new_node);
                 }
             }
         }
@@ -376,10 +376,15 @@ bap_bb (const size_t nv, const size_t nc, const int repeats)
         free (node);
     }
 
-    free (queue);
+    free (stack);
+
     free (cost_nv);
     free (rowsol_nv);
     free (colsol_nv);
+
+    free (cost_m);
+    free (rowsol_m);
+    free (colsol_m);
 
     return B;
 }

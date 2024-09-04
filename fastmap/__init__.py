@@ -134,7 +134,7 @@ def hamming(
     ```
     min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
     ```
-    where `d(i,j,k,l) := U[i,k] xor V[j,l]`, nc is the number of candidates, nv is the number of
+    where d(i,j,k,l) := U[i,k] xor V[j,l], nc is the number of candidates, nv is the number of
     voters and S_n denotes the set of all permutations of the set {0,..,n-1}.
 
     NOTE: This function is a Python wrapper around C extension. For implementation details see

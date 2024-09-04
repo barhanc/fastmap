@@ -67,7 +67,8 @@ def spearman(
 
         repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
                  starting permutations and then perform coordinate descent) and choose the smallest
-                 value. If method is not "aa" this option is ignored.
+                 value. The "aa" heuristic is also used in the "bb" method for getting initial upper
+                 bound. If method is not "aa" or "bb" this option is ignored.
 
     Returns:
         Isomorphic Spearman distance between U and V.
@@ -161,7 +162,8 @@ def hamming(
 
         repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
                  starting permutations and then perform coordinate descent) and choose the smallest
-                 value. If method is not "aa" this option is ignored.
+                 value. The "aa" heuristic is also used in the "bb" method for getting initial upper
+                 bound. If method is not "aa" or "bb" this option is ignored.
 
     Returns:
         Isomorphic Hamming distance between U and V.

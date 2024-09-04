@@ -66,7 +66,7 @@ py_spear (PyObject *self, PyObject *args)
         }
         break;
     case 2:
-        ret = bap_bb (nv, nc);
+        ret = bap_bb (nv, nc, repeats);
         break;
     default:
         break;

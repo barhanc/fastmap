@@ -222,13 +222,13 @@ typedef struct Node
  * bap_aa() function) and later perform a search over all permutation prefixes of σ computing the
  * lower bound on the cost value and pruning the part of the tree that certainly does not contain
  * minimum. The lower bound is computed as follows. Assume we are in the node of the tree having a
- * prefix of length n' < nc of permutation σ and let C be the cost
+ * prefix of length n' < nc of permutation σ and let C(σ) be the cost
  * ```
- *  min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
+ *  C(σ) = min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```
- * for any permutation σ with the given prefix then
+ * for any permutation σ with the given prefix then it is easy to see that
  * ```
- *  C >= min_{v ∈ S_nv} sum_{i=0,..,nv-1} cost[i,v(i)]                                    (1)
+ *  forall σ : C(σ) >= min_{v ∈ S_nv} sum_{i=0,..,nv-1} cost[i,v(i)]                      (1)
  * ```
  * where
  * ```
@@ -251,7 +251,7 @@ typedef struct Node
  * @return minimal value of the cost function
  */
 static int32_t
-bap_bb (const size_t nv, const size_t nc)
+bap_bb (const size_t nv, const size_t nc, const int repeats)
 {
     // Upper bound on cost
     int32_t B = 0x7FFFFFFF;
@@ -260,8 +260,7 @@ bap_bb (const size_t nv, const size_t nc)
     //     will denote the best solution found so far, and will be used as an upper bound on
     //     candidate solutions.
 
-    size_t repeats = 30;
-    for (size_t i = 0; i < repeats; i++)
+    for (int i = 0; i < repeats; i++)
     {
         int32_t bound = bap_aa (nv, nc);
         B = bound < B ? bound : B;
@@ -277,7 +276,7 @@ bap_bb (const size_t nv, const size_t nc)
     // 2. Initialize a queue to hold a partial solution with none of the variables of the problem
     //    assigned.
 
-    Queue *q = queue_alloc ();           // FIFO queue
+    Queue *queue = queue_alloc ();       // FIFO queue
     Node *node = malloc (sizeof (Node)); // Node of the search tree
 
     node->n = 0;
@@ -286,13 +285,13 @@ bap_bb (const size_t nv, const size_t nc)
     node->available = malloc (nc * sizeof (bool));
     memset (node->available, true, nc * sizeof (bool));
 
-    enqueue (q, (void *)node);
+    enqueue (queue, (void *)node);
 
     // 3. Loop until the queue is empty:
-    while (q->size > 0)
+    while (queue->size > 0)
     {
         // 1. Take a node N off the queue.
-        node = (Node *)dequeue (q);
+        node = (Node *)dequeue (queue);
 
         // 2. If N represents a single candidate solution x and cost(x) < B, then x is the best
         //    solution so far. Record it and set B = cost(x).
@@ -366,7 +365,7 @@ bap_bb (const size_t nv, const size_t nc)
                 // 2. Else, store Ni on the queue.
                 else
                 {
-                    enqueue (q, (void *)new_node);
+                    enqueue (queue, (void *)new_node);
                 }
             }
         }
@@ -376,7 +375,7 @@ bap_bb (const size_t nv, const size_t nc)
         free (node);
     }
 
-    free (q);
+    free (queue);
     free (cost_nv);
     free (rowsol_nv);
     free (colsol_nv);

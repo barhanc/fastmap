@@ -40,7 +40,7 @@ from scipy.optimize import quadratic_assignment
 if __name__ == "__main__":
     print("PAIRWISE\n")
 
-    nv, nc = 100, 7
+    nv, nc = 100, 10
     culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
     culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
@@ -62,3 +62,8 @@ if __name__ == "__main__":
     d2 = fastmap.pairwise(U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix())
     t2 = time.monotonic() - t2
     print(f"C(faq) :: {d2:6.3f} :: Time {t2:6.3f}s :: Approx. ratio {d2 / d1:.3f}")
+
+    t3 = time.monotonic()
+    d3 = fastmap.pairwise(U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix(), method="aa", repeats=300)
+    t3 = time.monotonic() - t3
+    print(f"C(aa)  :: {d3:6.3f} :: Time {t3:6.3f}s :: Approx. ratio {d3 / d1:.3f}")

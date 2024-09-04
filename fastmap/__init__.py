@@ -367,10 +367,11 @@ def pairwise(
             the number of iterations it takes for the algorithm to converge.
 
         repeats:
-            Number of times we compute distance using "aa" method (i.e. we sample `repeats` starting
-            permutations and then perform coordinate descent) and choose the smallest value.
+            Number of times we compute distance using "aa" or "faq" method (i.e. we sample `repeats`
+            starting permutations or doubly stochastic matrices and then perform refinement
+            procedure) and choose the smallest value.
 
-            NOTE: If method not in ("aa",) this option is ignored.
+            NOTE: If method not in ("faq", "aa") this option is ignored.
 
         seed:
             Seed of the PRNG used. Must be a non-negative integer or -1 for randomly set seed.

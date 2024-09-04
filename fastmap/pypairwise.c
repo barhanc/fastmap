@@ -68,6 +68,11 @@ py_pairwise (PyObject *self, PyObject *args)
     {
     case 0:
         ret = qap_faq (nc, maxiter, tol);
+        for (int i = 0; i < repeats - 1; i++)
+        {
+            double f = qap_faq (nc, maxiter, tol);
+            ret = ret > f ? f : ret;
+        }
         break;
     case 1:
         ret = qap_aa (nc);

@@ -80,8 +80,7 @@ def spearman(
             NOTE: If method not in ("aa", "bb") this option is ignored.
 
         seed:
-            Seed of the PRNG used in "aa" method. Must be a non-negative integer or -1 for randomly
-            set seed.
+            Seed of the PRNG used. Must be a non-negative integer or -1 for randomly set seed.
 
             NOTE: If method not in ("aa", "bb") this option is ignored.
 
@@ -99,7 +98,8 @@ def spearman(
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
-    assert seed >= -1, "Expected seed to be a non-negative integer or -1"
+    assert type(seed) is int and seed >= -1, "Expected `seed` to be a non-negative integer or -1"
+    assert type(repeats) is int and repeats > 0, "Expected `repeats` to be an int greater than 0"
 
     nv, nc = U.shape
     # Transpose matrices if necessary i.e. so that num of rows is min(nv,nc). This makes for a
@@ -190,8 +190,7 @@ def hamming(
             NOTE: If method not in ("aa", "bb") this option is ignored.
 
         seed:
-            Seed of the PRNG used in "aa" method. Must be a non-negative integer or -1 for randomly
-            set seed.
+            Seed of the PRNG used. Must be a non-negative integer or -1 for randomly set seed.
 
             NOTE: If method not in ("aa", "bb") this option is ignored.
 
@@ -209,7 +208,8 @@ def hamming(
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
-    assert seed >= -1, "Expected seed to be a non-negative integer or -1"
+    assert type(seed) is int and seed >= -1, "Expected `seed` to be a non-negative integer or -1"
+    assert type(repeats) is int and repeats > 0, "Expected `repeats` to be an int greater than 0"
 
     nv, nc = U.shape
     # Transpose matrices if necessary i.e. so that num of rows is min(nv,nc). This makes for a
@@ -288,8 +288,7 @@ def swap(
             NOTE: If method not in ("aa",) this option is ignored.
 
         seed:
-            Seed of the PRNG used in "aa" method. Must be a non-negative integer or -1 for randomly
-            set seed.
+            Seed of the PRNG used. Must be a non-negative integer or -1 for randomly set seed.
 
             NOTE: If method not in ("aa",) this option is ignored.
 
@@ -307,7 +306,8 @@ def swap(
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
-    assert seed >= -1, "Expected seed to be a non-negative integer or -1"
+    assert type(seed) is int and seed >= -1, "Expected `seed` to be a non-negative integer or -1"
+    assert type(repeats) is int and repeats > 0, "Expected `repeats` to be an int greater than 0"
 
     # We transpose the matrices so that the memory access pattern is better
     pos_U, pos_V = U.argsort().T, V.argsort().T
@@ -326,6 +326,7 @@ def pairwise(
     M_U: np.ndarray[float],
     M_V: np.ndarray[float],
     method: str = "faq",
+    repeats: int = 30,
     seed: int = -1,
     maxiter: int = 30,
     tol: float = 1e-3,
@@ -339,17 +340,18 @@ def pairwise(
     where d(i,j,k,l) := abs(M_V[i,k] - M_V[j,l]), nc is the number of candidates and S_n denotes the
     set of all permutations of the set {0,..,n-1}. Matrices M_V and M_U are the so called pairwise
     matrices of elections U and V. Pairwise matrix M of an election U is a matrix whose element
-    M[i,j] is equal to the number of votes in which i-th candidate comes before the j-th one.
+    M[i,j] is equal to the (normalized) number of votes in which i-th candidate comes before the
+    j-th one.
 
     NOTE: This function is a Python wrapper around C extension. For implementation details see
     'qap.h' and 'pypairwise.c' files.
 
     Args:
         M_U:
-            Pairwise matrix of ordinal election U. Shape (nc, nc).
+            Normalized pairwise matrix of ordinal election U. Shape (nc, nc).
 
         M_V:
-            Pairwise matrix of ordinal election V. Shape (nc, nc).
+            Normalized pairwise matrix of ordinal election V. Shape (nc, nc).
 
         method:
             Method used to compute the distance. Should be one of the
@@ -359,18 +361,34 @@ def pairwise(
             formulation) described in detail in
             https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0121002.
 
+            `"aa"` - implements a coordinate-descent heuristic, which solves a corresponding BAP
+            problem using Alternating Algorithm (see docs for the fastmap.hamming or
+            fastmap.spearman function). Time complexity of this method is O(N * nc**3) where N is
+            the number of iterations it takes for the algorithm to converge.
+
+        repeats:
+            Number of times we compute distance using "aa" method (i.e. we sample `repeats` starting
+            permutations and then perform coordinate descent) and choose the smallest value.
+
+            NOTE: If method not in ("aa",) this option is ignored.
+
         seed:
-            Seed of the PRNG used in "aa" method. Must be a non-negative integer or -1 for randomly
-            set seed.
+            Seed of the PRNG used. Must be a non-negative integer or -1 for randomly set seed.
+
+            NOTE: If method not in ("faq", "aa") this option is ignored.
 
         maxiter:
             Integer specifying the max number of Frank-Wolfe iterations performed in the FAQ method
             of computing the pairwise distance.
 
+            NOTE: If method not in ("faq",) this option is ignored.
+
         tol:
             Tolerance for termination in the FAQ method of computing the pairwise distance.
             Frank-Wolfe iteration terminates when ||P_{i} - P_{i+1}||_Frobenius < tol, where P is
             the solution to the relaxed QAP and i is the iteration number.
+
+            NOTE: If method not in ("faq",) this option is ignored.
 
     Returns:
         Pairwise distance between two elections with pairwise matrices M_U and M_V.
@@ -387,15 +405,17 @@ def pairwise(
     assert M_U.shape == M_V.shape, "Expected arrays to have the same shape"
     assert (dim := len(M_U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
     assert M_U.shape[0] == M_U.shape[1], "Expected pairwise matrix to be a square matrix"
-    assert seed >= -1, "Expected seed to be a non-negative integer or -1"
-    assert type(maxiter) == int and maxiter > 0, "Expected `maxiter` to be an int greater than 0"
-    assert type(tol) == float and tol > 0, "Expected `tol` to be a float greater than 0"
+    assert type(seed) is int and seed >= -1, "Expected `seed` to be a non-negative integer or -1"
+    assert type(repeats) is int and repeats > 0, "Expected `repeats` to be an int greater than 0"
+    assert type(maxiter) is int and maxiter > 0, "Expected `maxiter` to be an int greater than 0"
+    assert type(tol) is float and tol > 0, "Expected `tol` to be a float greater than 0"
 
     return fastmap._pairwise.pairwise(
         M_U.astype(np.double),
         M_V.astype(np.double),
-        {"faq": 0}[method],
+        {"faq": 0, "aa": 1}[method],
         # Options
+        repeats,
         seed,
         maxiter,
         tol,

@@ -4,14 +4,21 @@
 
 #include "lapf.h"
 
-void
+#define swap(type, x, y) \
+    {                    \
+        type SWAP = x;   \
+        x = y;           \
+        y = SWAP;        \
+    }
+
+static void
 _invert_array (double *arr, size_t size)
 {
     for (size_t i = 0; i < size; i++)
         arr[i] = 1.0 / arr[i];
 }
 
-double *
+static double *
 _doubly_stochastic (const size_t nc, double eps)
 {
     double *P = (double *)malloc (nc * nc * sizeof (double));
@@ -100,7 +107,7 @@ _doubly_stochastic (const size_t nc, double eps)
  *  min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
  * ```
  * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
- * {0,..,n-1} and integer nc describe the size of the problem instance. Using permutation matrix P
+ * {0,..,n-1} and integer nc describes the size of the problem instance. Using permutation matrix P
  * we may write this problem as a minimization of a function f(P)
  * ```
  *  f(P) = sum_{i,j,k,l} d(i,j,k,l) * P[i,j] * P[k,l]   .
@@ -208,4 +215,112 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
     free (Q);
 
     return res;
+}
+
+/**
+ * @brief Implementation of a coordinate-descent heuristic solving Quadratic Assignment Problem
+ * (QAP)
+ * ```
+ *  min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
+ * ```
+ * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
+ * {0,..,n-1} and integer nc describes the size of the problem instance. The algorithm actually
+ * solves heuristically the Bilinear Assignment Problem (BAP)
+ * ```
+ *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,v(i),j,σ(j))
+ * ```
+ * using the Alternating Algorithm (for details see: 'bap.h' file). After the AA algorithm has
+ * converged we return the smaller of the values
+ * ```
+ *  sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
+ *  sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,v(i),j,v(j))
+ * ```
+ * which provides a heuristic solution to the QAP problem.
+ *
+ * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
+ * used to compute the cost tensor.
+ *
+ * @param nc problem size parameter
+ * @return double
+ */
+static double
+qap_aa (const size_t nc)
+{
+    // Cost matrices for LAP
+    double *cost_nc = calloc (nc * nc, sizeof (double));
+
+    // Auxiliary variables required for J-V LAP algorithm
+    int32_t *rowsol_nc = calloc (nc, sizeof (int32_t));
+    int32_t *colsol_nc = calloc (nc, sizeof (int32_t));
+
+    // Permutation arrays randomly initialized. Note that permutations `sigma_nc_1` and `sigma_nc_2`
+    // are initialized to the same random permutation by design.
+    size_t *sigma_nc_1 = calloc (nc, sizeof (size_t));
+    size_t *sigma_nc_2 = calloc (nc, sizeof (size_t));
+
+    for (size_t i = 0; i < nc; i++)
+        sigma_nc_1[i] = i;
+
+    for (size_t i = nc - 1; i > 0; i--)
+    {
+        size_t j = rand () % i;
+        swap (size_t, sigma_nc_1[i], sigma_nc_1[j]);
+    }
+
+    for (size_t i = 0; i < nc; i++)
+        sigma_nc_2[i] = sigma_nc_1[i];
+
+    // Minimum costs found in the previous and current iteration of coordinate-descent
+    double res_prev = 0, res_curr = -1;
+
+    for (size_t i = 0; i < nc; i++)
+        for (size_t j = 0; j < nc; j++)
+            res_prev += d (i, sigma_nc_1[i], j, sigma_nc_2[j]);
+
+    // Coordinate-descent-like refinment
+    while (1)
+    {
+        memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
+        for (size_t k = 0; k < nc; k++)
+            for (size_t i = 0; i < nc; i++)
+                for (size_t j = 0; j < nc; j++)
+                    cost_nc[i * nc + j] += d (i, j, k, sigma_nc_2[k]);
+
+        res_curr = lapf (nc, cost_nc, rowsol_nc, colsol_nc);
+        for (size_t i = 0; i < nc; i++)
+            sigma_nc_1[i] = rowsol_nc[i];
+
+        memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
+        for (size_t i = 0; i < nc; i++)
+            for (size_t j = 0; j < nc; j++)
+                for (size_t k = 0; k < nc; k++)
+                    cost_nc[i * nc + j] += d (k, sigma_nc_1[k], i, j);
+
+        res_curr = lapf (nc, cost_nc, rowsol_nc, colsol_nc);
+        for (size_t i = 0; i < nc; i++)
+            sigma_nc_2[i] = rowsol_nc[i];
+
+        if (res_prev == res_curr)
+            break;
+
+        res_prev = res_curr;
+    }
+
+    double best_res_1 = 0;
+    for (size_t i = 0; i < nc; i++)
+        for (size_t j = 0; j < nc; j++)
+            best_res_1 += d (i, sigma_nc_1[i], j, sigma_nc_1[j]);
+
+    double best_res_2 = 0;
+    for (size_t i = 0; i < nc; i++)
+        for (size_t j = 0; j < nc; j++)
+            best_res_2 += d (i, sigma_nc_2[i], j, sigma_nc_2[j]);
+
+    free (cost_nc);
+    free (rowsol_nc);
+    free (colsol_nc);
+    free (sigma_nc_1);
+    free (sigma_nc_2);
+
+    return best_res_1 < best_res_2 ? best_res_1 : best_res_2;
 }

@@ -10,11 +10,11 @@ static PyObject *
 py_pairwise (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0, N_METHODS = 1, seed = -1;
+    int method = 0, N_METHODS = 2, seed = -1, repeats = 0;
     size_t maxiter = 0;
     double tol = 0;
 
-    if (!PyArg_ParseTuple (args, "OOiiid", &obj_X, &obj_Y, &method, &seed, &maxiter, &tol))
+    if (!PyArg_ParseTuple (args, "OOiiiid", &obj_X, &obj_Y, &method, &repeats, &seed, &maxiter, &tol))
         return NULL;
 
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_DOUBLE, 0, 0);
@@ -68,6 +68,14 @@ py_pairwise (PyObject *self, PyObject *args)
     {
     case 0:
         ret = qap_faq (nc, maxiter, tol);
+        break;
+    case 1:
+        ret = qap_aa (nc);
+        for (int i = 0; i < repeats - 1; i++)
+        {
+            double f = qap_aa (nc);
+            ret = ret > f ? f : ret;
+        }
         break;
     default:
         break;

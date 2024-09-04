@@ -96,7 +96,8 @@ random_doubly_stochastic (const size_t n, double *X, const double eps)
  * ```
  *  f(P) = sum_{i,j,k,l} d(i,j,k,l) * P[i,j] * P[k,l]   .
  * ```
- * The implemented algorithm is based on paper:
+ * The implemented algorithm is a generalization to Lawler QAP problem of the algorithm described in
+ * paper:
  *
  * Vogelstein JT, Conroy JM, Lyzinski V, Podrazik LJ, Kratzer SG, Harley ET, et al. (2015) Fast
  * Approximate Quadratic Programming for Graph Matching. PLoS ONE 10(4): e0121002.

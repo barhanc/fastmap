@@ -51,14 +51,19 @@ def spearman(
             NOTE: This method returns exact value but if one of the nv, nc is greater than
             10 it is extremely slow.
 
-            `"aa"` - implements Alternating Algorithm heuristic described in arXiv:1707.07057 which
-            solves the equivalent Bilinear Assignment Problem (BAP). The algorithm first generates a
-            feasible solution to the BAP by sampling from a uniform distribution two permutations σ,
-            v and then performs a coordinate-descent-like refinment by interchangeably fixing one of
-            the permutations, solving the corresponding Linear Assignment Problem (LAP) and updating
-            the other permutation with the matching found in LAP, doing so until convergence. Time
-            complexity of this method is O(N * (nv**3 + nc**3)) where N is the number of iterations
-            it takes for the algorithm to converge.
+            `"aa"` - implements Alternating Algorithm heuristic described in paper:
+
+            Vladyslav Sokol, Ante Ćustić, Abraham P. Punnen, Binay Bhattacharya (2020) Bilinear
+            Assignment Problem: Large Neighborhoods and Experimental Analysis of Algorithms. INFORMS
+            Journal on Computing 32(3):730-746. https://doi.org/10.1287/ijoc.2019.0893
+
+            which solves the equivalent Bilinear Assignment Problem (BAP). The algorithm first
+            generates a feasible solution to the BAP by sampling from a uniform distribution two
+            permutations σ, v and then performs a coordinate-descent-like refinment by
+            interchangeably fixing one of the permutations, solving the corresponding Linear
+            Assignment Problem (LAP) and updating the other permutation with the matching found in
+            LAP, doing so until convergence. Time complexity of this method is O(N * (nv**3 +
+            nc**3)) where N is the number of iterations it takes for the algorithm to converge.
 
             NOTE: This method is much faster in practice than "bf" but there are no
             theoretical guarantees on the approximation ratio for the used heuristic.
@@ -357,9 +362,12 @@ def pairwise(
             Method used to compute the distance. Should be one of the
 
             `"faq"` - implements generalized Fast Approximate QAP (FAQAP) algorithm for aproximately
-            solving general Lawler QAP (as opposed to more restricted Koopmans and Beckmann
-            formulation) described in detail in
-            https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0121002.
+            solving Lawler QAP (as opposed to more restricted Koopmans and Beckmann formulation)
+            described in detail in paper:
+
+            Vogelstein JT, Conroy JM, Lyzinski V, Podrazik LJ, Kratzer SG, Harley ET, et al. (2015)
+            Fast Approximate Quadratic Programming for Graph Matching. PLoS ONE 10(4): e0121002.
+            https://doi.org/10.1371/journal.pone.0121002
 
             `"aa"` - implements a coordinate-descent heuristic, which solves a corresponding BAP
             problem using Alternating Algorithm (see docs for the fastmap.hamming or

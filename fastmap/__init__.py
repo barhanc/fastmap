@@ -13,6 +13,7 @@ def spearman(
     V: np.ndarray[int],
     method: str = "bf",
     repeats: int = 30,
+    seed: int = -1,
 ) -> int:
     """Computes Isomorphic Spearman distance between ordinal elections U and V defined as
 
@@ -68,7 +69,14 @@ def spearman(
         repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
                  starting permutations and then perform coordinate descent) and choose the smallest
                  value. The "aa" heuristic is also used in the "bb" method for getting initial upper
-                 bound. If method is not "aa" or "bb" this option is ignored.
+                 bound.
+
+                 NOTE: If method not in ("aa", "bb") this option is ignored.
+
+        seed: Seed of the PRNG used in "aa" method. Must be a non-negative integer or -1 for
+              randomly set seed.
+
+              NOTE: If method not in ("aa", "bb") this option is ignored.
 
     Returns:
         Isomorphic Spearman distance between U and V.
@@ -84,6 +92,7 @@ def spearman(
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
+    assert seed >= -1, "Expected seed to be a non-negative integer or -1"
 
     nv, nc = U.shape
     # Transpose matrices if necessary i.e. so that num of rows is min(nv,nc). This makes for a
@@ -101,6 +110,7 @@ def spearman(
         {"bf": 0, "aa": 1, "bb": 2}[method],
         # Options
         repeats,
+        seed,
     )
 
 
@@ -109,6 +119,7 @@ def hamming(
     V: np.ndarray[int],
     method: str = "bf",
     repeats: int = 30,
+    seed: int = -1,
 ) -> int:
     """Computes Isomorphic Hamming distance between approval elections U and V defined as
 
@@ -163,7 +174,14 @@ def hamming(
         repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
                  starting permutations and then perform coordinate descent) and choose the smallest
                  value. The "aa" heuristic is also used in the "bb" method for getting initial upper
-                 bound. If method is not "aa" or "bb" this option is ignored.
+                 bound.
+
+                 NOTE: If method not in ("aa", "bb") this option is ignored.
+
+        seed: Seed of the PRNG used in "aa" method. Must be a non-negative integer or -1 for
+              randomly set seed.
+
+              NOTE: If method not in ("aa", "bb") this option is ignored.
 
     Returns:
         Isomorphic Hamming distance between U and V.
@@ -179,6 +197,7 @@ def hamming(
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
+    assert seed >= -1, "Expected seed to be a non-negative integer or -1"
 
     nv, nc = U.shape
     # Transpose matrices if necessary i.e. so that num of rows is min(nv,nc). This makes for a
@@ -194,6 +213,7 @@ def hamming(
         {"bf": 0, "aa": 1, "bb": 2}[method],
         # Options
         repeats,
+        seed,
     )
 
 
@@ -202,9 +222,9 @@ def swap(
     V: np.ndarray[int],
     method: str = "bf",
     repeats: int = 30,
+    seed: int = -1,
 ) -> int:
-    """
-    Computes Isomorphic swap distance between ordinal elections U and V defined as
+    """Computes Isomorphic swap distance between ordinal elections U and V defined as
 
         min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
 
@@ -247,7 +267,14 @@ def swap(
 
         repeats: Number of times we compute distance using "aa" method (i.e. we sample `repeats`
                  starting permutations and then perform coordinate descent) and choose the smallest
-                 value. If method is not "aa" this option is ignored.
+                 value.
+
+                 NOTE: If method not in ("aa",) this option is ignored.
+
+        seed: Seed of the PRNG used in "aa" method. Must be a non-negative integer or -1 for
+              randomly set seed.
+
+              NOTE: If method not in ("aa",) this option is ignored.
 
     Returns:
         Isomorphic swap distance between U and V.
@@ -263,6 +290,7 @@ def swap(
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
     assert (dim := len(U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
+    assert seed >= -1, "Expected seed to be a non-negative integer or -1"
 
     # We transpose the matrices so that the memory access pattern is better
     pos_U, pos_V = U.argsort().T, V.argsort().T
@@ -273,6 +301,7 @@ def swap(
         {"bf": 0, "aa": 1}[method],
         # Options
         repeats,
+        seed,
     )
 
 
@@ -280,6 +309,7 @@ def pairwise(
     M_U: np.ndarray[float],
     M_V: np.ndarray[float],
     method: str = "faq",
+    seed: int = -1,
     maxiter: int = 30,
     tol: float = 1e-3,
 ) -> float:
@@ -307,6 +337,9 @@ def pairwise(
                     and Beckmann formulation) described in detail in
                     https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0121002.
 
+        seed: Seed of the PRNG used in "aa" method. Must be a non-negative integer or -1 for
+              randomly set seed.
+
         maxiter: Integer specifying the max number of Frank-Wolfe iterations performed in the FAQ
                  method of computing the pairwise distance.
 
@@ -329,6 +362,7 @@ def pairwise(
     assert M_U.shape == M_V.shape, "Expected arrays to have the same shape"
     assert (dim := len(M_U.shape)) == 2, f"Expected 2-D arrays, got {dim}-D arrays"
     assert M_U.shape[0] == M_U.shape[1], "Expected pairwise matrix to be a square matrix"
+    assert seed >= -1, "Expected seed to be a non-negative integer or -1"
     assert type(maxiter) == int and maxiter > 0, "Expected `maxiter` to be an int greater than 0"
     assert type(tol) == float and tol > 0, "Expected `tol` to be a float greater than 0"
 
@@ -337,6 +371,7 @@ def pairwise(
         M_V.astype(np.double),
         {"faq": 0}[method],
         # Options
+        seed,
         maxiter,
         tol,
     )

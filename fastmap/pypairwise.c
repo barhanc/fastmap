@@ -10,11 +10,11 @@ static PyObject *
 py_pairwise (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0, N_METHODS = 1;
+    int method = 0, N_METHODS = 1, seed = -1;
     size_t maxiter = 0;
     double tol = 0;
 
-    if (!PyArg_ParseTuple (args, "OOiid", &obj_X, &obj_Y, &method, &maxiter, &tol))
+    if (!PyArg_ParseTuple (args, "OOiiid", &obj_X, &obj_Y, &method, &seed, &maxiter, &tol))
         return NULL;
 
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_DOUBLE, 0, 0);
@@ -59,6 +59,9 @@ py_pairwise (PyObject *self, PyObject *args)
 
     size_t nc = rows_X;
     double ret = -1;
+
+    // Set seed of the PRNG
+    srand (seed > -1 ? seed : time (NULL));
 
     Py_BEGIN_ALLOW_THREADS;
     switch (method)

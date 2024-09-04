@@ -10,8 +10,8 @@ static PyObject *
 py_spear (PyObject *self, PyObject *args)
 {
     PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0, N_METHODS = 3, repeats = 0;
-    if (!PyArg_ParseTuple (args, "OOii", &obj_X, &obj_Y, &method, &repeats))
+    int method = 0, N_METHODS = 3, repeats = 0, seed = -1;
+    if (!PyArg_ParseTuple (args, "OOiii", &obj_X, &obj_Y, &method, &repeats, &seed))
         return NULL;
 
     PyArrayObject *obj_cont_X = (PyArrayObject *)PyArray_ContiguousFromAny (obj_X, NPY_INT32, 0, 0);
@@ -50,6 +50,9 @@ py_spear (PyObject *self, PyObject *args)
 
     size_t nc = rows_X, nv = cols_X;
     int32_t ret = -1;
+
+    // Set seed of the PRNG
+    srand (seed > -1 ? seed : time (NULL));
 
     Py_BEGIN_ALLOW_THREADS;
     switch (method)

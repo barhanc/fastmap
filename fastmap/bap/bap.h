@@ -100,8 +100,13 @@ bap_bf (const size_t nv, const size_t nc)
 }
 
 /**
- * @brief Implementation of the Alternating Algorithm described in arXiv:1707.07057 which is a
- * heuristic to solve the Bilinear Assignment Problem (BAP)
+ * @brief Implementation of the Alternating Algorithm described in paper:
+ *
+ * Vladyslav Sokol, Ante Ćustić, Abraham P. Punnen, Binay Bhattacharya (2020) Bilinear Assignment
+ * Problem: Large Neighborhoods and Experimental Analysis of Algorithms. INFORMS Journal on
+ * Computing 32(3):730-746. https://doi.org/10.1287/ijoc.2019.0893
+ *
+ * which is a heuristic to solve the Bilinear Assignment Problem (BAP)
  * ```
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```

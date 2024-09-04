@@ -90,14 +90,17 @@ random_doubly_stochastic (const size_t n, double *X, const double eps)
  * ```
  *  min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
  * ```
- * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
- * {0,..,n-1} and integer nc describes the size of the problem instance. Using permutation matrix P
- * we may write this problem as a minimization of a function f(P)
+ * where d(i,j,k,l) is the cost array, S_n denotes the set of all permutations of the set {0,..,n-1}
+ * and integer nc describes the size of the problem instance. Using permutation matrix P we may
+ * write this problem as a minimization of a function f(P) defined as
  * ```
  *  f(P) = sum_{i,j,k,l} d(i,j,k,l) * P[i,j] * P[k,l]   .
  * ```
- * The algorithm is based on paper
- * https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0121002.
+ * The implemented algorithm is based on paper:
+ *
+ * Vogelstein JT, Conroy JM, Lyzinski V, Podrazik LJ, Kratzer SG, Harley ET, et al. (2015) Fast
+ * Approximate Quadratic Programming for Graph Matching. PLoS ONE 10(4): e0121002.
+ * https://doi.org/10.1371/journal.pone.0121002
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
  * used to compute the cost tensor.
@@ -224,7 +227,7 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
  * used to compute the cost tensor.
  *
  * @param nc problem size parameter
- * @return double
+ * @return approximation of the minimal value of the cost function
  */
 static double
 qap_aa (const size_t nc)

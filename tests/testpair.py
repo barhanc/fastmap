@@ -44,18 +44,18 @@ U = mapel.generate_ordinal_election(
     num_candidates=nc,
     num_voters=nv,
     **culture1["params"],
-    seed=0,
 )
 V = mapel.generate_ordinal_election(
     culture_id=culture2["id"],
     num_candidates=nc,
     num_voters=nv,
     **culture2["params"],
-    seed=0,
 )
 
 print("PAIRWISE\n")
-print(f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} :: Culture2 {culture2['id']}\n")
+print(
+    f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} {culture1['params']} :: Culture2 {culture2['id']} {culture2['params']}\n"
+)
 
 t1 = time.monotonic()
 d1 = bf(U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix())
@@ -68,12 +68,24 @@ for trial in range(5):
 
     t2 = time.monotonic()
     d2 = fastmap.pairwise(
-        U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix(), method="faq", repeats=300, tol=1e-8, seed=0
+        U.votes_to_pairwise_matrix(),
+        V.votes_to_pairwise_matrix(),
+        method="faq",
+        repeats=300,
+        maxiter=300,
+        tol=1e-10,
+        seed=0,
     )
     t2 = time.monotonic() - t2
     print(f"C(faq) :: {d2:6.3f} :: Time {t2:6.3f}s :: Approx. ratio {d2 / d1 if d1 > 0 else d1 == d2:.3f}")
 
     t3 = time.monotonic()
-    d3 = fastmap.pairwise(U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix(), method="aa", repeats=300, seed=0)
+    d3 = fastmap.pairwise(
+        U.votes_to_pairwise_matrix(),
+        V.votes_to_pairwise_matrix(),
+        method="aa",
+        repeats=300,
+        seed=0,
+    )
     t3 = time.monotonic() - t3
     print(f"C(aa)  :: {d3:6.3f} :: Time {t3:6.3f}s :: Approx. ratio {d3 / d1 if d1 > 0 else d1 == d3:.3f}")

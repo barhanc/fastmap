@@ -17,12 +17,24 @@ ORDINAL_CULTURES = [
     {"id": "walsh", "params": {}},
 ]
 
-nv, nc = 96, 8
+nv, nc = 16, 10
 culture1 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
 culture2 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
-U = mapel.generate_ordinal_election(culture_id=culture1["id"], num_candidates=nc, num_voters=nv, **culture1["params"])
-V = mapel.generate_ordinal_election(culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"])
+U = mapel.generate_ordinal_election(
+    culture_id=culture1["id"],
+    num_candidates=nc,
+    num_voters=nv,
+    **culture1["params"],
+    seed=0,
+)
+V = mapel.generate_ordinal_election(
+    culture_id=culture2["id"],
+    num_candidates=nc,
+    num_voters=nv,
+    **culture2["params"],
+    seed=1,
+)
 
 print("ISOMORPHIC SWAP\n")
 print(
@@ -34,7 +46,7 @@ d1, _ = mapel.compute_distance(U, V, distance_id="swap")
 t1 = time.monotonic() - t1
 print(f"Mapel :: {d1} :: Time {t1:6.3f}s")
 
-for trial in range(5):
+for trial in range(1):
     print(f"\nTrial: {trial}\n")
 
     t2 = time.monotonic()
@@ -45,6 +57,6 @@ for trial in range(5):
     assert d1 == d2, "Wrong answer"
 
     t3 = time.monotonic()
-    d3 = fastmap.swap(U.votes, V.votes, method="aa", repeats=300, seed=42)
+    d3 = fastmap.swap(U.votes, V.votes, method="aa", repeats=30, seed=0)
     t3 = time.monotonic() - t3
     print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")

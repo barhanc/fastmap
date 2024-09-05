@@ -30,7 +30,7 @@
  * all(abs(X.sum(1) - 1) <= eps).
  */
 static void
-random_doubly_stochastic (const size_t n, double *X, const double eps)
+random_bistochastic (const size_t n, double *X, const double eps)
 {
     for (size_t r = 0; r < n; r++)
         for (size_t c = 0; c < n; c++)
@@ -129,7 +129,7 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
     double *Q = calloc (nc * nc, sizeof (double));
 
     // 1: Random initialization
-    random_doubly_stochastic (nc, P, 1e-8);
+    random_bistochastic (nc, P, 1e-8);
 
     // 2: While stopping criteria not met do
     for (size_t iter = maxiter; --iter;)

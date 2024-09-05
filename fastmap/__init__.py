@@ -65,8 +65,8 @@ def spearman(
             LAP, doing so until convergence. Time complexity of this method is O(N * (nv**3 +
             nc**3)) where N is the number of iterations it takes for the algorithm to converge.
 
-            NOTE: This method is much faster in practice than "bf" but there are no
-            theoretical guarantees on the approximation ratio for the used heuristic.
+            NOTE: This method is much faster in practice than "bf" but there are no theoretical
+            guarantees on the approximation ratio for the used heuristic.
 
             `"bb"` - implements a branch-and-bound algorithm with problem specific branching rules
             and bounding function which solves the corresponding Bilinear Assignment Problem (BAP).

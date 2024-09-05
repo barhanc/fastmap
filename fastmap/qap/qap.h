@@ -15,7 +15,7 @@
 
 /**
  * @brief Function to generate a random doubly stochastic matrix. It takes as an argument a pointer
- * *X to the array which will store the doubly stochastic matrix in a linearized row-major fashion.
+ * X to the array which will store the doubly stochastic matrix in a linearized row-major fashion.
  * It initializes matrix X with random numbers between 0 and 1 sampled uniformly and then repeatadly
  * makes the matrix row-stochastic and column-stochastic until convergence condition is met. This
  * scheme makes X eventually converge to the random doubly stochastic matrix according to paper:

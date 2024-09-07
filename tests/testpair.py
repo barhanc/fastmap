@@ -3,17 +3,116 @@ import fastmap
 import mapel.elections as mapel
 
 ORDINAL_CULTURES = [
-    {"id": "ic", "params": {}},
-    {"id": "mallows", "params": {"phi": 0.2}},
-    {"id": "mallows", "params": {"phi": 0.5}},
-    {"id": "mallows", "params": {"phi": 0.8}},
-    {"id": "urn", "params": {"alpha": 0.1}},
-    {"id": "urn", "params": {"alpha": 0.2}},
-    {"id": "urn", "params": {"alpha": 0.5}},
-    {"id": "euclidean", "params": {"dim": 1, "space": "uniform"}},
-    {"id": "euclidean", "params": {"dim": 2, "space": "uniform"}},
-    {"id": "conitzer", "params": {}},
-    {"id": "walsh", "params": {}},
+    {
+        "id": "ic",
+        "params": {},
+    },
+    {
+        "id": "norm-mallows",
+        "params": {
+            "norm-phi": 0.05,
+        },
+    },
+    {
+        "id": "norm-mallows",
+        "params": {
+            "norm-phi": 0.20,
+        },
+    },
+    {
+        "id": "norm-mallows",
+        "params": {
+            "norm-phi": 0.50,
+        },
+    },
+    {
+        "id": "urn",
+        "params": {
+            "alpha": 0.05,
+        },
+    },
+    {
+        "id": "urn",
+        "params": {
+            "alpha": 0.20,
+        },
+    },
+    {
+        "id": "urn",
+        "params": {
+            "alpha": 1.00,
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 1,
+            "space": "uniform",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 2,
+            "space": "uniform",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 3,
+            "space": "uniform",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 10,
+            "space": "uniform",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 2,
+            "space": "sphere",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 3,
+            "space": "sphere",
+        },
+    },
+    {
+        "id": "walsh",
+        "params": {},
+    },
+    {
+        "id": "conitzer",
+        "params": {},
+    },
+    {
+        "id": "spoc",
+        "params": {},
+    },
+    {
+        "id": "single-crossing",
+        "params": {},
+    },
+    {
+        "id": "group-separable",
+        "params": {
+            "tree_sampler": "caterpillar",
+        },
+    },
+    {
+        "id": "group-separable",
+        "params": {
+            "tree_sampler": "balanced",
+        },
+    },
 ]
 
 import numpy as np
@@ -52,9 +151,11 @@ V = mapel.generate_ordinal_election(
     **culture2["params"],
 )
 
-print("PAIRWISE\n")
 print(
-    f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} {culture1['params']} :: Culture2 {culture2['id']} {culture2['params']}\n"
+    "\nPAIRWISE\n\n"
+    f"Candidates {nc} :: Votes {nv} :: "
+    f"Culture1 {culture1['id']} {culture1['params']} :: "
+    f"Culture2 {culture2['id']} {culture2['params']}\n"
 )
 
 t1 = time.monotonic()
@@ -62,7 +163,7 @@ d1 = bf(U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix())
 t1 = time.monotonic() - t1
 print(f"Python :: {d1:6.3f} :: Time {t1:6.3f}")
 
-for trial in range(5):
+for trial in range(1):
 
     print(f"\nTrial : {trial}\n")
 
@@ -71,10 +172,10 @@ for trial in range(5):
         U.votes_to_pairwise_matrix(),
         V.votes_to_pairwise_matrix(),
         method="faq",
-        repeats=300,
-        maxiter=300,
-        tol=1e-10,
-        seed=0,
+        repeats=100,
+        maxiter=30,
+        tol=1e-4,
+        seed=-1,
     )
     t2 = time.monotonic() - t2
     print(f"C(faq) :: {d2:6.3f} :: Time {t2:6.3f}s :: Approx. ratio {d2 / d1 if d1 > 0 else d1 == d2:.3f}")
@@ -85,7 +186,7 @@ for trial in range(5):
         V.votes_to_pairwise_matrix(),
         method="aa",
         repeats=300,
-        seed=0,
+        seed=-1,
     )
     t3 = time.monotonic() - t3
     print(f"C(aa)  :: {d3:6.3f} :: Time {t3:6.3f}s :: Approx. ratio {d3 / d1 if d1 > 0 else d1 == d3:.3f}")

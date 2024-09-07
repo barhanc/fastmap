@@ -4,36 +4,133 @@ import mapel.elections as mapel
 import numpy as np
 
 ORDINAL_CULTURES = [
-    {"id": "ic", "params": {}},
-    {"id": "mallows", "params": {"phi": 0.2}},
-    {"id": "mallows", "params": {"phi": 0.5}},
-    {"id": "mallows", "params": {"phi": 0.8}},
-    {"id": "urn", "params": {"alpha": 0.1}},
-    {"id": "urn", "params": {"alpha": 0.2}},
-    {"id": "urn", "params": {"alpha": 0.5}},
-    {"id": "euclidean", "params": {"dim": 1, "space": "uniform"}},
-    {"id": "euclidean", "params": {"dim": 2, "space": "uniform"}},
-    {"id": "conitzer", "params": {}},
-    {"id": "walsh", "params": {}},
+    {
+        "id": "ic",
+        "params": {},
+    },
+    {
+        "id": "norm-mallows",
+        "params": {
+            "norm-phi": 0.05,
+        },
+    },
+    {
+        "id": "norm-mallows",
+        "params": {
+            "norm-phi": 0.20,
+        },
+    },
+    {
+        "id": "norm-mallows",
+        "params": {
+            "norm-phi": 0.50,
+        },
+    },
+    {
+        "id": "urn",
+        "params": {
+            "alpha": 0.05,
+        },
+    },
+    {
+        "id": "urn",
+        "params": {
+            "alpha": 0.20,
+        },
+    },
+    {
+        "id": "urn",
+        "params": {
+            "alpha": 1.00,
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 1,
+            "space": "uniform",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 2,
+            "space": "uniform",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 3,
+            "space": "uniform",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 10,
+            "space": "uniform",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 2,
+            "space": "sphere",
+        },
+    },
+    {
+        "id": "euclidean",
+        "params": {
+            "dim": 3,
+            "space": "sphere",
+        },
+    },
+    {
+        "id": "walsh",
+        "params": {},
+    },
+    {
+        "id": "conitzer",
+        "params": {},
+    },
+    {
+        "id": "spoc",
+        "params": {},
+    },
+    {
+        "id": "single-crossing",
+        "params": {},
+    },
+    {
+        "id": "group-separable",
+        "params": {
+            "tree_sampler": "caterpillar",
+        },
+    },
+    {
+        "id": "group-separable",
+        "params": {
+            "tree_sampler": "balanced",
+        },
+    },
 ]
 
-nv, nc = 16, 10
+nv, nc = 12, 10
 culture1 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
-culture2 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
+culture2 = ORDINAL_CULTURES[1]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
 U = mapel.generate_ordinal_election(
     culture_id=culture1["id"],
     num_candidates=nc,
     num_voters=nv,
     **culture1["params"],
-    seed=0,
 )
 V = mapel.generate_ordinal_election(
     culture_id=culture2["id"],
     num_candidates=nc,
     num_voters=nv,
     **culture2["params"],
-    seed=1,
 )
 
 print("ISOMORPHIC SWAP\n")
@@ -57,6 +154,6 @@ for trial in range(1):
     assert d1 == d2, "Wrong answer"
 
     t3 = time.monotonic()
-    d3 = fastmap.swap(U.votes, V.votes, method="aa", repeats=30, seed=0)
+    d3 = fastmap.swap(U.votes, V.votes, method="aa", repeats=300, seed=-1)
     t3 = time.monotonic() - t3
     print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")

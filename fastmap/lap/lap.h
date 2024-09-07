@@ -54,9 +54,11 @@
 #define PRINT_COST_ARRAY(a, n)
 #define PRINT_INDEX_ARRAY(a, n)
 
-#include <x86intrin.h>
-
 typedef int32_t cost_t;
+
+#ifdef __AVX2__
+
+#include <x86intrin.h>
 
 inline void
 find_umins_avx2 (const size_t n,
@@ -141,6 +143,45 @@ find_umins_avx2 (const size_t n,
                 v2 = h, j2 = j;
             else
                 v2 = v1, v1 = h, j2 = j1, j1 = j;
+        }
+    }
+
+    *ptr_v1 = v1, *ptr_v2 = v2, *ptr_j1 = j1, *ptr_j2 = j2;
+}
+#endif
+
+inline void
+find_umins_regular (const size_t n,
+                    const int32_t free_i,
+                    const cost_t *cost,
+                    const cost_t *v,
+                    cost_t *ptr_v1,
+                    cost_t *ptr_v2,
+                    int32_t *ptr_j1,
+                    int32_t *ptr_j2)
+{
+    int32_t j1 = 0;
+    cost_t v1 = cost[free_i * n + 0] - v[0];
+    int32_t j2 = -1;
+    cost_t v2 = LARGE;
+    for (size_t j = 1; j < n; j++)
+    {
+        PRINTF ("%d = %f %d = %f\n", j1, v1, j2, v2);
+        const cost_t c = cost[free_i * n + j] - v[j];
+        if (c < v2)
+        {
+            if (c >= v1)
+            {
+                v2 = c;
+                j2 = j;
+            }
+            else
+            {
+                v2 = v1;
+                v1 = c;
+                j2 = j1;
+                j1 = j;
+            }
         }
     }
 
@@ -253,35 +294,15 @@ _carr_dense (
         PRINTF ("current = %d rr_cnt = %d\n", current, rr_cnt);
         const int32_t free_i = free_rows[current++];
 
+#ifdef __AVX2__
         if (n >= 8)
             find_umins_avx2 (n, free_i, cost, v, &v1, &v2, &j1, &j2);
         else
-        {
-            j1 = 0;
-            v1 = cost[free_i * n + 0] - v[0];
-            j2 = -1;
-            v2 = LARGE;
-            for (size_t j = 1; j < n; j++)
-            {
-                PRINTF ("%d = %f %d = %f\n", j1, v1, j2, v2);
-                const cost_t c = cost[free_i * n + j] - v[j];
-                if (c < v2)
-                {
-                    if (c >= v1)
-                    {
-                        v2 = c;
-                        j2 = j;
-                    }
-                    else
-                    {
-                        v2 = v1;
-                        v1 = c;
-                        j2 = j1;
-                        j1 = j;
-                    }
-                }
-            }
-        }
+            find_umins_regular (n, free_i, cost, v, &v1, &v2, &j1, &j2);
+#else
+        find_umins_regular (n, free_i, cost, v, &v1, &v2, &j1, &j2);
+#endif
+
         i0 = y[j1];
         v1_new = v[j1] - (v2 - v1);
         v1_lowers = v1_new < v[j1];

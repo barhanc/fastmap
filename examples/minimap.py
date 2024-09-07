@@ -264,7 +264,7 @@ def f(t: tuple[int, OrdinalElection, int, OrdinalElection]):
 
 
 def main():
-    nv, nc = 100, 20
+    nv, nc = 96, 8
     size = 16
     args, desc = generate(cultures, nv, nc, size, seed)
     args = [(*args[i], *args[j]) for i in range(len(args)) for j in range(i + 1, len(args))]
@@ -302,7 +302,7 @@ def main():
             edgecolors=cultures[i]["plot"]["color"],
             label=desc[i * size],
         )
-    plt.title(f"Map of elections, nc={nc}, nv={nv}, Swap AA")
+    plt.title(f"Map of elections, nc={nc}, nv={nv}, Swap BF")
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.axis("off")
     plt.savefig(f"./tests/map{random.randint(1, 10000)}.png", bbox_inches="tight")

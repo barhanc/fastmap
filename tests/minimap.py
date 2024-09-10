@@ -9,7 +9,7 @@ from mapel.elections import generate_ordinal_election, OrdinalElection
 from sklearn import manifold
 from tqdm import tqdm
 
-method = "bf"
+method = "aa"
 seed = 42
 cultures = [
     {

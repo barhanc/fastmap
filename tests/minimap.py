@@ -1,4 +1,5 @@
 import random
+import pickle
 import concurrent.futures
 
 import fastmap
@@ -9,9 +10,9 @@ from mapel.elections import generate_ordinal_election, OrdinalElection
 from sklearn import manifold
 from tqdm import tqdm
 
-method = "aa"
-seed = 42
-cultures = [
+SEED = 42
+METHOD = "bf"
+ORDINAL_CULTURES = [
     {
         "id": "ic",
         "params": {},
@@ -110,7 +111,7 @@ cultures = [
 ]
 
 
-def generate(cultures: list[dict], nv: int, nc: int, size: int, seed: int = 0) -> list[tuple[int, OrdinalElection]]:
+def generate(cultures: list[dict], nv: int, nc: int, size: int, seed: int) -> list[tuple[int, OrdinalElection]]:
     return [
         (
             i * size + r,
@@ -129,18 +130,31 @@ def generate(cultures: list[dict], nv: int, nc: int, size: int, seed: int = 0) -
 
 def f(t: tuple[int, OrdinalElection, int, OrdinalElection]) -> tuple[int, int, int]:
     i, U, j, V = t
-    return i, j, fastmap.swap(U.votes, V.votes, method=method, repeats=30, seed=42)
+    return i, j, fastmap.swap(U.votes, V.votes, method=METHOD, repeats=30, seed=SEED)
 
 
 def main():
     nv, nc = 96, 8
     size = 16  # number of elections sampled from each culture
 
-    # Compute distances between every pair
+    # Generate list of elections from given cultures
     # -----------------------------------------------------
 
-    args = generate(cultures, nv, nc, size, seed)
-    args = [(*args[i], *args[j]) for i in range(len(args)) for j in range(i + 1, len(args))]
+    try:
+        with open("./tests/args.pickle", "rb") as file:
+            args = pickle.load(file)
+
+    except IOError as e:
+        print(e, "\nGenerating random data and saving them...")
+
+        args = generate(cultures=ORDINAL_CULTURES, nv=nv, nc=nc, size=size, seed=SEED)
+        args = [(*args[i], *args[j]) for i in range(len(args)) for j in range(i + 1, len(args))]
+
+        with open("./tests/args.pickle", "wb") as file:
+            pickle.dump(args, file, pickle.HIGHEST_PROTOCOL)
+
+    # Compute distances between every pair
+    # -----------------------------------------------------
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = list(tqdm(executor.map(f, args), total=len(args)))
@@ -148,7 +162,7 @@ def main():
     # Create 2d embedding
     # -----------------------------------------------------
 
-    X = np.zeros((len(cultures) * size, len(cultures) * size))
+    X = np.zeros((len(ORDINAL_CULTURES) * size, len(ORDINAL_CULTURES) * size))
 
     for i, j, d in results:
         X[i, j] = d
@@ -157,15 +171,15 @@ def main():
     npos = manifold.MDS(
         n_components=2,
         dissimilarity="precomputed",
-        random_state=0,
-        n_jobs=-1,
         normalized_stress="auto",
+        random_state=SEED,
+        n_jobs=-1,
     ).fit_transform(X)
 
     # Plot map
     # -----------------------------------------------------
 
-    for i, culture in enumerate(cultures):
+    for i, culture in enumerate(ORDINAL_CULTURES):
         plt.scatter(
             npos[i * size : i * size + size, 0],
             npos[i * size : i * size + size, 1],
@@ -175,7 +189,7 @@ def main():
             marker=culture["plot"]["marker"],
             edgecolors=culture["plot"]["color"],
         )
-    plt.title(f"Map of elections, nc={nc}, nv={nv}, Swap {method.upper()}")
+    plt.title(f"Map of elections, nc={nc}, nv={nv}, Swap {METHOD.upper()}")
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.axis("off")
     plt.savefig(f"./tests/map{random.randint(1, 10000)}.png", bbox_inches="tight")

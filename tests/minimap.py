@@ -9,6 +9,7 @@ from mapel.elections import generate_ordinal_election, OrdinalElection
 from sklearn import manifold
 from tqdm import tqdm
 
+method = "bf"
 seed = 42
 cultures = [
     {
@@ -128,7 +129,7 @@ def generate(cultures: list[dict], nv: int, nc: int, size: int, seed: int = 0) -
 
 def f(t: tuple[int, OrdinalElection, int, OrdinalElection]) -> tuple[int, int, int]:
     i, U, j, V = t
-    return i, j, fastmap.swap(U.votes, V.votes, method="aa", repeats=30, seed=42)
+    return i, j, fastmap.swap(U.votes, V.votes, method=method, repeats=30, seed=42)
 
 
 def main():
@@ -174,7 +175,7 @@ def main():
             marker=culture["plot"]["marker"],
             edgecolors=culture["plot"]["color"],
         )
-    plt.title(f"Map of elections, nc={nc}, nv={nv}, Swap AA")
+    plt.title(f"Map of elections, nc={nc}, nv={nv}, Swap {method.upper()}")
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.axis("off")
     plt.savefig(f"./tests/map{random.randint(1, 10000)}.png", bbox_inches="tight")

@@ -1,126 +1,34 @@
 import time
-import math
 import random
 import fastmap
 import mapel.elections as mapel
 import numpy as np
 
 ORDINAL_CULTURES = [
-    {
-        "id": "ic",
-        "params": {},
-    },
-    {
-        "id": "norm-mallows",
-        "params": {
-            "norm-phi": 0.05,
-        },
-    },
-    {
-        "id": "norm-mallows",
-        "params": {
-            "norm-phi": 0.20,
-        },
-    },
-    {
-        "id": "norm-mallows",
-        "params": {
-            "norm-phi": 0.50,
-        },
-    },
-    {
-        "id": "urn",
-        "params": {
-            "alpha": 0.05,
-        },
-    },
-    {
-        "id": "urn",
-        "params": {
-            "alpha": 0.20,
-        },
-    },
-    {
-        "id": "urn",
-        "params": {
-            "alpha": 1.00,
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 1,
-            "space": "uniform",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 2,
-            "space": "uniform",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 3,
-            "space": "uniform",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 10,
-            "space": "uniform",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 2,
-            "space": "sphere",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 3,
-            "space": "sphere",
-        },
-    },
-    {
-        "id": "walsh",
-        "params": {},
-    },
-    {
-        "id": "conitzer",
-        "params": {},
-    },
-    {
-        "id": "spoc",
-        "params": {},
-    },
-    {
-        "id": "single-crossing",
-        "params": {},
-    },
-    {
-        "id": "group-separable",
-        "params": {
-            "tree_sampler": "caterpillar",
-        },
-    },
-    {
-        "id": "group-separable",
-        "params": {
-            "tree_sampler": "balanced",
-        },
-    },
+    {"id": "ic", "params": {}},
+    {"id": "norm-mallows", "params": {"norm-phi": 0.05}},
+    {"id": "norm-mallows", "params": {"norm-phi": 0.20}},
+    {"id": "norm-mallows", "params": {"norm-phi": 0.50}},
+    {"id": "urn", "params": {"alpha": 0.05}},
+    {"id": "urn", "params": {"alpha": 0.20}},
+    {"id": "urn", "params": {"alpha": 1.00}},
+    {"id": "euclidean", "params": {"dim": 1, "space": "uniform"}},
+    {"id": "euclidean", "params": {"dim": 2, "space": "uniform"}},
+    {"id": "euclidean", "params": {"dim": 3, "space": "uniform"}},
+    {"id": "euclidean", "params": {"dim": 10, "space": "uniform"}},
+    {"id": "euclidean", "params": {"dim": 2, "space": "sphere"}},
+    {"id": "euclidean", "params": {"dim": 3, "space": "sphere"}},
+    {"id": "walsh", "params": {}},
+    {"id": "conitzer", "params": {}},
+    {"id": "spoc", "params": {}},
+    {"id": "single-crossing", "params": {}},
+    {"id": "group-separable", "params": {"tree_sampler": "caterpillar"}},
+    {"id": "group-separable", "params": {"tree_sampler": "balanced"}},
 ]
 
-nv, nc = 16, 10
-culture1 = ORDINAL_CULTURES[3]  # [random.randint(0, len(ORDINAL_CULTURES) - 1)]
-culture2 = ORDINAL_CULTURES[0]  # [random.randint(0, len(ORDINAL_CULTURES) - 1)]
+nv, nc = 10, 10
+culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
+culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
 U = mapel.generate_ordinal_election(culture_id=culture1["id"], num_candidates=nc, num_voters=nv, **culture1["params"])
 V = mapel.generate_ordinal_election(culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"])
@@ -150,9 +58,9 @@ for trial in range(1):
     t3 = time.monotonic() - t3
     print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d1:.3f}")
 
-    # t4 = time.monotonic()
-    # d4 = fastmap.spearman(U.votes, V.votes, method="bb", repeats=300, seed=-1)
-    # t4 = time.monotonic() - t4
-    # print(f"C(bb) :: {d4} :: Time {t4:6.3f}s :: Time ratio {t4 / t1:6.3f}")
+    t4 = time.monotonic()
+    d4 = fastmap.spearman(U.votes, V.votes, method="bb", repeats=300, seed=-1)
+    t4 = time.monotonic() - t4
+    print(f"C(bb) :: {d4} :: Time {t4:6.3f}s :: Time ratio {t4 / t1:6.3f}")
 
-    # assert d1 == d4, "Wrong answer"
+    assert d1 == d4, "Wrong answer"

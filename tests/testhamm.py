@@ -6,8 +6,9 @@ import numpy as np
 
 
 APPROVAL_CULTURES = [
-    {"id": "ic", "params": {"p": 0.1}},
-    {"id": "ic", "params": {"p": 0.2}},
+    {"id": "ic", "params": {"p": 0.10}},
+    {"id": "ic", "params": {"p": 0.15}},
+    {"id": "ic", "params": {"p": 0.50}},
     {"id": "euclidean", "params": {"dim": 1, "space": "uniform", "radius": 0.05}},
     {"id": "euclidean", "params": {"dim": 2, "space": "uniform", "radius": 0.20}},
     {"id": "euclidean", "params": {"dim": 1, "space": "gaussian", "radius": 0.05}},

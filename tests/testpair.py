@@ -1,125 +1,35 @@
-import time, random
+import time
+import random
 import fastmap
 import mapel.elections as mapel
+import numpy as np
 
 ORDINAL_CULTURES = [
-    {
-        "id": "ic",
-        "params": {},
-    },
-    {
-        "id": "norm-mallows",
-        "params": {
-            "norm-phi": 0.05,
-        },
-    },
-    {
-        "id": "norm-mallows",
-        "params": {
-            "norm-phi": 0.20,
-        },
-    },
-    {
-        "id": "norm-mallows",
-        "params": {
-            "norm-phi": 0.50,
-        },
-    },
-    {
-        "id": "urn",
-        "params": {
-            "alpha": 0.05,
-        },
-    },
-    {
-        "id": "urn",
-        "params": {
-            "alpha": 0.20,
-        },
-    },
-    {
-        "id": "urn",
-        "params": {
-            "alpha": 1.00,
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 1,
-            "space": "uniform",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 2,
-            "space": "uniform",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 3,
-            "space": "uniform",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 10,
-            "space": "uniform",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 2,
-            "space": "sphere",
-        },
-    },
-    {
-        "id": "euclidean",
-        "params": {
-            "dim": 3,
-            "space": "sphere",
-        },
-    },
-    {
-        "id": "walsh",
-        "params": {},
-    },
-    {
-        "id": "conitzer",
-        "params": {},
-    },
-    {
-        "id": "spoc",
-        "params": {},
-    },
-    {
-        "id": "single-crossing",
-        "params": {},
-    },
-    {
-        "id": "group-separable",
-        "params": {
-            "tree_sampler": "caterpillar",
-        },
-    },
-    {
-        "id": "group-separable",
-        "params": {
-            "tree_sampler": "balanced",
-        },
-    },
+    {"id": "ic", "params": {}},
+    {"id": "norm-mallows", "params": {"norm-phi": 0.05}},
+    {"id": "norm-mallows", "params": {"norm-phi": 0.20}},
+    {"id": "norm-mallows", "params": {"norm-phi": 0.50}},
+    {"id": "urn", "params": {"alpha": 0.05}},
+    {"id": "urn", "params": {"alpha": 0.20}},
+    {"id": "urn", "params": {"alpha": 1.00}},
+    {"id": "euclidean", "params": {"dim": 1, "space": "uniform"}},
+    {"id": "euclidean", "params": {"dim": 2, "space": "uniform"}},
+    {"id": "euclidean", "params": {"dim": 3, "space": "uniform"}},
+    {"id": "euclidean", "params": {"dim": 10, "space": "uniform"}},
+    {"id": "euclidean", "params": {"dim": 2, "space": "sphere"}},
+    {"id": "euclidean", "params": {"dim": 3, "space": "sphere"}},
+    {"id": "walsh", "params": {}},
+    {"id": "conitzer", "params": {}},
+    {"id": "spoc", "params": {}},
+    {"id": "single-crossing", "params": {}},
+    {"id": "group-separable", "params": {"tree_sampler": "caterpillar"}},
+    {"id": "group-separable", "params": {"tree_sampler": "balanced"}},
 ]
-
-import numpy as np
-from itertools import permutations
 
 
 def bf(M_U: np.ndarray, M_V: np.ndarray):
+    from itertools import permutations
+
     assert M_U.shape == M_V.shape
     nc, _ = M_U.shape
     best = float("inf")

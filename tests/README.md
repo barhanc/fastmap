@@ -4,14 +4,14 @@ about 7 minutes on Apple M1
 
 ![alt text](map2455.png "Map of elections using fastmap AA heuristic")
 
-*Exemplar Map of elections using fastmap AA heuristic*
+*Exemplar Map of elections using fastmap AA heuristic | Time: ~1min (i9-12900K)*
 
 Changing AA to BF method in fastmap library results (for the same list of elections) in computing time
 of about 2h on Intel Core i9-12900K CPU and generates the following map.
 
 ![alt text](map6935.png "Map of elections using fastmap BF")
 
-*Exemplar Map of elections using fastmap BF*
+*Exemplar Map of elections using fastmap BF | Time: ~2h (i9-12900K)*
 
 The reproducible code is in [minimap.py](/tests/minimap.py) file. 
 

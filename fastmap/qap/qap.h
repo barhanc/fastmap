@@ -148,7 +148,7 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
         lapf (nc, grad_f, rowsol_nc, colsol_nc);
         memset (Q, 0, nc * nc * sizeof (double));
         for (size_t i = 0; i < nc; i++)
-            Q[i * nc + colsol_nc[i]] = 1;
+            Q[i * nc + rowsol_nc[i]] = 1;
 
         // 5: Compute the step size alpha
 

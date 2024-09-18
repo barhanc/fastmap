@@ -30,12 +30,24 @@ nv, nc = 10, 10
 culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
 culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
-U = mapel.generate_ordinal_election(culture_id=culture1["id"], num_candidates=nc, num_voters=nv, **culture1["params"])
-V = mapel.generate_ordinal_election(culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"])
-
 print("ISOMORPHIC SPEARMAN\n")
 print(
-    f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} {culture1['params']} :: Culture2 {culture2['id']} {culture2['params']}\n"
+    f"Candidates {nc} :: Votes {nv}\n"
+    f"Culture1 {culture1['id']} {culture1['params']}\n"
+    f"Culture2 {culture2['id']} {culture2['params']}\n"
+)
+
+U = mapel.generate_ordinal_election(
+    culture_id=culture1["id"],
+    num_candidates=nc,
+    num_voters=nv,
+    **culture1["params"],
+)
+V = mapel.generate_ordinal_election(
+    culture_id=culture2["id"],
+    num_candidates=nc,
+    num_voters=nv,
+    **culture2["params"],
 )
 
 t1 = time.monotonic()
@@ -57,6 +69,8 @@ for trial in range(1):
     d3 = fastmap.spearman(U.votes, V.votes, method="aa", repeats=300, seed=-1)
     t3 = time.monotonic() - t3
     print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d1:.3f}")
+
+    assert d1 <= d3, "Wrong answer"
 
     t4 = time.monotonic()
     d4 = fastmap.spearman(U.votes, V.votes, method="bb", repeats=300, seed=-1)

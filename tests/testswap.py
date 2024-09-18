@@ -26,28 +26,28 @@ ORDINAL_CULTURES = [
     {"id": "group-separable", "params": {"tree_sampler": "balanced"}},
 ]
 
-nv, nc = 2048, 5
-culture1 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
-culture2 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
+nv, nc = 10, 10
+culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
+culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
+
+print("ISOMORPHIC SWAP\n")
+print(
+    f"Candidates {nc} :: Votes {nv}\n"
+    f"Culture1 {culture1['id']} {culture1['params']}\n"
+    f"Culture2 {culture2['id']} {culture2['params']}\n"
+)
 
 U = mapel.generate_ordinal_election(
     culture_id=culture1["id"],
     num_candidates=nc,
     num_voters=nv,
     **culture1["params"],
-    seed=0,
 )
 V = mapel.generate_ordinal_election(
     culture_id=culture2["id"],
     num_candidates=nc,
     num_voters=nv,
     **culture2["params"],
-    seed=1,
-)
-
-print("ISOMORPHIC SWAP\n")
-print(
-    f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} {culture1['params']} :: Culture2 {culture2['id']} {culture2['params']}\n"
 )
 
 t1 = time.monotonic()
@@ -65,7 +65,9 @@ for trial in range(1):
 
     assert d1 == d2, "Wrong answer"
 
-    # t3 = time.monotonic()
-    # d3 = fastmap.swap(U.votes, V.votes, method="aa", repeats=300, seed=0)
-    # t3 = time.monotonic() - t3
-    # print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")
+    t3 = time.monotonic()
+    d3 = fastmap.swap(U.votes, V.votes, method="aa", repeats=30)
+    t3 = time.monotonic() - t3
+    print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")
+
+    assert d1 <= d3, "Wrong answer"

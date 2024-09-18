@@ -44,9 +44,16 @@ def bf(M_U: np.ndarray, M_V: np.ndarray):
     return best
 
 
-nv, nc = 100, 9
-culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
-culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
+nv, nc = 100, 8
+culture1 = ORDINAL_CULTURES[0]  # [random.randint(0, len(ORDINAL_CULTURES) - 1)]
+culture2 = ORDINAL_CULTURES[0]  # [random.randint(0, len(ORDINAL_CULTURES) - 1)]
+
+print(
+    "\nPAIRWISE\n\n"
+    f"Candidates {nc} :: Votes {nv} :: "
+    f"Culture1 {culture1['id']} {culture1['params']} :: "
+    f"Culture2 {culture2['id']} {culture2['params']}\n"
+)
 
 U = mapel.generate_ordinal_election(
     culture_id=culture1["id"],
@@ -61,17 +68,11 @@ V = mapel.generate_ordinal_election(
     **culture2["params"],
 )
 
-print(
-    "\nPAIRWISE\n\n"
-    f"Candidates {nc} :: Votes {nv} :: "
-    f"Culture1 {culture1['id']} {culture1['params']} :: "
-    f"Culture2 {culture2['id']} {culture2['params']}\n"
-)
 
 t1 = time.monotonic()
 d1 = bf(U.votes_to_pairwise_matrix(), V.votes_to_pairwise_matrix())
 t1 = time.monotonic() - t1
-print(f"Python :: {d1:6.3f} :: Time {t1:6.3f}")
+print(f"Python :: {d1:6.3f} :: Time {t1:6.3f}s")
 
 for trial in range(1):
 
@@ -82,13 +83,14 @@ for trial in range(1):
         U.votes_to_pairwise_matrix(),
         V.votes_to_pairwise_matrix(),
         method="faq",
-        repeats=100,
+        repeats=300,
         maxiter=30,
         tol=1e-4,
-        seed=-1,
     )
     t2 = time.monotonic() - t2
     print(f"C(faq) :: {d2:6.3f} :: Time {t2:6.3f}s :: Approx. ratio {d2 / d1 if d1 > 0 else d1 == d2:.3f}")
+
+    assert d1 <= d2, "Wrong answer"
 
     t3 = time.monotonic()
     d3 = fastmap.pairwise(
@@ -96,7 +98,8 @@ for trial in range(1):
         V.votes_to_pairwise_matrix(),
         method="aa",
         repeats=300,
-        seed=-1,
     )
     t3 = time.monotonic() - t3
     print(f"C(aa)  :: {d3:6.3f} :: Time {t3:6.3f}s :: Approx. ratio {d3 / d1 if d1 > 0 else d1 == d3:.3f}")
+
+    assert d1 <= d3, "Wrong answer"

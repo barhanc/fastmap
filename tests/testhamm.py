@@ -21,19 +21,34 @@ nv, nc = 96, 8
 culture1 = APPROVAL_CULTURES[random.randint(0, len(APPROVAL_CULTURES) - 1)]
 culture2 = APPROVAL_CULTURES[random.randint(0, len(APPROVAL_CULTURES) - 1)]
 
-U = mapel.generate_approval_election(culture_id=culture1["id"], num_candidates=nc, num_voters=nv, **culture1["params"])
-V = mapel.generate_approval_election(culture_id=culture2["id"], num_candidates=nc, num_voters=nv, **culture2["params"])
+print("\n\nISOMORPHIC HAMMING\n")
+print(
+    f"Candidates {nc} :: Votes {nv}\n"
+    f"Culture1 {culture1['id']} {culture1['params']}\n"
+    f"Culture2 {culture2['id']} {culture2['params']}\n"
+)
+
+U = mapel.generate_approval_election(
+    culture_id=culture1["id"],
+    num_candidates=nc,
+    num_voters=nv,
+    **culture1["params"],
+)
+V = mapel.generate_approval_election(
+    culture_id=culture2["id"],
+    num_candidates=nc,
+    num_voters=nv,
+    **culture2["params"],
+)
 
 oU, oV = np.zeros((nv, nc)), np.zeros((nv, nc))
+
 for i, ballot in enumerate(U.votes):
     oU[i][list(ballot)] = 1
+
 for i, ballot in enumerate(V.votes):
     oV[i][list(ballot)] = 1
 
-print("\n\nISOMORPHIC HAMMING\n")
-print(
-    f"Candidates {nc} :: Votes {nv} :: Culture1 {culture1['id']} {culture1['params']} :: Culture2 {culture2['id']} {culture2['params']}\n"
-)
 
 t1 = time.monotonic()
 d1, _ = mapel.compute_distance(U, V, distance_id="l1-approvalwise")
@@ -53,6 +68,8 @@ for trial in range(1):
     d3 = fastmap.hamming(oU, oV, method="aa", repeats=300, seed=-1)
     t3 = time.monotonic() - t3
     print(f"C(aa) :: {d3:.2f} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx ratio :: {d3 / d2:.3f}")
+
+    assert d2 <= d3, "Wrong answer"
 
     t4 = time.monotonic()
     d4 = fastmap.hamming(oU, oV, method="bb", repeats=300, seed=-1)

@@ -414,6 +414,14 @@ _ca_dense (
 }
 
 /** Solve dense sparse LAP.
+ *
+ * input:
+ * n        - problem size
+ * cost     - cost matrix
+
+ * output:
+ * x     - column assigned to row in solution
+ * y     - row assigned to column in solution
  */
 static cost_t
 lapf (const size_t n, cost_t *cost, int32_t *x, int32_t *y)

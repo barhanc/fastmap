@@ -194,7 +194,7 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
     double res = 0;
     for (size_t i = 0; i < nc; i++)
         for (size_t j = 0; j < nc; j++)
-            res += d (i, colsol_nc[i], j, colsol_nc[j]);
+            res += d (i, rowsol_nc[i], j, rowsol_nc[j]);
 
     free (rowsol_nc);
     free (colsol_nc);

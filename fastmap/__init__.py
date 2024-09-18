@@ -342,8 +342,8 @@ def pairwise(
     ```
     min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
     ```
-    where d(i,j,k,l) := abs(M_V[i,k] - M_V[j,l]), nc is the number of candidates and S_n denotes the
-    set of all permutations of the set {0,..,n-1}. Matrices M_V and M_U are the so called pairwise
+    where d(i,j,k,l) := abs(M_U[i,k] - M_V[j,l]), nc is the number of candidates and S_n denotes the
+    set of all permutations of the set {0,..,n-1}. Matrices M_U and M_V are the so called pairwise
     matrices of elections U and V. Pairwise matrix M of an election U is a matrix whose element
     M[i,j] is equal to the (normalized) number of votes in which i-th candidate comes before the
     j-th one.

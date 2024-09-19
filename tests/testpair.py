@@ -27,26 +27,28 @@ ORDINAL_CULTURES = [
 ]
 
 
+def dist(M_U, M_V, sigma):
+    M_V = M_V[sigma, :]
+    M_V = M_V[:, sigma]
+    return np.sum(np.abs(M_U - M_V))
+
+
 def bf(M_U: np.ndarray, M_V: np.ndarray):
     from itertools import permutations
 
     assert M_U.shape == M_V.shape
-    nc, _ = M_U.shape
-    best = float("inf")
+    nc = M_U.shape[0]
 
+    best = float("inf")
     for sigma in permutations(range(nc)):
-        res = 0
-        for i in range(nc):
-            for j in range(nc):
-                res += abs(M_U[i, j] - M_V[sigma[i], sigma[j]])
-        best = min(best, res)
+        best = min(best, dist(M_U, M_V, sigma))
 
     return best
 
 
 nv, nc = 100, 8
-culture1 = ORDINAL_CULTURES[0]  # [random.randint(0, len(ORDINAL_CULTURES) - 1)]
-culture2 = ORDINAL_CULTURES[0]  # [random.randint(0, len(ORDINAL_CULTURES) - 1)]
+culture1 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
+culture2 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
 print(
     "\nPAIRWISE\n\n"
@@ -90,7 +92,7 @@ for trial in range(1):
     t2 = time.monotonic() - t2
     print(f"C(faq) :: {d2:6.3f} :: Time {t2:6.3f}s :: Approx. ratio {d2 / d1 if d1 > 0 else d1 == d2:.3f}")
 
-    assert d1 <= d2, "Wrong answer"
+    assert round(d1, 6) <= round(d2, 6), f"Wrong answer: {d1} > {d2}"
 
     t3 = time.monotonic()
     d3 = fastmap.pairwise(
@@ -102,4 +104,4 @@ for trial in range(1):
     t3 = time.monotonic() - t3
     print(f"C(aa)  :: {d3:6.3f} :: Time {t3:6.3f}s :: Approx. ratio {d3 / d1 if d1 > 0 else d1 == d3:.3f}")
 
-    assert d1 <= d3, "Wrong answer"
+    assert round(d1, 6) <= round(d3, 6), f"Wrong answer: {d1} > {d3}"

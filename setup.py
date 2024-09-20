@@ -53,7 +53,7 @@ setup(
             name="fastmap._pairwise",
             sources=["fastmap/pypairwise.c"],
             extra_compile_args=CFLAGS,
-            include_dirs=["fastmap/lap/", "fastmap/qap/"],
+            include_dirs=["fastmap/lap/", "fastmap/qap/", "fastmap/utils/"],
         ),
     ],
     include_dirs=[np.get_include()],

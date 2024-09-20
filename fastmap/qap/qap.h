@@ -214,7 +214,7 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
  * {0,..,n-1} and integer nc describes the size of the problem instance. The algorithm actually
  * solves heuristically the Bilinear Assignment Problem (BAP)
  * ```
- *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,v(i),j,σ(j))
+ *  min_{v ∈ S_nc} min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,v(i),j,σ(j))
  * ```
  * using the Alternating Algorithm (for details see: 'bap.h' file). After the AA algorithm has
  * converged we return the smaller of the values

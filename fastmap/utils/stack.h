@@ -11,7 +11,7 @@
  * - `size`: number of elements on the stack
  *
  * Public functions:
- * - `Queue *stack_alloc()`: allocate memory for the stack and return pointer to it
+ * - `Stack *stack_alloc()`: allocate memory for the stack and return pointer to it
  * - `void push(Stack *s, void *item)`: push a generic item on the top of the stack
  * - `void *pop(Stack *s)`: remove and return the generic item from the top of the stack
  */

@@ -104,7 +104,7 @@ random_bistochastic (const size_t n, double *X, const double eps)
  * https://doi.org/10.1371/journal.pone.0121002
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
- * used to compute the cost tensor.
+ * used to compute the cost array.
  *
  * @param nc problem size parameter
  * @param maxiter upper bound on iteration count
@@ -210,7 +210,7 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
  * ```
  *  min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
  * ```
- * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
+ * where d(i,j,k,l) is the cost array, S_n denotes the set of all permutations of the set
  * {0,..,n-1} and integer nc describes the size of the problem instance. The algorithm actually
  * solves heuristically the Bilinear Assignment Problem (BAP)
  * ```
@@ -225,7 +225,7 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
  * which provides a heuristic solution to the QAP problem.
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
- * used to compute the cost tensor.
+ * used to compute the cost array.
  *
  * @param nc problem size parameter
  * @return approximation of the minimal value of the cost function

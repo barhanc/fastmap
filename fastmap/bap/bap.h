@@ -17,7 +17,7 @@
  * ```
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```
- * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
+ * where d(i,j,k,l) is the cost array, S_n denotes the set of all permutations of the set
  * {0,..,n-1} and integers nv, nc describe the size of the problem instance. The algorithm generates
  * all permutations of S_nc using Heap's algorithm and for every generated permutation σ solves the
  * following Linear Assignment Problem (LAP) in order to find the optimal permutation v ∈ S_nv
@@ -25,7 +25,7 @@
  *   min_{v ∈ S_nv} sum_{i=0,..,nv-1} ( sum_{k=0,..,nc-1} d(i,v(i),k,σ(k)) ) .
  * ```
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
- * used to compute the cost tensor.
+ * used to compute the cost array.
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
@@ -110,7 +110,7 @@ bap_bf (const size_t nv, const size_t nc)
  * ```
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```
- * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
+ * where d(i,j,k,l) is the cost array, S_n denotes the set of all permutations of the set
  * {0,..,n-1} and integers nv, nc describe the size of the problem instance. The algorithm first
  * generates a feasible solution to the BAP by sampling from a uniform distribution two permutations
  * σ, v and then performs a coordinate-descent-like refinment by interchangeably fixing one of the
@@ -118,7 +118,7 @@ bap_bf (const size_t nv, const size_t nc)
  * permutation with the matching found in LAP doing so until convergence.
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
- * used to compute the cost tensor.
+ * used to compute the cost array.
  *
  * @param nv problem size parameter
  * @param nc problem size parameter
@@ -221,7 +221,7 @@ typedef struct Node
  * ```
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))    (0)
  * ```
- * where d(i,j,k,l) is the cost tensor, S_n denotes the set of all permutations of the set
+ * where d(i,j,k,l) is the cost array, S_n denotes the set of all permutations of the set
  * {0,..,n-1} and integers nv, nc describe the size of the problem instance. In the algorithm we
  * first compute an upper bound on the cost value using Alternating Algorithm heuristic (see:
  * bap_aa() function) and later perform a search over all permutation prefixes of σ computing the
@@ -249,7 +249,7 @@ typedef struct Node
  * brute-force needs to solve only nc! LAPs for cost matrices of size nv x nv.
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
- * used to compute the cost tensor.
+ * used to compute the cost array.
  *
  * @param nv problem size parameter
  * @param nc problem size parameter

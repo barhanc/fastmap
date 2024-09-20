@@ -98,7 +98,7 @@ def spearman(
     try:
         import fastmap._spear
     except ImportError as e:
-        raise ImportError("C extension module for computing Isomorphic Spearman distance not found") from e
+        raise ImportError("Error while importing C extension for computing Isomorphic Spearman distance") from e
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
@@ -213,7 +213,7 @@ def hamming(
     try:
         import fastmap._hamm
     except ImportError as e:
-        raise ImportError("C extension module for computing Isomorphic Hamming distance not found") from e
+        raise ImportError("Error while importing C extension for computing Isomorphic Hamming distance") from e
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
@@ -309,7 +309,7 @@ def swap(
     try:
         import fastmap._swap
     except ImportError as e:
-        raise ImportError("C extension module for computing Isomorphic swap distance not found") from e
+        raise ImportError("Error while importing C extension for computing Isomorphic swap distance") from e
 
     assert isinstance(U, np.ndarray) and isinstance(V, np.ndarray), "Expected numpy arrays"
     assert U.shape == V.shape, "Expected arrays to have the same shape"
@@ -411,7 +411,7 @@ def pairwise(
     try:
         import fastmap._pairwise
     except ImportError as e:
-        raise ImportError("C extension module for computing pairwise distance not found") from e
+        raise ImportError("Error while importing C extension for computing pairwise distance") from e
 
     assert isinstance(M_U, np.ndarray) and isinstance(M_V, np.ndarray), "Expected numpy arrays"
     assert M_U.shape == M_V.shape, "Expected arrays to have the same shape"

@@ -56,7 +56,7 @@
 #define PRINT_COST_ARRAY(a, n)
 #define PRINT_INDEX_ARRAY(a, n)
 
-typedef int32_t cost_t;
+typedef int32_t costi_t;
 
 #ifdef __AVX2__
 
@@ -65,14 +65,14 @@ typedef int32_t cost_t;
 inline void
 _lapi_find_umins_avx2 (const size_t n,
                        const int32_t free_i,
-                       const cost_t *cost,
-                       const cost_t *v,
-                       cost_t *ptr_v1,
-                       cost_t *ptr_v2,
+                       const costi_t *cost,
+                       const costi_t *v,
+                       costi_t *ptr_v1,
+                       costi_t *ptr_v2,
                        int32_t *ptr_j1,
                        int32_t *ptr_j2)
 {
-    cost_t *c = cost + free_i * n;
+    costi_t *c = cost + free_i * n;
 
     __m256i idxs = _mm256_setr_epi32 (0, 1, 2, 3, 4, 5, 6, 7);
     __m256i incr = _mm256_set1_epi32 (8);
@@ -105,7 +105,7 @@ _lapi_find_umins_avx2 (const size_t n,
         idxs = _mm256_add_epi32 (idxs, incr);
     }
 
-    cost_t h_dump[8], h_backup_dump[8];
+    costi_t h_dump[8], h_backup_dump[8];
     int32_t j_dump[8], j_backup_dump[8];
     _mm256_store_si256 ((__m256i *)&h_dump, hvec);
     _mm256_store_si256 ((__m256i *)&h_backup_dump, hvec_backup);
@@ -114,12 +114,12 @@ _lapi_find_umins_avx2 (const size_t n,
 
     int32_t j1 = -1;
     int32_t j2 = -1;
-    cost_t v1 = LARGE;
-    cost_t v2 = LARGE;
+    costi_t v1 = LARGE;
+    costi_t v2 = LARGE;
 
     for (int32_t j_ = 0; j_ < 8; j_++)
     {
-        cost_t h = h_dump[j_];
+        costi_t h = h_dump[j_];
         if (h < v2)
         {
             if (h >= v1)
@@ -128,7 +128,7 @@ _lapi_find_umins_avx2 (const size_t n,
                 v2 = v1, v1 = h, j2 = j1, j1 = j_dump[j_];
         }
 
-        cost_t h_b = h_backup_dump[j_];
+        costi_t h_b = h_backup_dump[j_];
         if (h_b < v2)
         {
             j2 = j_backup_dump[j_];
@@ -138,7 +138,7 @@ _lapi_find_umins_avx2 (const size_t n,
 
     for (int32_t j = n - n % 8; j < n; j += 1)
     {
-        cost_t h = c[j] - v[j];
+        costi_t h = c[j] - v[j];
         if (h < v2)
         {
             if (h >= v1)
@@ -155,21 +155,21 @@ _lapi_find_umins_avx2 (const size_t n,
 inline void
 _lapi_find_umins_regular (const size_t n,
                           const int32_t free_i,
-                          const cost_t *cost,
-                          const cost_t *v,
-                          cost_t *ptr_v1,
-                          cost_t *ptr_v2,
+                          const costi_t *cost,
+                          const costi_t *v,
+                          costi_t *ptr_v1,
+                          costi_t *ptr_v2,
                           int32_t *ptr_j1,
                           int32_t *ptr_j2)
 {
     int32_t j1 = 0;
-    cost_t v1 = cost[free_i * n + 0] - v[0];
+    costi_t v1 = cost[free_i * n + 0] - v[0];
     int32_t j2 = -1;
-    cost_t v2 = LARGE;
+    costi_t v2 = LARGE;
     for (size_t j = 1; j < n; j++)
     {
         PRINTF ("%d = %f %d = %f\n", j1, v1, j2, v2);
-        const cost_t c = cost[free_i * n + j] - v[j];
+        const costi_t c = cost[free_i * n + j] - v[j];
         if (c < v2)
         {
             if (c >= v1)
@@ -193,8 +193,8 @@ _lapi_find_umins_regular (const size_t n,
 /** Column-reduction and reduction transfer for a dense cost matrix.
  */
 static int32_t
-_lapi_ccrrt_dense (const size_t n, cost_t *cost,
-                   int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
+_lapi_ccrrt_dense (const size_t n, costi_t *cost,
+                   int32_t *free_rows, int32_t *x, int32_t *y, costi_t *v)
 {
     int32_t n_free_rows;
     bool *unique;
@@ -209,7 +209,7 @@ _lapi_ccrrt_dense (const size_t n, cost_t *cost,
     {
         for (size_t j = 0; j < n; j++)
         {
-            const cost_t c = cost[i * n + j];
+            const costi_t c = cost[i * n + j];
             if (c < v[j])
             {
                 v[j] = c;
@@ -249,14 +249,14 @@ _lapi_ccrrt_dense (const size_t n, cost_t *cost,
         else if (unique[i])
         {
             const int32_t j = x[i];
-            cost_t min = LARGE;
+            costi_t min = LARGE;
             for (size_t j2 = 0; j2 < n; j2++)
             {
                 if (j2 == (size_t)j)
                 {
                     continue;
                 }
-                const cost_t c = cost[i * n + j2] - v[j2];
+                const costi_t c = cost[i * n + j2] - v[j2];
                 if (c < min)
                 {
                     min = c;
@@ -274,9 +274,9 @@ _lapi_ccrrt_dense (const size_t n, cost_t *cost,
  */
 static int32_t
 _lapi_carr_dense (
-    const size_t n, cost_t *cost,
+    const size_t n, costi_t *cost,
     const size_t n_free_rows,
-    int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
+    int32_t *free_rows, int32_t *x, int32_t *y, costi_t *v)
 {
     size_t current = 0;
     int32_t new_free_rows = 0;
@@ -289,7 +289,7 @@ _lapi_carr_dense (
     {
         int32_t i0;
         int32_t j1, j2;
-        cost_t v1, v2, v1_new;
+        costi_t v1, v2, v1_new;
         bool v1_lowers;
 
         rr_cnt++;
@@ -349,10 +349,10 @@ _lapi_carr_dense (
 /** Find columns with minimum d[j] and put them on the SCAN list.
  */
 static size_t
-_lapi_find_dense (const size_t n, size_t lo, cost_t *d, int32_t *cols, int32_t *y)
+_lapi_find_dense (const size_t n, size_t lo, costi_t *d, int32_t *cols, int32_t *y)
 {
     size_t hi = lo + 1;
-    cost_t mind = d[cols[lo]];
+    costi_t mind = d[cols[lo]];
     for (size_t k = hi; k < n; k++)
     {
         int32_t j = cols[k];
@@ -373,20 +373,20 @@ _lapi_find_dense (const size_t n, size_t lo, cost_t *d, int32_t *cols, int32_t *
 // Scan all columns in TODO starting from arbitrary column in SCAN
 // and try to decrease d of the TODO columns using the SCAN column.
 static int32_t
-_lapi_scan_dense (const size_t n, cost_t *cost,
+_lapi_scan_dense (const size_t n, costi_t *cost,
                   size_t *plo, size_t *phi,
-                  cost_t *d, int32_t *cols, int32_t *pred,
-                  int32_t *y, cost_t *v)
+                  costi_t *d, int32_t *cols, int32_t *pred,
+                  int32_t *y, costi_t *v)
 {
     size_t lo = *plo;
     size_t hi = *phi;
-    cost_t h, cred_ij;
+    costi_t h, cred_ij;
 
     while (lo != hi)
     {
         int32_t j = cols[lo++];
         const int32_t i = y[j];
-        const cost_t mind = d[j];
+        const costi_t mind = d[j];
         h = cost[i * n + j] - v[j] - mind;
         PRINTF ("i=%d j=%d h=%f\n", i, j, h);
         // For all columns in TODO
@@ -423,19 +423,19 @@ _lapi_scan_dense (const size_t n, cost_t *cost,
  */
 static int32_t
 _lapi_find_path_dense (
-    const size_t n, cost_t *cost,
+    const size_t n, costi_t *cost,
     const int32_t start_i,
-    int32_t *y, cost_t *v,
+    int32_t *y, costi_t *v,
     int32_t *pred)
 {
     size_t lo = 0, hi = 0;
     int32_t final_j = -1;
     size_t n_ready = 0;
     int32_t *cols;
-    cost_t *d;
+    costi_t *d;
 
     NEW (cols, int32_t, n);
-    NEW (d, cost_t, n);
+    NEW (d, costi_t, n);
 
     for (size_t i = 0; i < n; i++)
     {
@@ -477,7 +477,7 @@ _lapi_find_path_dense (
     PRINTF ("found final_j=%d\n", final_j);
     PRINT_INDEX_ARRAY (cols, n);
     {
-        const cost_t mind = d[cols[lo]];
+        const costi_t mind = d[cols[lo]];
         for (size_t k = 0; k < n_ready; k++)
         {
             const int32_t j = cols[k];
@@ -495,9 +495,9 @@ _lapi_find_path_dense (
  */
 static int32_t
 _lapi_ca_dense (
-    const size_t n, cost_t *cost,
+    const size_t n, costi_t *cost,
     const size_t n_free_rows,
-    int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
+    int32_t *free_rows, int32_t *x, int32_t *y, costi_t *v)
 {
     int32_t *pred;
 
@@ -542,15 +542,15 @@ _lapi_ca_dense (
  * x     - column assigned to row in solution
  * y     - row assigned to column in solution
  */
-static cost_t
+static costi_t
 lapi (const size_t n, int32_t *cost, int32_t *x, int32_t *y)
 {
     int ret;
     int32_t *free_rows;
-    cost_t *v;
+    costi_t *v;
 
     NEW (free_rows, int32_t, n);
-    NEW (v, cost_t, n);
+    NEW (v, costi_t, n);
     ret = _lapi_ccrrt_dense (n, cost, free_rows, x, y, v);
     int i = 0;
     while (ret > 0 && i < 2)
@@ -569,7 +569,7 @@ lapi (const size_t n, int32_t *cost, int32_t *x, int32_t *y)
     if (ret < 0)
         return ret;
 
-    cost_t res = 0;
+    costi_t res = 0;
     for (size_t i = 0; i < n; i++)
         res += cost[i * n + x[i]];
 

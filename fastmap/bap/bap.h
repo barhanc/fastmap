@@ -16,7 +16,7 @@
     }
 
 /**
- * @brief Brute-force algorithm solving Bilinear Assignment Problem (BAP)
+ * @brief Implementation of a brute-force algorithm solving Bilinear Assignment Problem (BAP)
  * ```
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```

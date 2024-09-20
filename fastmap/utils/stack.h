@@ -15,6 +15,8 @@
  * - `void push(Stack *s, void *item)`: push a generic item on the top of the stack
  * - `void *pop(Stack *s)`: remove and return the generic item from the top of the stack
  */
+#ifndef STACK_H
+#define STACK_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,3 +70,4 @@ pop (Stack *stack)
 
     return item;
 }
+#endif

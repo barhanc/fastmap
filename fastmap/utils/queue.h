@@ -47,6 +47,8 @@
  * }
  * ```
  */
+#ifndef QUEUE_H
+#define QUEUE_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,3 +123,4 @@ dequeue (Queue *q)
     free (tmp);
     return item;
 }
+#endif

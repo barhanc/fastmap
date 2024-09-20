@@ -18,7 +18,7 @@
  * X to the array which will store the doubly stochastic matrix in a linearized row-major fashion.
  * It initializes matrix X with random numbers between 0 and 1 sampled uniformly and then repeatadly
  * makes the matrix row-stochastic and column-stochastic until convergence condition is met. This
- * scheme makes X eventually converge to the random doubly stochastic matrix according to paper:
+ * scheme makes X eventually converge to the random doubly stochastic matrix according to paper
  *
  * Richard Sinkhorn. "A Relationship Between Arbitrary Positive Matrices and Doubly Stochastic
  * Matrices." Ann. Math. Statist. 35 (2) 876 - 879, June, 1964.
@@ -87,7 +87,7 @@ random_bistochastic (const size_t n, double *X, const double eps)
 }
 
 /**
- * @brief Approximate algorithm solving Quadratic Assignment Problem (QAP)
+ * @brief Implementation of an approximate algorithm solving Quadratic Assignment Problem (QAP)
  * ```
  *  min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
  * ```
@@ -97,8 +97,7 @@ random_bistochastic (const size_t n, double *X, const double eps)
  * ```
  *  f(P) = sum_{i,j,k,l} d(i,j,k,l) * P[i,j] * P[k,l]   .
  * ```
- * The implemented algorithm is a generalization to Lawler QAP problem of the algorithm described in
- * paper:
+ * The implemented algorithm is a generalization to Lawler QAP of the algorithm described in paper
  *
  * Vogelstein JT, Conroy JM, Lyzinski V, Podrazik LJ, Kratzer SG, Harley ET, et al. (2015) Fast
  * Approximate Quadratic Programming for Graph Matching. PLoS ONE 10(4): e0121002.

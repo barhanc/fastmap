@@ -606,7 +606,6 @@ py_swap (PyObject *self, PyObject *args)
     PyObject *obj_X = NULL;  // Argument object for the 1st matrix
     PyObject *obj_Y = NULL;  // Argument object for the 2nd matrix
     // Options
-    int N_METHODS = 2;
     int method = 0;
     int repeats = 0;
     int seed = -1;
@@ -622,6 +621,8 @@ py_swap (PyObject *self, PyObject *args)
         return NULL;
 
     // Assert method is between 0 and N_METHODS-1
+
+    const int N_METHODS = 2;
 
     if (method < 0 || method >= N_METHODS)
     {

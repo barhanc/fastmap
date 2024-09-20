@@ -23,6 +23,8 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef _LAPF_H
+#define _LAPF_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -50,7 +52,6 @@
     }
 
 #define ASSERT(cond)
-// #define PRINTF(fmt, ...) printf(fmt, ##__VA_ARGS__)
 #define PRINTF(fmt, ...)
 #define PRINT_COST_ARRAY(a, n)
 #define PRINT_INDEX_ARRAY(a, n)
@@ -60,8 +61,8 @@ typedef double cost_t;
 /** Column-reduction and reduction transfer for a dense cost matrix.
  */
 static int32_t
-_ccrrt_dense (const size_t n, cost_t *cost,
-              int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
+_lapf_ccrrt_dense (const size_t n, cost_t *cost,
+                   int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
 {
     int32_t n_free_rows;
     bool *unique;
@@ -140,7 +141,7 @@ _ccrrt_dense (const size_t n, cost_t *cost,
 /** Augmenting row reduction for a dense cost matrix.
  */
 static int32_t
-_carr_dense (
+_lapf_carr_dense (
     const size_t n, cost_t *cost,
     const size_t n_free_rows,
     int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
@@ -230,7 +231,7 @@ _carr_dense (
 /** Find columns with minimum d[j] and put them on the SCAN list.
  */
 static size_t
-_find_dense (const size_t n, size_t lo, cost_t *d, int32_t *cols, int32_t *y)
+_lapf_find_dense (const size_t n, size_t lo, cost_t *d, int32_t *cols, int32_t *y)
 {
     size_t hi = lo + 1;
     cost_t mind = d[cols[lo]];
@@ -254,10 +255,10 @@ _find_dense (const size_t n, size_t lo, cost_t *d, int32_t *cols, int32_t *y)
 // Scan all columns in TODO starting from arbitrary column in SCAN
 // and try to decrease d of the TODO columns using the SCAN column.
 static int32_t
-_scan_dense (const size_t n, cost_t *cost,
-             size_t *plo, size_t *phi,
-             cost_t *d, int32_t *cols, int32_t *pred,
-             int32_t *y, cost_t *v)
+_lapf_scan_dense (const size_t n, cost_t *cost,
+                  size_t *plo, size_t *phi,
+                  cost_t *d, int32_t *cols, int32_t *pred,
+                  int32_t *y, cost_t *v)
 {
     size_t lo = *plo;
     size_t hi = *phi;
@@ -303,7 +304,7 @@ _scan_dense (const size_t n, cost_t *cost,
  * \return The closest free column index.
  */
 static int32_t
-find_path_dense (
+_lapf_find_path_dense (
     const size_t n, cost_t *cost,
     const int32_t start_i,
     int32_t *y, cost_t *v,
@@ -332,7 +333,7 @@ find_path_dense (
         {
             PRINTF ("%d..%d -> find\n", lo, hi);
             n_ready = lo;
-            hi = _find_dense (n, lo, d, cols, y);
+            hi = _lapf_find_dense (n, lo, d, cols, y);
             PRINTF ("check %d..%d\n", lo, hi);
             PRINT_INDEX_ARRAY (cols, n);
             for (size_t k = lo; k < hi; k++)
@@ -347,7 +348,7 @@ find_path_dense (
         if (final_j == -1)
         {
             PRINTF ("%d..%d -> scan\n", lo, hi);
-            final_j = _scan_dense (
+            final_j = _lapf_scan_dense (
                 n, cost, &lo, &hi, d, cols, pred, y, v);
             PRINT_COST_ARRAY (d, n);
             PRINT_INDEX_ARRAY (cols, n);
@@ -375,7 +376,7 @@ find_path_dense (
 /** Augment for a dense cost matrix.
  */
 static int32_t
-_ca_dense (
+_lapf_ca_dense (
     const size_t n, cost_t *cost,
     const size_t n_free_rows,
     int32_t *free_rows, int32_t *x, int32_t *y, cost_t *v)
@@ -390,7 +391,7 @@ _ca_dense (
         size_t k = 0;
 
         PRINTF ("looking at free_i=%d\n", *pfree_i);
-        j = find_path_dense (n, cost, *pfree_i, y, v, pred);
+        j = _lapf_find_path_dense (n, cost, *pfree_i, y, v, pred);
         ASSERT (j >= 0);
         ASSERT (j < n);
         while (i != *pfree_i)
@@ -424,7 +425,7 @@ _ca_dense (
  * y     - row assigned to column in solution
  */
 static cost_t
-lapf (const size_t n, cost_t *cost, int32_t *x, int32_t *y)
+lapf (const size_t n, double *cost, int32_t *x, int32_t *y)
 {
     int ret;
     int32_t *free_rows;
@@ -432,16 +433,16 @@ lapf (const size_t n, cost_t *cost, int32_t *x, int32_t *y)
 
     NEW (free_rows, int32_t, n);
     NEW (v, cost_t, n);
-    ret = _ccrrt_dense (n, cost, free_rows, x, y, v);
+    ret = _lapf_ccrrt_dense (n, cost, free_rows, x, y, v);
     int i = 0;
     while (ret > 0 && i < 2)
     {
-        ret = _carr_dense (n, cost, ret, free_rows, x, y, v);
+        ret = _lapf_carr_dense (n, cost, ret, free_rows, x, y, v);
         i++;
     }
     if (ret > 0)
     {
-        ret = _ca_dense (n, cost, ret, free_rows, x, y, v);
+        ret = _lapf_ca_dense (n, cost, ret, free_rows, x, y, v);
     }
 
     FREE (v);
@@ -456,3 +457,4 @@ lapf (const size_t n, cost_t *cost, int32_t *x, int32_t *y)
 
     return res;
 }
+#endif

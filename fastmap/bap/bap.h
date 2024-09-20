@@ -1,5 +1,5 @@
-#ifndef _BAP_H
-#define _BAP_H
+#ifndef BAP_H
+#define BAP_H
 
 #include <stdbool.h>
 #include <stdint.h>

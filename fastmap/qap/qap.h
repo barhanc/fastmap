@@ -1,5 +1,5 @@
-#ifndef _QAP_H
-#define _QAP_H
+#ifndef QAP_H
+#define QAP_H
 
 #include <math.h>
 #include <stdbool.h>

@@ -23,8 +23,8 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef _LAPI_H
-#define _LAPI_H
+#ifndef LAPI_H
+#define LAPI_H
 
 #include <stdbool.h>
 #include <stdint.h>

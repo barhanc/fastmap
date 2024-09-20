@@ -602,8 +602,17 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
 static PyObject *
 py_swap (PyObject *self, PyObject *args)
 {
-    PyObject *result = NULL, *obj_X = NULL, *obj_Y = NULL;
-    int method = 0, N_METHODS = 2, repeats = 0, seed = -1;
+    PyObject *result = NULL; // Return object of the Python function
+    PyObject *obj_X = NULL;  // Argument object for the 1st matrix
+    PyObject *obj_Y = NULL;  // Argument object for the 2nd matrix
+    // Options
+    int N_METHODS = 2;
+    int method = 0;
+    int repeats = 0;
+    int seed = -1;
+
+    // Parse arguments from Python to C
+
     if (!PyArg_ParseTuple (args, "OOiii", &obj_X, &obj_Y, &method, &repeats, &seed))
         return NULL;
 
@@ -612,11 +621,15 @@ py_swap (PyObject *self, PyObject *args)
     if (!obj_cont_X || !obj_cont_Y)
         return NULL;
 
+    // Assert method is between 0 and N_METHODS-1
+
     if (method < 0 || method >= N_METHODS)
     {
         PyErr_Format (PyExc_ValueError, "expected method to be an int between 0 and %d", N_METHODS - 1);
         goto cleanup;
     }
+
+    // Assert arrays are 2D
 
     if (PyArray_NDIM (obj_cont_X) != 2 || PyArray_NDIM (obj_cont_Y) != 2)
     {
@@ -624,6 +637,8 @@ py_swap (PyObject *self, PyObject *args)
                       PyArray_NDIM (obj_cont_X), PyArray_NDIM (obj_cont_Y));
         goto cleanup;
     }
+
+    // Cast array objects to C arrays
 
     int32_t *pos_U = (int32_t *)PyArray_DATA (obj_cont_X);
     int32_t *pos_V = (int32_t *)PyArray_DATA (obj_cont_Y);
@@ -633,6 +648,8 @@ py_swap (PyObject *self, PyObject *args)
         goto cleanup;
     }
 
+    // Assert arrays have the same shape
+
     npy_intp rows_X = PyArray_DIM (obj_cont_X, 0), cols_X = PyArray_DIM (obj_cont_X, 1);
     npy_intp rows_Y = PyArray_DIM (obj_cont_Y, 0), cols_Y = PyArray_DIM (obj_cont_Y, 1);
     if (rows_X != rows_Y || cols_X != cols_Y)
@@ -641,11 +658,16 @@ py_swap (PyObject *self, PyObject *args)
         goto cleanup;
     }
 
+    // Variables required for C functions
+
     size_t nc = rows_X, nv = cols_X;
     int32_t ret = -1;
 
     // Set seed of the PRNG
+
     srand (seed > -1 ? seed : time (NULL));
+
+    // Compute solution using C functions
 
     Py_BEGIN_ALLOW_THREADS;
     switch (method)

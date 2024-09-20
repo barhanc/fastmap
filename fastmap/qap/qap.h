@@ -1,3 +1,6 @@
+#ifndef _QAP_H
+#define _QAP_H
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -311,3 +314,4 @@ qap_aa (const size_t nc)
 
     return best_res_1 < best_res_2 ? best_res_1 : best_res_2;
 }
+#endif

@@ -1,9 +1,12 @@
+#ifndef _BAP_H
+#define _BAP_H
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "lap.h"
+#include "lapi.h"
 
 #define swap(type, x, y) \
     {                    \
@@ -58,7 +61,7 @@ bap_bf (const size_t nv, const size_t nc)
     int32_t *x = calloc (nv, sizeof (int32_t));
     int32_t *y = calloc (nv, sizeof (int32_t));
 
-    int32_t best_res = lap (nv, cost, x, y);
+    int32_t best_res = lapi (nv, cost, x, y);
 
     while (alpha < nc)
     {
@@ -76,7 +79,7 @@ bap_bf (const size_t nv, const size_t nc)
                                         - d (i, j, p, sigma[p])
                                         - d (i, j, q, sigma[q]);
 
-            int32_t res = lap (nv, cost, x, y);
+            int32_t res = lapi (nv, cost, x, y);
             best_res = res < best_res ? res : best_res;
 
             swap (size_t, sigma[p], sigma[q]);
@@ -173,7 +176,7 @@ bap_aa (const size_t nv, const size_t nc)
                 for (size_t j = 0; j < nv; j++)
                     cost_nv[i * nv + j] += d (i, j, k, sigma_nc[k]);
 
-        res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv);
+        res_curr = lapi (nv, cost_nv, rowsol_nv, colsol_nv);
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
 
@@ -183,7 +186,7 @@ bap_aa (const size_t nv, const size_t nc)
                 for (size_t k = 0; k < nv; k++)
                     cost_nc[i * nc + j] += d (k, sigma_nv[k], i, j);
 
-        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc);
+        res_curr = lapi (nc, cost_nc, rowsol_nc, colsol_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc[i] = rowsol_nc[i];
 
@@ -350,13 +353,13 @@ bap_bb (const size_t nv, const size_t nc, const int repeats)
                         }
 
                         if (m > 0)
-                            cost_nv[i * nv + j] = lap (m, cost_m, rowsol_m, colsol_m);
+                            cost_nv[i * nv + j] = lapi (m, cost_m, rowsol_m, colsol_m);
 
                         for (size_t k = 0; k < new_node->n; k++)
                             cost_nv[i * nv + j] += d (i, j, k, new_node->sigma[k]);
                     }
 
-                new_node->bound = lap (nv, cost_nv, rowsol_nv, colsol_nv);
+                new_node->bound = lapi (nv, cost_nv, rowsol_nv, colsol_nv);
 
                 // 1. If bound(Ni) > B, do nothing; since the lower bound on this node is greater
                 //    than the upper bound of the problem, it will never lead to the optimal
@@ -392,3 +395,4 @@ bap_bb (const size_t nv, const size_t nc, const int repeats)
 
     return B;
 }
+#endif

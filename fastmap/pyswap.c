@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lap.h"
+#include "lapi.h"
 
 #define swap(type, x, y) \
     {                    \
@@ -112,7 +112,7 @@ swap_bf (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     int32_t *x = calloc (nv, sizeof (int32_t));
     int32_t *y = calloc (nv, sizeof (int32_t));
 
-    int32_t best_res = lap (nv, cost, x, y);
+    int32_t best_res = lapi (nv, cost, x, y);
 
     while (alpha < nc)
     {
@@ -150,7 +150,7 @@ swap_bf (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                 }
             }
 
-            int32_t res = lap (nv, cost, x, y);
+            int32_t res = lapi (nv, cost, x, y);
             best_res = res < best_res ? res : best_res;
 
             swap (size_t, sigma[p], sigma[q]);
@@ -384,7 +384,7 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
     int32_t *x = calloc (nv, sizeof (int32_t));
     int32_t *y = calloc (nv, sizeof (int32_t));
 
-    int32_t best_res = lap (nv, cost, x, y);
+    int32_t best_res = lapi (nv, cost, x, y);
 
     while (alpha < nc)
     {
@@ -416,7 +416,7 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
                 }
             }
 
-            int32_t res = lap (nv, cost, x, y);
+            int32_t res = lapi (nv, cost, x, y);
             best_res = res < best_res ? res : best_res;
 
             swap (size_t, sigma[p], sigma[q]);
@@ -539,7 +539,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                     for (size_t j = 0; j < nv; j++)
                         cost_nv[i * nv + j] += d (i, j, k, l, sigma_nc_1[k], sigma_nc_2[l]);
 
-        res_curr = lap (nv, cost_nv, rowsol_nv, colsol_nv);
+        res_curr = lapi (nv, cost_nv, rowsol_nv, colsol_nv);
         for (size_t i = 0; i < nv; i++)
             sigma_nv[i] = rowsol_nv[i];
 
@@ -550,7 +550,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                     for (size_t k = 0; k < nv; k++)
                         cost_nc[i * nc + j] += d (k, sigma_nv[k], i, l, j, sigma_nc_2[l]);
 
-        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc);
+        res_curr = lapi (nc, cost_nc, rowsol_nc, colsol_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc_1[i] = rowsol_nc[i];
 
@@ -561,7 +561,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
                     for (size_t k = 0; k < nv; k++)
                         cost_nc[i * nc + j] += d (k, sigma_nv[k], l, i, sigma_nc_1[l], j);
 
-        res_curr = lap (nc, cost_nc, rowsol_nc, colsol_nc);
+        res_curr = lapi (nc, cost_nc, rowsol_nc, colsol_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc_2[i] = rowsol_nc[i];
 

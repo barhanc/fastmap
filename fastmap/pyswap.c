@@ -532,17 +532,6 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     // Coordinate-descent-like refinment
     while (1)
     {
-        memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
-        for (size_t l = 0; l < nc; l++)
-            for (size_t k = 0; k < nc; k++)
-                for (size_t i = 0; i < nv; i++)
-                    for (size_t j = 0; j < nv; j++)
-                        cost_nv[i * nv + j] += d (i, j, k, l, sigma_nc_1[k], sigma_nc_2[l]);
-
-        res_curr = lapi (nv, cost_nv, rowsol_nv, colsol_nv);
-        for (size_t i = 0; i < nv; i++)
-            sigma_nv[i] = rowsol_nv[i];
-
         memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
         for (size_t i = 0; i < nc; i++)
             for (size_t j = 0; j < nc; j++)
@@ -565,23 +554,40 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
         for (size_t i = 0; i < nc; i++)
             sigma_nc_2[i] = rowsol_nc[i];
 
+        memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
+        for (size_t l = 0; l < nc; l++)
+            for (size_t k = 0; k < nc; k++)
+                for (size_t i = 0; i < nv; i++)
+                    for (size_t j = 0; j < nv; j++)
+                        cost_nv[i * nv + j] += d (i, j, k, l, sigma_nc_1[k], sigma_nc_2[l]);
+
+        res_curr = lapi (nv, cost_nv, rowsol_nv, colsol_nv);
+        for (size_t i = 0; i < nv; i++)
+            sigma_nv[i] = rowsol_nv[i];
+
         if (res_prev == res_curr)
             break;
 
         res_prev = res_curr;
     }
 
-    int32_t best_res_1 = 0;
-    for (size_t k = 0; k < nc; k++)
-        for (size_t l = k; l < nc; l++)
+    memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
+    for (size_t l = 0; l < nc; l++)
+        for (size_t k = 0; k < nc; k++)
             for (size_t i = 0; i < nv; i++)
-                best_res_1 += d (i, sigma_nv[i], k, l, sigma_nc_1[k], sigma_nc_1[l]);
+                for (size_t j = 0; j < nv; j++)
+                    cost_nv[i * nv + j] += d (i, j, k, l, sigma_nc_1[k], sigma_nc_1[l]);
 
-    int32_t best_res_2 = 0;
-    for (size_t k = 0; k < nc; k++)
-        for (size_t l = k; l < nc; l++)
+    int32_t res1 = lapi (nv, cost_nv, rowsol_nv, colsol_nv) / 2;
+
+    memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
+    for (size_t l = 0; l < nc; l++)
+        for (size_t k = 0; k < nc; k++)
             for (size_t i = 0; i < nv; i++)
-                best_res_2 += d (i, sigma_nv[i], k, l, sigma_nc_2[k], sigma_nc_2[l]);
+                for (size_t j = 0; j < nv; j++)
+                    cost_nv[i * nv + j] += d (i, j, k, l, sigma_nc_2[k], sigma_nc_2[l]);
+
+    int32_t res2 = lapi (nv, cost_nv, rowsol_nv, colsol_nv) / 2;
 
     free (sigma_nv);
     free (sigma_nc_1);
@@ -593,7 +599,7 @@ swap_aa (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size
     free (colsol_nv);
     free (colsol_nc);
 
-    return best_res_1 < best_res_2 ? best_res_1 : best_res_2;
+    return res1 < res2 ? res1 : res2;
 }
 
 // =================================================================================================

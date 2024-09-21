@@ -340,7 +340,7 @@ static int32_t
 swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const size_t nc)
 {
     // Ordinal Election matrix of the 2nd election (V) constructed from position matrix pos_V
-    int32_t *V = calloc (nv * nc, sizeof (size_t));
+    size_t *V = calloc (nv * nc, sizeof (size_t));
     for (size_t i = 0; i < nv; i++)
         for (size_t j = 0; j < nc; j++)
             V[i + nv * pos_V[i + nv * j]] = j;

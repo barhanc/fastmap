@@ -11,7 +11,7 @@ from sklearn import manifold
 from tqdm import tqdm
 
 SEED = 42
-METHOD = "bf"
+METHOD = "aa"
 ORDINAL_CULTURES = [
     {
         "id": "ic",

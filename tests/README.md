@@ -1,8 +1,8 @@
 This is an exemplar map of elections with 8 candidates and 96 voters which requires computing 46056
 distances that was generated using the AA heuristic in about 1 minute on Intel Core i9-12900K CPU or
-about 7 minutes on Apple M1
+about 8 minutes on Apple M1
 
-![alt text](map2455.png "Map of elections using fastmap AA heuristic")
+![alt text](map6410.png "Map of elections using fastmap AA heuristic")
 
 *Exemplar Map of elections using fastmap AA heuristic | Time: ~1min (i9-12900K)*
 

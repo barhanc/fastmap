@@ -46,7 +46,7 @@ def spearman(
             Generates all permutations σ of the set {0,..,min(nv-1,nc-1)} using Heap's algorithm and
             for each generated permutation σ solves the Linear Assignment Problem (LAP) to obtain
             the optimal permutation v of {0,..,max(nv-1,nc-1)}. Time complexity of this method is
-            O(min(nv,nc)! * max(nv,nc)**3)
+            `O(min(nv,nc)! * max(nv,nc)**3)`
 
             NOTE: This method returns exact value but if one of the nv, nc is greater than
             10 it is extremely slow.
@@ -62,8 +62,8 @@ def spearman(
             permutations σ, v and then performs a coordinate-descent-like refinment by
             interchangeably fixing one of the permutations, solving the corresponding Linear
             Assignment Problem (LAP) and updating the other permutation with the matching found in
-            LAP, doing so until convergence. Time complexity of this method is O(N * (nv**3 +
-            nc**3)) where N is the number of iterations it takes for the algorithm to converge.
+            LAP, doing so until convergence. Time complexity of this method is `O(N * (nv**3 +
+            nc**3))` where N is the number of iterations it takes for the algorithm to converge.
 
             NOTE: This method is much faster in practice than "bf" but there are no theoretical
             guarantees on the approximation ratio for the used heuristic.
@@ -161,7 +161,7 @@ def hamming(
             Generates all permutations σ of the set {1,..,min(nv,nc)} using Heap's algorithm and for
             each generated permutation σ solves the Linear Assignment Problem (LAP) to obtain the
             optimal permutation v of {0,..,max(nv-1,nc-1)}. Time complexity of this method is
-            O(min(nv,nc)! * max(nv,nc)**3)
+            `O(min(nv,nc)! * max(nv,nc)**3)`
 
             NOTE: This method returns exact value but if one of the nv, nc is greater than 10 it is
             extremely slow.
@@ -283,8 +283,8 @@ def swap(
 
             `"aa"` - implements a coordinate-descent heuristic, analogous to the Alternating
             Algorithm for BAP problem (see docs for the fastmap.hamming or fastmap.spearman
-            function). Time complexity of this method is O(N * (nv**3 + nc**3 * nv + nv**2 * nc**2))
-            where N is the number of iterations it takes for the algorithm to converge.
+            function). Time complexity of this method is `O(N * (nv**3 + nc**3 * nv + nv**2 *
+            nc**2))` where N is the number of iterations it takes for the algorithm to converge.
 
             NOTE: This method is much faster in practice than "bf" but there are no theoretical
             guarantees on the approximation ratio for the used heuristic.
@@ -374,7 +374,7 @@ def pairwise(
 
             `"aa"` - implements a coordinate-descent heuristic, which solves a corresponding BAP
             problem using Alternating Algorithm (see docs for the fastmap.hamming or
-            fastmap.spearman function). Time complexity of this method is O(N * nc**3) where N is
+            fastmap.spearman function). Time complexity of this method is `O(N * nc**3)` where N is
             the number of iterations it takes for the algorithm to converge.
 
         repeats:

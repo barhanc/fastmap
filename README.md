@@ -40,9 +40,6 @@ $ source venv/bin/activate
 (venv) $ pip install git+https://github.com/barhanc/fastmap.git
 ```
 
-# Running tests
+# Benchmarking
 
-```shell
-(venv) $ pip install -e '.[testing]'
-```
 TODO:...

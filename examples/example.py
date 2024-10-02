@@ -1,3 +1,4 @@
+import os
 import random
 import pickle
 import concurrent.futures
@@ -130,7 +131,7 @@ def generate(cultures: list[dict], nv: int, nc: int, size: int, seed: int) -> li
 
 def f(t: tuple[int, OrdinalElection, int, OrdinalElection]) -> tuple[int, int, int]:
     i, U, j, V = t
-    return i, j, fastmap.swap(U.votes, V.votes, method=METHOD, repeats=30, seed=SEED)
+    return i, j, fastmap.swap(U.votes, V.votes, method=METHOD, repeats=60, seed=SEED)
 
 
 def main():
@@ -141,7 +142,7 @@ def main():
     # -----------------------------------------------------
 
     try:
-        with open("./tests/args.pickle", "rb") as file:
+        with open(os.path.abspath(__file__), "rb") as file:
             args = pickle.load(file)
 
     except IOError as e:
@@ -150,7 +151,7 @@ def main():
         args = generate(cultures=ORDINAL_CULTURES, nv=nv, nc=nc, size=size, seed=SEED)
         args = [(*args[i], *args[j]) for i in range(len(args)) for j in range(i + 1, len(args))]
 
-        with open("./tests/args.pickle", "wb") as file:
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/args.pickle", "wb") as file:
             pickle.dump(args, file, pickle.HIGHEST_PROTOCOL)
 
     # Compute distances between every pair
@@ -192,7 +193,10 @@ def main():
     plt.title(f"Map of elections, nc={nc}, nv={nv}, Swap {METHOD.upper()}")
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.axis("off")
-    plt.savefig(f"./tests/map{random.randint(1, 10000)}.png", bbox_inches="tight")
+    plt.savefig(
+        os.path.dirname(os.path.abspath(__file__)) + f"/map{random.randint(1, 10000)}.png",
+        bbox_inches="tight",
+    )
 
 
 if __name__ == "__main__":

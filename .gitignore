@@ -1,6 +1,7 @@
 .vscode/
 extern/
 *.dump
+experiments/
 
 # Local History for Visual Studio Code
 .history/

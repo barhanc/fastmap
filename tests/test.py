@@ -39,6 +39,8 @@ def py_isomorphic_bf(
     ```
     d-ID(U, V) := min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} d( U[i, σ], V[v(i), :] )
     ```
+    where nc is the number of candidates, nv is the number of voters and S_n denotes the set of all
+    permutations of the set {0,..,n-1}.
 
     Args:
         U:

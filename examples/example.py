@@ -131,7 +131,7 @@ def generate(cultures: list[dict], nv: int, nc: int, size: int, seed: int) -> li
 
 def f(t: tuple[int, OrdinalElection, int, OrdinalElection]) -> tuple[int, int, int]:
     i, U, j, V = t
-    return i, j, fastmap.swap(U.votes, V.votes, method=METHOD, repeats=60, seed=SEED)
+    return i, j, fastmap.swap(U.votes, V.votes, method=METHOD, repeats=30, seed=SEED)
 
 
 def main():

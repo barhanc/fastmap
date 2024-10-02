@@ -26,9 +26,9 @@ ORDINAL_CULTURES = [
     {"id": "group-separable", "params": {"tree_sampler": "balanced"}},
 ]
 
-nv, nc = 10, 10
-culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
-culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
+nv, nc = 50, 6
+culture1 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
+culture2 = ORDINAL_CULTURES[0]  # random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
 print("ISOMORPHIC SPEARMAN\n")
 print(

@@ -26,9 +26,9 @@ ORDINAL_CULTURES = [
     {"id": "group-separable", "params": {"tree_sampler": "balanced"}},
 ]
 
-nv, nc = 10, 10
-culture1 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
-culture2 = ORDINAL_CULTURES[random.randint(0, len(ORDINAL_CULTURES) - 1)]
+nv, nc = 8, 8
+culture1 = ORDINAL_CULTURES[0]  # [random.randint(0, len(ORDINAL_CULTURES) - 1)]
+culture2 = ORDINAL_CULTURES[0]  # [random.randint(0, len(ORDINAL_CULTURES) - 1)]
 
 print("ISOMORPHIC SWAP\n")
 print(
@@ -66,7 +66,7 @@ for trial in range(1):
     assert d1 == d2, "Wrong answer"
 
     t3 = time.monotonic()
-    d3 = fastmap.swap(U.votes, V.votes, method="aa", repeats=30)
+    d3 = fastmap.swap(U.votes, V.votes, method="aa", repeats=300)
     t3 = time.monotonic() - t3
     print(f"C(aa) :: {d3} :: Time {t3:6.3f}s :: Time ratio {t3 / t1:6.3f} :: Approx. ratio {d3/d1:.3f}")
 

@@ -17,7 +17,7 @@ solutions (which might be "good enough" to get initial maps of elections).
 
 The goal of this project is to provide such highly optimized implementations, as well as heuristics
 for computing the distances. The implementation---if sufficiently good---will become part of the
-Python [MapEl](https://github.com/szufix/mapel) package.
+Python [Mapel](https://github.com/szufix/mapel) package.
 
 # Installation
 

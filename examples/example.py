@@ -140,9 +140,8 @@ def main():
 
     # Generate list of elections from given cultures
     # -----------------------------------------------------
-
     try:
-        with open(os.path.abspath(__file__), "rb") as file:
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/args.pickle", "rb") as file:
             args = pickle.load(file)
 
     except IOError as e:

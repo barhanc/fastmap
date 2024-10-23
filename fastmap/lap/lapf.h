@@ -58,6 +58,142 @@
 
 typedef double costf_t;
 
+#ifdef __AVX2__
+
+#include <x86intrin.h>
+
+inline void
+_lapf_find_umins_avx2 (const size_t n,
+                          const int32_t free_i,
+                          const costf_t *cost,
+                          const costf_t *v,
+                          costf_t *ptr_v1,
+                          costf_t *ptr_v2,
+                          int32_t *ptr_j1,
+                          int32_t *ptr_j2) 
+{
+    costf_t *c = cost + free_i * n;
+
+    __m512d idxs = _mm512_setr_pd(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0);
+    __m512d incr = _mm512_set1_pd(8.0);
+
+    __m512d hvec = _mm512_set1_pd(LARGE);
+    __m512d hvec_backup = _mm512_set1_pd(LARGE);
+
+    __m512d jvec = _mm512_set1_pd(-1.0);
+    __m512d jvec_backup = _mm512_set1_pd(-1.0);
+
+    __m512d h;
+    __mmask8 cmp1, cmp2;
+
+    for (int32_t j = 0; j < n - 7; j += 8) 
+    {
+        h = _mm512_sub_pd (_mm512_loadu_pd ((__m512d *)(c + j)),
+                           _mm512_loadu_pd ((__m512d *)(v + j)));
+
+
+        cmp1 = _mm512_cmp_pd_mask(hvec, h, _CMP_GT_OQ);
+        cmp2 = _mm512_cmp_pd_mask(hvec_backup, h, _CMP_GT_OQ);
+        cmp2 = (~cmp1)&cmp2;
+
+        hvec_backup = _mm512_mask_blend_pd(cmp1, hvec_backup, hvec);
+        jvec_backup = _mm512_mask_blend_pd(cmp1, jvec_backup, jvec);
+
+        hvec = _mm512_mask_blend_pd(cmp1, hvec, h);
+        jvec = _mm512_mask_blend_pd(cmp1, jvec, idxs);
+
+        hvec_backup = _mm512_mask_blend_pd(cmp2, hvec_backup, h);
+        jvec_backup = _mm512_mask_blend_pd(cmp2, jvec_backup, idxs);
+
+        idxs = _mm512_add_pd(idxs, incr);
+    }
+
+    costf_t h_dump[8], h_backup_dump[8];
+    costf_t j_dump[8], j_backup_dump[8];
+    _mm512_store_pd((__m512d *)&h_dump, hvec);
+    _mm512_store_pd((__m512d *)&h_backup_dump, hvec_backup);
+    _mm512_store_pd((__m512d *)&j_dump, jvec);
+    _mm512_store_pd((__m512d *)&j_backup_dump, jvec_backup);
+
+    costf_t j1 = -1.0;
+    costf_t j2 = -1.0;
+    costf_t v1 = LARGE;
+    costf_t v2 = LARGE;
+
+
+    for (int32_t j_ = 0; j_ < 8; j_++) 
+    {
+        costf_t h = h_dump[j_];
+        if (h < v2)
+        {
+            if (h >= v1)
+                v2 = h, j2 = j_dump[j_];
+            else
+                v2 = v1, v1 = h, j2 = j1, j1 = j_dump[j_];
+        }
+
+        costf_t h_b = h_backup_dump[j_];
+        if (h_b < v2)
+        {
+            j2 = j_backup_dump[j_];
+            v2 = h_b;
+        }
+    }
+
+    for (int32_t j = n - n % 8; j < n; j += 1)
+    {
+        costf_t h = c[j] - v[j];
+        if (h < v2)
+        {
+            if (h >= v1)
+                v2 = h, j2 = j;
+            else
+                v2 = v1, v1 = h, j2 = j1, j1 = j;
+        }
+    }
+
+    *ptr_v1 = v1, *ptr_v2 = v2, *ptr_j1 = j1, *ptr_j2 = j2;
+}
+#endif
+
+inline void
+_lapf_find_umins_regular (const size_t n,
+                          const int32_t free_i,
+                          const costf_t *cost,
+                          const costf_t *v,
+                          costf_t *ptr_v1,
+                          costf_t *ptr_v2,
+                          int32_t *ptr_j1,
+                          int32_t *ptr_j2)
+{
+    int32_t j1 = 0;
+    costf_t v1 = cost[free_i * n + 0] - v[0];
+    int32_t j2 = -1;
+    costf_t v2 = LARGE;
+    for (size_t j = 1; j < n; j++)
+    {
+        PRINTF ("%d = %f %d = %f\n", j1, v1, j2, v2);
+        const costf_t c = cost[free_i * n + j] - v[j];
+        if (c < v2)
+        {
+            if (c >= v1)
+            {
+                v2 = c;
+                j2 = j;
+            }
+            else
+            {
+                v2 = v1;
+                v1 = c;
+                j2 = j1;
+                j1 = j;
+            }
+        }
+    }
+
+    *ptr_v1 = v1, *ptr_v2 = v2, *ptr_j1 = j1, *ptr_j2 = j2;
+}
+
 /** Column-reduction and reduction transfer for a dense cost matrix.
  */
 static int32_t
@@ -163,30 +299,39 @@ _lapf_carr_dense (
         rr_cnt++;
         PRINTF ("current = %d rr_cnt = %d\n", current, rr_cnt);
         const int32_t free_i = free_rows[current++];
-        j1 = 0;
-        v1 = cost[free_i * n + 0] - v[0];
-        j2 = -1;
-        v2 = LARGE;
-        for (size_t j = 1; j < n; j++)
-        {
-            PRINTF ("%d = %f %d = %f\n", j1, v1, j2, v2);
-            const costf_t c = cost[free_i * n + j] - v[j];
-            if (c < v2)
-            {
-                if (c >= v1)
-                {
-                    v2 = c;
-                    j2 = j;
-                }
-                else
-                {
-                    v2 = v1;
-                    v1 = c;
-                    j2 = j1;
-                    j1 = j;
-                }
-            }
-        }
+        // j1 = 0;
+        // v1 = cost[free_i * n + 0] - v[0];
+        // j2 = -1;
+        // v2 = LARGE;
+        // for (size_t j = 1; j < n; j++)
+        // {
+        //     PRINTF ("%d = %f %d = %f\n", j1, v1, j2, v2);
+        //     const costf_t c = cost[free_i * n + j] - v[j];
+        //     if (c < v2)
+        //     {
+        //         if (c >= v1)
+        //         {
+        //             v2 = c;
+        //             j2 = j;
+        //         }
+        //         else
+        //         {
+        //             v2 = v1;
+        //             v1 = c;
+        //             j2 = j1;
+        //             j1 = j;
+        //         }
+        //     }
+        // }
+    #ifdef __AVX2__
+        if (n >= 8)
+            _lapf_find_umins_avx2 (n, free_i, cost, v, &v1, &v2, &j1, &j2);
+        else
+            _lapf_find_umins_regular (n, free_i, cost, v, &v1, &v2, &j1, &j2);
+    #else
+            _lapf_find_umins_regular (n, free_i, cost, v, &v1, &v2, &j1, &j2);
+    #endif
+
         i0 = y[j1];
         v1_new = v[j1] - (v2 - v1);
         v1_lowers = v1_new < v[j1];

@@ -42,4 +42,23 @@ $ source venv/bin/activate
 
 # Benchmarking
 
+In the [example.py](/examples/example.py) file we provide a minimalistic code which generates a map
+of elections with 8 candidates and 96 voters that requires computing 46056 isomorphic swap
+distances. In the code we use the `concurrent.futures` module to utilze multiple cores when
+computing the distances and use the `sklearn.manifold.MDS` method to obtain the 2D embedding. We
+provide the elections' matrices generated using `mapel.elections` module in the `args.pickle` file
+to allow full reproducibility. Below we show the resulting maps and the time required to generate
+them for the brute force method and the heuristic AA method.
+
+![alt text](/examples/map4022.png "Map of elections using fastmap AA heuristic")
+
+*Exemplar Map of elections using fastmap AA heuristic | Time: ~1min (Intel i9-12900K) / ~8min (Apple M1)*
+
+![alt text](/examples/map9658.png "Map of elections using fastmap BF implementation")
+
+*Exemplar Map of elections using fastmap BF implementation | Time: ~2h (Intel i9-12900K)*
+
+As we can see the maps are nearly identical while the computing time using the implemented heuristic
+is vastly smaller.
+
 TODO:...

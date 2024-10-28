@@ -140,6 +140,10 @@ def main():
 
     # Generate list of elections from given cultures
     # -----------------------------------------------------
+    # NOTE: there is some problem with `seed` parameter for `"norm-mallows"` culture in Mapel
+    # library which makes setting seed not enough to get full reproducibility. To overcome this
+    # problem we save the `args` list to `args.pickle` file and provide it to allow full
+    # reproducibility.
     try:
         with open(os.path.dirname(os.path.abspath(__file__)) + "/args.pickle", "rb") as file:
             args = pickle.load(file)

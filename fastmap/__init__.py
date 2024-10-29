@@ -7,7 +7,403 @@ Elections framework, such as the isomorphic swap and Spearman distances, Hamming
 distance as well as distances based on diversity, agreement and polarization of the elections.
 """
 
+import ctypes
 import numpy as np
+
+
+def agreement_index(votes: np.ndarray[int]) -> float:
+    """Calculates the Agreement Index for a voting matrix.
+
+    The Agreement Index quantifies the level of consensus among voters for a set of candidates
+    in an election. The index is derived by computing the candidate dominance distances and
+    averaging over all candidate pairs.
+
+    Args:
+        votes:
+            A 2-D numpy array (matrix) of integers representing votes. Each row corresponds
+            to a voter and each column to a candidate, where votes[i, j] is the rank assigned
+            by voter i to candidate j. The shape of votes should be (num_voters, num_candidates).
+
+        num_voters:
+            The number of voters (rows in the `votes` matrix).
+
+        num_candidates:
+            The number of candidates (columns in the `votes` matrix).
+
+    Returns:
+        A float representing the Agreement Index, normalized by the number of candidate pairs.
+
+    Raises:
+        ImportError: Raises exception if C extension module for Agreement Index is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+        MemoryError: If memory allocation for distances fails.
+    """
+    try:
+        import fastmap._agreement_index
+    except ImportError as e:
+        raise ImportError("Error while importing C extension for computing Agreement Index") from e
+
+    assert isinstance(votes, np.ndarray), "Expected a numpy array for votes"
+    assert votes.dtype == np.int32, "Expected votes array of dtype np.int32"
+
+    return fastmap._agreement_index.agreement_index(votes)
+
+def polarization_index(votes: np.ndarray[int]) -> float:
+    """Calculates the Polarization Index for a voting matrix.
+
+    The Polarization Index quantifies the level of polarization among voters for a set of candidates
+    in an election. The index is derived from the analysis of voter distances and their distribution.
+
+    Args:
+        votes:
+            A 2-D numpy array (matrix) of integers representing votes. Each row corresponds
+            to a voter and each column to a candidate, where votes[i, j] is the rank assigned
+            by voter i to candidate j. The shape of votes should be (num_voters, num_candidates).
+
+    Returns:
+        A float representing the Polarization Index, normalized by the number of candidate pairs.
+
+    Raises:
+        ImportError: Raises exception if C extension module for Polarization Index is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+    try:
+        import fastmap._polarization_index
+    except ImportError as e:
+        raise ImportError("Error while importing C extension for computing Polarization Index") from e
+
+    assert isinstance(votes, np.ndarray), "Expected a numpy array for votes"
+    assert votes.ndim == 2, "Votes array must be 2-dimensional"
+    assert votes.dtype == np.int32, "Expected votes array of dtype np.int32"
+
+    num_voters, num_candidates = votes.shape
+
+    if num_voters == 0 or num_candidates == 0:
+        raise ValueError("Votes array must have non-zero dimensions")
+
+    return fastmap._polarization_index.polarization_index(votes)
+
+def diversity_index(votes: np.ndarray[int]) -> float:
+    """Calculates the Diversity Index for a voting matrix.
+
+    The Diversity Index quantifies the level of diversity among voters for a set of candidates
+    in an election. The index is derived from the analysis of voter distances and their distribution.
+
+    Args:
+        votes:
+            A 2-D numpy array (matrix) of integers representing votes. Each row corresponds
+            to a voter and each column to a candidate, where votes[i, j] is the rank assigned
+            by voter i to candidate j. The shape of votes should be (num_voters, num_candidates).
+
+    Returns:
+        A float representing the Diversity Index, normalized by the number of candidate pairs.
+
+    Raises:
+        ImportError: Raises exception if C extension module for Diversity Index is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+
+    try:
+        import fastmap._diversity_index
+    except ImportError as e:
+        raise ImportError("Error while importing C extension for computing Diversity Index") from e
+
+    assert isinstance(votes, np.ndarray), "Expected a numpy array for votes"
+    assert votes.ndim == 2, "Votes array must be 2-dimensional"
+    assert votes.dtype == np.int32, "Expected votes array of dtype np.int32"
+
+    num_voters, num_candidates = votes.shape
+
+    if num_voters == 0 or num_candidates == 0:
+        raise ValueError("Votes array must have non-zero dimensions")
+
+    return fastmap._diversity_index.diversity_index(votes)
+
+
+def kemeny_ranking(votes: np.ndarray) -> tuple[np.ndarray, float]:
+    """Calculates the Kemeny ranking for a voting matrix.
+
+    The Kemeny ranking identifies the permutation of candidates that minimizes the distance to
+    all voters' rankings, using a pairwise comparison approach.
+
+    Args:
+        votes:
+            A 2-D numpy array (matrix) of integers representing votes. Each row corresponds
+            to a voter and each column to a candidate, where votes[i, j] is the rank assigned
+            by voter i to candidate j. The shape of votes should be (num_voters, num_candidates).
+
+    Returns:
+        A tuple containing:
+        - A numpy array with the best ranking (an ordered list of candidate indices).
+        - A float representing the best distance achieved by this ranking.
+
+    Raises:
+        ImportError: If the C extension module for Kemeny ranking is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+        MemoryError: If memory allocation for intermediate matrices fails.
+    """
+    try:
+        from ._kemeny_ranking import kemeny_ranking as _kemeny_ranking
+    except ImportError as e:
+        raise ImportError("Error while importing C extension for computing Kemeny ranking") from e
+
+    if not isinstance(votes, np.ndarray):
+        raise ValueError("Expected a numpy array for votes")
+    if votes.ndim != 2:
+        raise ValueError("Expected a 2-D numpy array for votes")
+    if votes.dtype != np.int32:
+        raise ValueError("Expected votes array of dtype np.int32")
+
+    return _kemeny_ranking(votes)
+
+
+def local_search_kkemeny_single_k(votes: np.ndarray[int], k: int, l: int, starting: np.ndarray[int] = None) -> int:
+    """Performs local search for Kemeny ranking optimization using a single k.
+
+    Args:
+        votes:
+            A 2-D numpy array (matrix) of integers representing votes. Each row corresponds
+            to a voter and each column to a candidate, where votes[i, j] is the rank assigned
+            by voter i to candidate j. The shape of votes should be (num_voters, num_candidates).
+        k:
+            The number of candidates to consider in the local search.
+        l:
+            A parameter controlling the local search's stopping criteria.
+        starting:
+            An optional 1-D numpy array of integers indicating the starting ranking (default is None).
+
+    Returns:
+        An integer representing the resulting score of the Kemeny optimization.
+
+    Raises:
+        ImportError: Raises exception if C extension module for Kemeny local search is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+
+    try:
+        import fastmap._local_search_kkemeny_single_k  # Ensure to replace with the actual module name
+    except ImportError as e:
+        raise ImportError("Error while importing C extension for computing local search Kemeny") from e
+
+    assert isinstance(votes, np.ndarray), "Expected a numpy array for votes"
+    assert votes.ndim == 2, "Votes array must be 2-dimensional"
+    assert votes.dtype == np.int32, "Expected votes array of dtype np.int32"
+
+    num_voters, num_candidates = votes.shape
+
+    if num_voters == 0 or num_candidates == 0:
+        raise ValueError("Votes array must have non-zero dimensions")
+
+    if starting is not None:
+        assert isinstance(starting, np.ndarray), "Starting should be a numpy array"
+        assert starting.ndim == 1 and starting.size == k, "Starting array must be 1-D with size k"
+        assert starting.dtype == np.int32, "Expected starting array of dtype np.int32"
+        starting_ptr = starting.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
+    else:
+        starting_ptr = [] 
+
+    result = fastmap._local_search_kkemeny_single_k.local_search_kkemeny_single_k(
+        votes, k, l, num_voters, num_candidates, starting_ptr
+    )
+    
+    return result
+
+def local_search_kkemeny(
+    votes: np.ndarray[int],
+    l: int,
+    starting: np.ndarray[int] = None
+) -> np.ndarray:
+    """Performs local search for Kemeny ranking optimization on a set of votes.
+
+    Args:
+        votes:
+            A 2-D numpy array (matrix) of integers representing votes. Each row corresponds
+            to a voter and each column to a candidate, where votes[i, j] is the rank assigned
+            by voter i to candidate j. The shape of votes should be (num_voters, num_candidates).
+        l:
+            A parameter controlling the local search's stopping criteria.
+        starting:
+            An optional 1-D numpy array of integers indicating the starting ranking (default is None).
+
+    Returns:
+        A 1-D numpy array of floats representing the resulting scores for each voter.
+
+    Raises:
+        ImportError: If the C extension module for Kemeny local search is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+    try:
+        import fastmap._local_search_kkemeny  # Ensure to replace with the actual module name
+    except ImportError as e:
+        raise ImportError("Error while importing C extension for computing local search Kemeny") from e
+
+    assert isinstance(votes, np.ndarray), "Expected a numpy array for votes"
+    assert votes.ndim == 2, "Votes array must be 2-dimensional"
+    assert votes.dtype == np.int32, "Expected votes array of dtype np.int32"
+    
+    num_voters, num_candidates = votes.shape
+    if num_voters == 0 or num_candidates == 0:
+        raise ValueError("Votes array must have non-zero dimensions")
+    
+    if starting is not None:
+        assert isinstance(starting, np.ndarray), "Starting should be a numpy array"
+        assert starting.ndim == 1 and starting.size == num_candidates, \
+            "Starting array must be 1-D with size equal to number of candidates"
+        assert starting.dtype == np.int32, "Expected starting array of dtype np.int32"
+        starting_ptr = starting.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
+    else:
+        starting_ptr = []
+    
+    result = fastmap._local_search_kkemeny.local_search_kkemeny(
+        votes, l, num_voters, num_candidates, starting_ptr
+    )
+
+    return np.array(result, dtype=np.float64)
+
+
+def polarization_1by2Kemenys(votes: np.ndarray) -> float:
+    """Calculates polarization between two Kemeny rankings.
+
+    Args:
+        votes:
+            A 2-D numpy array of integers where each row corresponds to a voter and each column
+            to a candidate, with values representing ranks given by each voter to each candidate.
+            The array shape should be (num_voters, num_candidates).
+
+    Returns:
+        A float representing the polarization score between two Kemeny rankings.
+
+    Raises:
+        ImportError: If the C extension for polarization computation is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+    try:
+        import fastmap._polarization_1by2Kemenys as _polarization_1by2Kemenys
+    except ImportError as e:
+        raise ImportError("Error importing the C extension for computing polarization") from e
+
+    assert isinstance(votes, np.ndarray), "Votes must be a numpy array"
+    assert votes.ndim == 2, "Votes array must be 2-dimensional"
+    assert votes.dtype == np.int32, "Expected votes array of dtype np.int32"
+
+    return _polarization_1by2Kemenys.polarization_1by2Kemenys(votes)
+
+
+def greedy_kmeans_summed(votes: np.ndarray) -> float:
+    """Calculates a greedy K-means summed score from vote data.
+
+    Args:
+        votes:
+            A 2-D numpy array of integers, where each row corresponds to a voter and each
+            column to a candidate, with values representing ranks given by each voter.
+
+    Returns:
+        A float representing the summed score from the greedy K-means calculation.
+
+    Raises:
+        ImportError: If the C extension for the computation is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+    try:
+        import fastmap._greedy_kmeans_summed as _greedy_kmeans  # Replace with actual module path if necessary
+    except ImportError as e:
+        raise ImportError("Error importing the C extension for greedy K-means computation") from e
+
+    assert isinstance(votes, np.ndarray), "Votes must be a numpy array"
+    assert votes.ndim == 2, "Votes array must be 2-dimensional"
+    assert votes.dtype == np.int32, "Expected votes array of dtype np.int32"
+
+    return _greedy_kmeans.greedy_kmeans_summed(votes)
+
+
+def greedy_kKemenys_summed(votes: np.ndarray) -> float:
+    """Calculates a greedy Kemeny's summed score from vote data.
+
+    Args:
+        votes:
+            A 2-D numpy array of integers, where each row corresponds to a voter and each
+            column to a candidate, with values representing ranks given by each voter.
+
+    Returns:
+        A float representing the summed score from the greedy Kemeny's calculation.
+
+    Raises:
+        ImportError: If the C extension for the computation is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+    try:
+        import fastmap._greedy_kKemenys_summed as _greedy_kKemenys
+    except ImportError as e:
+        raise ImportError("Error importing the C extension for greedy Kemeny's computation") from e
+
+    if not isinstance(votes, np.ndarray):
+        raise ValueError("Votes must be a numpy array")
+    if votes.ndim != 2:
+        raise ValueError("Votes array must be 2-dimensional")
+    if votes.dtype != np.int32:
+        raise ValueError("Expected votes array of dtype np.int32")
+
+    return _greedy_kKemenys.greedy_kKemenys_summed(votes)
+
+
+def greedy_2kKemenys_summed(votes: np.ndarray) -> float:
+    """Calculates a greedy 2-Kemeny's summed score from vote data.
+
+    Args:
+        votes:
+            A 2-D numpy array of integers, where each row corresponds to a voter and each
+            column to a candidate, with values representing ranks given by each voter.
+
+    Returns:
+        A float representing the summed score from the greedy 2-Kemeny's calculation.
+
+    Raises:
+        ImportError: If the C extension for the computation is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+    try:
+        import fastmap._greedy_2kKemenys_summed as _greedy_2kKemenys
+    except ImportError as e:
+        raise ImportError("Error importing the C extension for greedy 2-Kemeny's computation") from e
+
+    if not isinstance(votes, np.ndarray):
+        raise ValueError("Votes must be a numpy array")
+    if votes.ndim != 2:
+        raise ValueError("Votes array must be 2-dimensional")
+    if votes.dtype != np.int32:
+        raise ValueError("Expected votes array of dtype np.int32")
+
+    return _greedy_2kKemenys.greedy_2kKemenys_summed(votes)
+
+
+def greedy_kKemenys_divk_summed(votes: np.ndarray) -> float:
+    """Calculates a greedy Kemeny's div-k summed score from vote data.
+
+    Args:
+        votes:
+            A 2-D numpy array of integers, where each row corresponds to a voter and each
+            column to a candidate, with values representing ranks given by each voter.
+
+    Returns:
+        A float representing the summed score from the greedy Kemeny's div-k calculation.
+
+    Raises:
+        ImportError: If the C extension for the computation is not found.
+        ValueError: If the input votes array has an incompatible shape or invalid data.
+    """
+    try:
+        import fastmap._greedy_kKemenys_divk_summed as _greedy_kKemenys_divk
+    except ImportError as e:
+        raise ImportError("Error importing the C extension for greedy Kemeny's div-k computation") from e
+
+    if not isinstance(votes, np.ndarray):
+        raise ValueError("Votes must be a numpy array")
+    if votes.ndim != 2:
+        raise ValueError("Votes array must be 2-dimensional")
+    if votes.dtype != np.int32:
+        raise ValueError("Expected votes array of dtype np.int32")
+
+    return _greedy_kKemenys_divk.greedy_kKemenys_divk_summed(votes)
 
 
 def spearman(
@@ -228,7 +624,6 @@ def hamming(
     # extension implementation we always exhaustively search over rows matching.
     if nv > nc:
         U, V = U.T, V.T
-
     return fastmap._hamm.hamm(
         U.astype(np.int32),
         V.astype(np.int32),

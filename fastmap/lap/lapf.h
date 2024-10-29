@@ -74,46 +74,45 @@ _lapf_find_umins_avx2 (const size_t n,
 {
     costf_t *c = cost + free_i * n;
 
-    __m512d idxs = _mm512_setr_pd(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0);
-    __m512d incr = _mm512_set1_pd(8.0);
+    __m256d idxs = _mm256_setr_pd(0.0, 1.0, 2.0, 3.0);
+    __m256d incr = _mm256_set1_pd(5.0);
 
-    __m512d hvec = _mm512_set1_pd(LARGE);
-    __m512d hvec_backup = _mm512_set1_pd(LARGE);
+    __m256d hvec = _mm256_set1_pd(LARGE);
+    __m256d hvec_backup = _mm256_set1_pd(LARGE);
 
-    __m512d jvec = _mm512_set1_pd(-1.0);
-    __m512d jvec_backup = _mm512_set1_pd(-1.0);
+    __m256d jvec = _mm256_set1_pd(-1.0);
+    __m256d jvec_backup = _mm256_set1_pd(-1.0);
 
-    __m512d h;
-    __mmask8 cmp1, cmp2;
+    __m256d h, cmp1, cmp2;
+    //__mmask8 cmp1, cmp2;
 
-    for (int32_t j = 0; j < n - 7; j += 8) 
+    for (int32_t j = 0; j < n - 3; j += 4) 
     {
-        h = _mm512_sub_pd (_mm512_loadu_pd ((__m512d *)(c + j)),
-                           _mm512_loadu_pd ((__m512d *)(v + j)));
+        h = _mm256_sub_pd (_mm256_loadu_pd ((costf_t *)(c + j)),
+                           _mm256_loadu_pd ((costf_t *)(v + j)));
 
 
-        cmp1 = _mm512_cmp_pd_mask(hvec, h, _CMP_GT_OQ);
-        cmp2 = _mm512_cmp_pd_mask(hvec_backup, h, _CMP_GT_OQ);
-        cmp2 = (~cmp1)&cmp2;
+        cmp1 = _mm256_cmp_pd(hvec, h, _CMP_GT_OQ);
+        cmp2 = _mm256_andnot_pd(cmp1, _mm256_cmp_pd(hvec_backup, h, _CMP_GT_OQ));
 
-        hvec_backup = _mm512_mask_blend_pd(cmp1, hvec_backup, hvec);
-        jvec_backup = _mm512_mask_blend_pd(cmp1, jvec_backup, jvec);
+        hvec_backup = _mm256_blendv_pd(hvec_backup, hvec, cmp1);
+        jvec_backup = _mm256_blendv_pd(jvec_backup, jvec, cmp1);
 
-        hvec = _mm512_mask_blend_pd(cmp1, hvec, h);
-        jvec = _mm512_mask_blend_pd(cmp1, jvec, idxs);
+        hvec = _mm256_blendv_pd(hvec, h, cmp1);
+        jvec = _mm256_blendv_pd(jvec, idxs, cmp1);
 
-        hvec_backup = _mm512_mask_blend_pd(cmp2, hvec_backup, h);
-        jvec_backup = _mm512_mask_blend_pd(cmp2, jvec_backup, idxs);
+        hvec_backup = _mm256_blendv_pd(hvec_backup, h, cmp2);
+        jvec_backup = _mm256_blendv_pd(jvec_backup, idxs, cmp2);
 
-        idxs = _mm512_add_pd(idxs, incr);
+        idxs = _mm256_add_pd(idxs, incr);
     }
 
-    costf_t h_dump[8], h_backup_dump[8];
-    costf_t j_dump[8], j_backup_dump[8];
-    _mm512_store_pd((__m512d *)&h_dump, hvec);
-    _mm512_store_pd((__m512d *)&h_backup_dump, hvec_backup);
-    _mm512_store_pd((__m512d *)&j_dump, jvec);
-    _mm512_store_pd((__m512d *)&j_backup_dump, jvec_backup);
+    costf_t h_dump[4], h_backup_dump[4];
+    costf_t j_dump[4], j_backup_dump[4];
+    _mm256_store_pd(h_dump, hvec);
+    _mm256_store_pd(h_backup_dump, hvec_backup);
+    _mm256_store_pd(j_dump, jvec);
+    _mm256_store_pd(j_backup_dump, jvec_backup);
 
     costf_t j1 = -1.0;
     costf_t j2 = -1.0;
@@ -121,7 +120,7 @@ _lapf_find_umins_avx2 (const size_t n,
     costf_t v2 = LARGE;
 
 
-    for (int32_t j_ = 0; j_ < 8; j_++) 
+    for (int32_t j_ = 0; j_ < 4; j_++) 
     {
         costf_t h = h_dump[j_];
         if (h < v2)
@@ -140,7 +139,7 @@ _lapf_find_umins_avx2 (const size_t n,
         }
     }
 
-    for (int32_t j = n - n % 8; j < n; j += 1)
+    for (int32_t j = n - n % 4; j < n; j += 1)
     {
         costf_t h = c[j] - v[j];
         if (h < v2)
@@ -324,7 +323,7 @@ _lapf_carr_dense (
         //     }
         // }
     #ifdef __AVX2__
-        if (n >= 8)
+        if (n >= 4)
             _lapf_find_umins_avx2 (n, free_i, cost, v, &v1, &v2, &j1, &j2);
         else
             _lapf_find_umins_regular (n, free_i, cost, v, &v1, &v2, &j1, &j2);

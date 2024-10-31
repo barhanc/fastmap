@@ -139,6 +139,7 @@ ENV/
 env.bak/
 venv.bak/
 activate.sh
+.DS_Store
 
 # Spyder project settings
 .spyderproject

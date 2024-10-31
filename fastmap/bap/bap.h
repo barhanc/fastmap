@@ -16,7 +16,7 @@
     }
 
 /**
- * @brief Implementation of a brute-force algorithm solving Bilinear Assignment Problem (BAP)
+ * @brief Implementation of a brute-force algorithm for the Bilinear Assignment Problem (BAP)
  * ```
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```
@@ -109,7 +109,7 @@ bap_bf (const size_t nv, const size_t nc)
  * Problem: Large Neighborhoods and Experimental Analysis of Algorithms. INFORMS Journal on
  * Computing 32(3):730-746. https://doi.org/10.1287/ijoc.2019.0893
  *
- * which is a heuristic to solve the Bilinear Assignment Problem (BAP)
+ * which is a heuristic for the Bilinear Assignment Problem (BAP)
  * ```
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
  * ```
@@ -118,7 +118,7 @@ bap_bf (const size_t nv, const size_t nc)
  * generates a feasible solution to the BAP by sampling from a uniform distribution two permutations
  * σ, v and then performs a coordinate-descent-like refinment by interchangeably fixing one of the
  * permutations, solving the corresponding Linear Assignment Problem (LAP) and updating the other
- * permutation with the matching found in LAP doing so until convergence.
+ * permutation with the matching found in LAP, doing so until convergence.
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
  * used to compute the cost array.
@@ -170,16 +170,6 @@ bap_aa (const size_t nv, const size_t nc)
     // Coordinate-descent-like refinment
     while (1)
     {
-        memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
-        for (size_t k = 0; k < nc; k++)
-            for (size_t i = 0; i < nv; i++)
-                for (size_t j = 0; j < nv; j++)
-                    cost_nv[i * nv + j] += d (i, j, k, sigma_nc[k]);
-
-        res_curr = lapi (nv, cost_nv, rowsol_nv, colsol_nv);
-        for (size_t i = 0; i < nv; i++)
-            sigma_nv[i] = rowsol_nv[i];
-
         memset (cost_nc, 0, nc * nc * sizeof (*cost_nc));
         for (size_t i = 0; i < nc; i++)
             for (size_t j = 0; j < nc; j++)
@@ -189,6 +179,16 @@ bap_aa (const size_t nv, const size_t nc)
         res_curr = lapi (nc, cost_nc, rowsol_nc, colsol_nc);
         for (size_t i = 0; i < nc; i++)
             sigma_nc[i] = rowsol_nc[i];
+
+        memset (cost_nv, 0, nv * nv * sizeof (*cost_nv));
+        for (size_t k = 0; k < nc; k++)
+            for (size_t i = 0; i < nv; i++)
+                for (size_t j = 0; j < nv; j++)
+                    cost_nv[i * nv + j] += d (i, j, k, sigma_nc[k]);
+
+        res_curr = lapi (nv, cost_nv, rowsol_nv, colsol_nv);
+        for (size_t i = 0; i < nv; i++)
+            sigma_nv[i] = rowsol_nv[i];
 
         if (res_prev == res_curr)
             break;
@@ -220,16 +220,16 @@ typedef struct Node
 
 /**
  * @brief Implementation of a branch-and-bound (see: https://en.wikipedia.org/wiki/Branch_and_bound)
- * algorithm solving Bilinear Assignment Problem (BAP)
+ * algorithm for the Bilinear Assignment Problem (BAP)
  * ```
  *  min_{σ ∈ S_nc} min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))    (0)
  * ```
  * where d(i,j,k,l) is the cost array, S_n denotes the set of all permutations of the set
  * {0,..,n-1} and integers nv, nc describe the size of the problem instance. In the algorithm we
- * first compute an upper bound on the cost value using Alternating Algorithm heuristic (see:
- * bap_aa() function) and later perform a search over all permutation prefixes of σ computing the
+ * first compute an upper bound on the cost value using the Alternating Algorithm heuristic (see:
+ * bap_aa() function) and later perform a search over all permutation prefixes of σ, computing the
  * lower bound on the cost value and pruning the part of the tree that certainly does not contain
- * minimum. The lower bound is computed as follows. Assume we are in the node of the tree having a
+ * the minimum. The lower bound is computed as follows. Assume we are in the node of the tree with a
  * prefix of length n' < nc of permutation σ and let C(σ) be the cost
  * ```
  *  C(σ) = min_{v ∈ S_nv} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} d(i,v(i),k,σ(k))
@@ -245,11 +245,11 @@ typedef struct Node
  * where in (2) we minimize over possible assignments of the remaining m = nc - n' elements. It's
  * clear that every element of cost[i,j] can be computed using lap in O(m**3) time and we then may
  * compute the lower bound (1) also using lap in O(nv**3) time. If the lower bound in the node is
- * greater than upper bound, we prune this part of the tree. Note that if we were to visit every
- * node this algorithm needs much more lap calls than simple brute-force (see: bap_bf()) since there
- * are `sum_{k=1,..,nc} (nc choose k) * k! > nc!` nodes and in each node we need to solve one LAP
- * for a cost matrix of size nv x nv and nv**2 LAPs for cost matrices of size O(nc) x O(nc), while
- * brute-force needs to solve only nc! LAPs for cost matrices of size nv x nv.
+ * greater than the global upper bound, we prune this part of the tree. Note that if we were to
+ * visit every node this algorithm needs much more lap calls than simple brute-force (see: bap_bf())
+ * since there are `sum_{k=1,..,nc} (nc choose k) * k! > nc!` nodes and in each node we need to
+ * solve one LAP for a cost matrix of size nv x nv and nv**2 LAPs for cost matrices of size O(nc) x
+ * O(nc), while brute-force needs to solve only nc! LAPs for cost matrices of size nv x nv.
  *
  * NOTE: Before including this header-file you must define a macro `#define d(i,j,k,l) ...` which is
  * used to compute the cost array.

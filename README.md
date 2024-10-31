@@ -59,4 +59,12 @@ required to generate them for the brute force method and the heuristic AA method
 *Map of elections generated using fastmap AA heuristic | Time: ~1min (Intel i9-12900K) / ~8min (Apple M1)*
 
 As we can see the maps are nearly identical while the computing time using the implemented heuristic
-is vastly smaller.
+is vastly smaller. For comparison we also include the map generated using Mapel implementation of
+the brute-force algorithm and the corresponding time.
+
+![alt text](/examples/map2758.png "Map of elections using Mapel BF implementation")
+
+*Map of elections generated using Mapel BF implementation | Time: ~3h (Intel i9-12900K)*
+
+The map is obviously exactly the same as the one generated using fastmap BF implementation but we
+can see that the computing time is approximately 50% longer.

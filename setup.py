@@ -16,7 +16,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="fastmap",
     version=__version__,
-    packages=find_packages(),
+    packages=find_packages(include=["fastmap", "testing_utils"]),
     license="MIT",
     description="Optimized implementations of algorithms computing distance measures for Maps of Elections.",
     long_description=long_description,
@@ -88,14 +88,14 @@ setup(
             include_dirs=["fastmap/kkemeny/"]
         ),
         Extension(
-            name="fastmap._local_search_kKemeny_single_k",
-            sources=["fastmap/local_search_kKemeny_single_k.c"],
+            name="fastmap._local_search_kkemeny_single_k",
+            sources=["fastmap/local_search_kkemeny_single_k.c"],
             extra_compile_args=CFLAGS,
             include_dirs=["fastmap/kkemeny/"]
         ),
         Extension(
-            name="fastmap._local_search_kKemeny",
-            sources=["fastmap/local_search_kKemeny.c"],
+            name="fastmap._local_search_kkemeny",
+            sources=["fastmap/local_search_kkemeny.c"],
             extra_compile_args=CFLAGS,
             include_dirs=["fastmap/kkemeny/"]
         ),

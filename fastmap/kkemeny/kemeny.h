@@ -185,7 +185,7 @@ static inline bool find_improvement(int **distances, int *d, int *starting, int 
                 cut[cut_index++] = j;
             }
         }
-
+        
         for (int m = 0; m < (1 << (votes_num - k)); m++) {
             if (__builtin_popcount(m) != l) continue;
 
@@ -199,7 +199,7 @@ static inline bool find_improvement(int **distances, int *d, int *starting, int 
 
             int j = 0;
             for (int i = 0; i < k; i++) {
-                if (cut_index < l && cut[j] == i) {
+                if (j < l && cut[j] == i) {
                     ranks[i] = paste[j++];
                 } else {
                     ranks[i] = starting[i];
@@ -247,6 +247,15 @@ static inline void restore_order(int *x, int len) {
     }
 }
 
+void print_array(int *array, int length, const char *name) {
+    printf("%s: [", name);
+    for (int i = 0; i < length; i++) {
+        printf("%d", array[i]);
+        if (i < length - 1) printf(", ");
+    }
+    printf("]\n");
+}
+
 static inline int local_search_kKemeny_single_k(int **votes, int k, int l, int votes_num, int cand_num, int *starting) {
     bool starting_allocated = false;
     if (!starting) {
@@ -257,20 +266,38 @@ static inline int local_search_kKemeny_single_k(int **votes, int k, int l, int v
         }
     }
 
+    // printf("starting allocated: %d\n", starting_allocated);
+    // printf("Initial starting array:\n");
+    // print_array(starting, k, "starting");
+
+    // Allocate distances
     int **distances = (int **)malloc(votes_num * sizeof(int *));
     for (int i = 0; i < votes_num; i++) {
         distances[i] = (int *)malloc(votes_num * sizeof(int));
     }
+    // printf("Allocated distances array.\n");
 
-    calculate_vote_swap_dist(votes, votes_num, distances, cand_num); 
+    // Calculate distances
+    calculate_vote_swap_dist(votes, votes_num, distances, cand_num);
+    // printf("Calculated vote swap distances.\n");
+    // for (int i = 0; i < votes_num; i++) {
+        // printf("Distances row %d: ", i);
+        // for (int j = 0; j < votes_num; j++) {
+            // printf("%d ", distances[i][j]);
+        // }
+        // printf("\n");  // Move to the next row
+    // }
 
+    // Initial distance computation
     int d = distances_to_rankings(starting, distances, k, votes_num);
-    
-    bool check = true;
+    // printf("Initial distance d: %d\n", d);
 
+    bool check = true;
     while (check) {
+        // Allocate rest array
         int *rest = (int *)malloc((votes_num - k) * sizeof(int));
         int rest_index = 0;
+
         for (int i = 0; i < votes_num; i++) {
             bool is_starting = false;
             for (int j = 0; j < k; j++) {
@@ -284,11 +311,18 @@ static inline int local_search_kKemeny_single_k(int **votes, int k, int l, int v
             }
         }
 
-        check = find_improvement(distances, &d, starting, rest, votes_num, k, l);
+        // Print rest array
+        // printf("Rest array:\n");
+        // print_array(rest, votes_num - k, "rest");
 
-        free(rest);
+        // Attempt improvement
+        check = find_improvement(distances, &d, starting, rest, votes_num, k, l);
+        // printf("Improvement found: %d, New distance d: %d\n", check, d);
+
+        free(rest); // Free rest array
     }
 
+    // Free distances array
     for (int i = 0; i < votes_num; i++) {
         free(distances[i]);
     }
@@ -298,6 +332,8 @@ static inline int local_search_kKemeny_single_k(int **votes, int k, int l, int v
         free(starting);
     }
 
+    // printf("Final distance: %d\n", d);
+    // printf("\n");
     return d;
 }
 
@@ -317,6 +353,7 @@ static inline double *local_search_kKemeny(int **votes, int num_voters, int num_
             for (int i = 0; i < k; i++) {
                 starting_k[i] = starting[i];
             }
+            // segmentation fault from here
             d = local_search_kKemeny_single_k(votes, k, l, num_voters, num_candidates, starting_k) / max_dist / num_voters;
             free(starting_k);
         }

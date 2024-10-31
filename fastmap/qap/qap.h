@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "lapf.h"
-#include "rand_special.h"
 
 #define swap(type, x, y) \
     {                    \
@@ -18,7 +17,81 @@
     }
 
 /**
- * @brief Implementation of an approximate algorithm solving Quadratic Assignment Problem (QAP)
+ * @brief Generates a random bistochastic matrix using the procedure described in
+ *
+ * Richard Sinkhorn. "A Relationship Between Arbitrary Positive Matrices and Doubly Stochastic
+ * Matrices." Ann. Math. Statist. 35 (2) 876 - 879, June, 1964.
+ * https://doi.org/10.1214/aoms/1177703591
+ *
+ * We first initialize matrix `X` with random numbers sampled uniformly from [0;1] interval and then
+ * repeatadly make the matrix row-stochastic and column-stochastic until the convergence condition
+ * is met. Using this procedure the matrix `X` eventually converges to the random bistochastic
+ * matrix according to the paper cited above.
+ *
+ * @param n size of the matrix (must be a square matrix)
+ * @param X pointer to the linearized matrix
+ * @param eps tolerance for termination. Iteration terminates when all(abs(X.sum(0) - 1) <= eps) and
+ * all(abs(X.sum(1) - 1) <= eps).
+ */
+static void
+random_bistochastic (const size_t n, double *X, const double eps)
+{
+    for (size_t r = 0; r < n; r++)
+        for (size_t c = 0; c < n; c++)
+            X[r * n + c] = (double)rand () / (double)RAND_MAX;
+
+    double *rsum = calloc (n, sizeof (double));
+    double *csum = calloc (n, sizeof (double));
+    bool converged = false;
+
+    while (!converged)
+    {
+        memset (rsum, 0, n * sizeof (*rsum));
+        memset (csum, 0, n * sizeof (*csum));
+
+        for (size_t c = 0; c < n; c++)
+            for (size_t r = 0; r < n; r++)
+                rsum[c] += X[r * n + c];
+
+        for (size_t c = 0; c < n; c++)
+            for (size_t r = 0; r < n; r++)
+                X[r * n + c] /= rsum[c];
+
+        for (size_t r = 0; r < n; r++)
+            for (size_t c = 0; c < n; c++)
+                csum[r] += X[r * n + c];
+
+        for (size_t r = 0; r < n; r++)
+            for (size_t c = 0; c < n; c++)
+                X[r * n + c] /= csum[r];
+
+        memset (rsum, 0, n * sizeof (*rsum));
+        memset (csum, 0, n * sizeof (*csum));
+
+        for (size_t r = 0; r < n; r++)
+            for (size_t c = 0; c < n; c++)
+            {
+                rsum[c] += X[r * n + c];
+                csum[r] += X[r * n + c];
+            }
+
+        converged = true;
+        for (size_t i = 0; i < n; i++)
+            if (fabs (rsum[i] - 1) > eps || fabs (csum[i] - 1) > eps)
+            {
+                converged = false;
+                break;
+            }
+    }
+
+    free (rsum);
+    free (csum);
+
+    return;
+}
+
+/**
+ * @brief Implementation of a heuristic algorithm for the Quadratic Assignment Problem (QAP)
  * ```
  *  min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))
  * ```
@@ -28,7 +101,7 @@
  * ```
  *  f(P) = sum_{i,j,k,l} d(i,j,k,l) * P[i,j] * P[k,l]   .
  * ```
- * The implemented algorithm is a generalization to Lawler QAP of the algorithm described in paper
+ * The implemented algorithm is a generalization of the algorithm described in paper
  *
  * Vogelstein JT, Conroy JM, Lyzinski V, Podrazik LJ, Kratzer SG, Harley ET, et al. (2015) Fast
  * Approximate Quadratic Programming for Graph Matching. PLoS ONE 10(4): e0121002.
@@ -136,7 +209,7 @@ qap_faq (const size_t nc, const size_t maxiter, const double tol)
 }
 
 /**
- * @brief Implementation of a coordinate-descent heuristic solving Quadratic Assignment Problem
+ * @brief Implementation of a coordinate-descent heuristic for the Quadratic Assignment Problem
  * (QAP)
  * ```
  *  min_{σ ∈ S_nc} sum_{i=0,..,nc-1} sum_{j=0,..,nc-1} d(i,σ(i),j,σ(j))

@@ -15,6 +15,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4
 
@@ -29,5 +30,4 @@ jobs:
         run: pip install .
 
       - name: Run tests
-        run: |
-          timeout 2m pytest tests/test.py -v -s
+        run: timeout 2m pytest tests/test.py -v -s

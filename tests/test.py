@@ -190,19 +190,13 @@ class TestSpearman:
 
     @pytest.mark.parametrize("i", range(len(ORDINAL_CASES_SMALL)))
     def test_small_bf_correct(self, i: int):
-        assert (
-            fastmap.spearman(*ORDINAL_CASES_SMALL[i], method="bf")
-            == TestSpearman.pyvalue[i]
-            == ORDINAL_CASES_SMALL_CORRECT["Spearman"][i]
-        )
+        assert fastmap.spearman(*ORDINAL_CASES_SMALL[i], method="bf") == TestSpearman.pyvalue[i]
+        assert TestSpearman.pyvalue[i] == ORDINAL_CASES_SMALL_CORRECT["Spearman"][i]
 
     @pytest.mark.parametrize("i", range(len(ORDINAL_CASES_SMALL)))
     def test_small_bb_correct(self, i: int):
-        assert (
-            fastmap.spearman(*ORDINAL_CASES_SMALL[i], method="bb")
-            == TestSpearman.pyvalue[i]
-            == ORDINAL_CASES_SMALL_CORRECT["Spearman"][i]
-        )
+        assert fastmap.spearman(*ORDINAL_CASES_SMALL[i], method="bb") == TestSpearman.pyvalue[i]
+        assert TestSpearman.pyvalue[i] == ORDINAL_CASES_SMALL_CORRECT["Spearman"][i]
 
     @pytest.mark.parametrize("i", range(len(ORDINAL_CASES_SMALL)))
     def test_small_aa_geq(self, i: int):

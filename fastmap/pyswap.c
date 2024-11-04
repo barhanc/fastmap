@@ -16,7 +16,7 @@
     }
 
 /**
- * @brief Implementation of a brute-force algorithm solving the following combinatorial optimization
+ * @brief Implementation of a brute-force algorithm for the following combinatorial optimization
  * problem equivalent to computing isomorphic swap distance
  * ```
  *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
@@ -256,7 +256,7 @@ mem_inversion_cnt (size_t n, uint8_t *mem)
 }
 
 /**
- * @brief Implementation of a brute-force algorithm solving the following combinatorial optimization
+ * @brief Implementation of a brute-force algorithm for the following combinatorial optimization
  * problem equivalent to computing isomorphic swap distance
  * ```
  *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
@@ -270,8 +270,8 @@ mem_inversion_cnt (size_t n, uint8_t *mem)
  *
  * This implementation is different from `swap_bf()` in that it uses a precomputed lookup table
  * which allows for O(nv**2) update of the `cost` matrix. Let's first notice that the expression for
- * (i,j) element of cost matrix (given candidates' permutation s) is permutation invariant, namely
- * for any permutation π ∈ S_nc we have
+ * the element (i,j) of `cost` matrix (given candidates' permutation s) is permutation invariant,
+ * namely for any permutation π ∈ S_nc we have
  * ```
  *  cost[i,j] = sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} 1/2 * {(pos_U[i, k   ] - pos_U[i, l   ]) * (pos_V[j, s(k)   ] - pos_V[j, s(l)   ]) < 0}
  *            = sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} 1/2 * {(pos_U[i, π(k)] - pos_U[i, π(l)]) * (pos_V[j, s(π(k))] - pos_V[j, s(π(l))]) < 0} .
@@ -292,8 +292,8 @@ mem_inversion_cnt (size_t n, uint8_t *mem)
  * for every i,j and fixed permutation s (note here that since we are exhaustively searching over
  * all permutations s, we don't really have to invert this permutation and can use s in place of
  * s^-1). We can however precompute the number of inversions for every permutation in S_nc and store
- * them in the lookup table mem. We only need an appropriate encoding of the permutation σ ∈ S_nc as
- * an key (index) to mem array. We use a simple encoding is
+ * them in the lookup table mem. We only need an appropriate encoding of the permutation σ ∈ S_nc to
+ * use as an index to `mem` array. We use a simple encoding
  * ```
  *  key(σ) = nc**0 * σ(0) + nc**1 * σ(1) + ... + nc**(nc-1) * σ(nc-1) .
  * ```
@@ -445,8 +445,8 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
 #define d(i, j, k, l, m, n) ((pos_U[(i) + nv * (k)] - pos_U[(i) + nv * (l)]) * (pos_V[(j) + nv * (m)] - pos_V[(j) + nv * (n)]) < 0)
 
 /**
- * @brief Implementation of a coordinate-descent heuristic (analogous to the Alternating Algorithm
- * for BAP problem, see 'bap.h' file) solving the following combinatorial optimization problem
+ * @brief Implementation of a coordinate-descent heuristic algorithm (analogous to the Alternating
+ * Algorithm for BAP problem, see 'bap.h' file) for the following combinatorial optimization problem
  * equivalent to computing isomorphic swap distance
  * ```
  *  min_{v ∈ S_nv} min_{σ ∈ S_nc} sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
@@ -465,18 +465,20 @@ swap_bf_mem (const int32_t *pos_U, const int32_t *pos_V, const size_t nv, const 
  * the non-fixed permutation, doing so until convergence. After that we return the smaller of the
  * values
  * ```
- *  sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,σ(k),σ(l))
- *  sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v(i),k,l,π(k),π(l))
+ *  sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v*(i),k,l,σ(k),σ(l))
+ *  sum_{i=0,..,nv-1} sum_{k=0,..,nc-1} sum_{l=0,..,nc-1} d(i,v*(i),k,l,π(k),π(l))
  * ```
- * which provides a heuristic approximation of the isomorphic swap distance.
+ * where v* is the optimal permutation of votes for the given permutation of candidates (σ or π) and
+ * can obviously be computed using LAP. This value provides a heuristic approximation of the
+ * isomorphic swap distance.
  *
  * @param pos_U pointer to the linearized position matrix of the 1st (U) election i.e. a matrix such
  * that pos_U[i,k] denotes the position of k-th candidate in the i-th vote in the U election.
- * NOTE: we assume that the elements of matrix are stored in column-major order.
+ * NOTE: we assume that the elements of matrix are stored in the column-major order.
  *
  * @param pos_V pointer to the linearized position matrix of the 2nd (V) election i.e. a matrix such
  * that pos_V[i,k] denotes the position of k-th candidate in the i-th vote in the V election.
- * NOTE: we assume that the elements of matrix are stored in column-major order.
+ * NOTE: we assume that the elements of matrix are stored in the column-major order.
  *
  * @param nv number of votes
  * @param nc number of candidates
@@ -651,7 +653,7 @@ py_swap (PyObject *self, PyObject *args)
     int32_t *pos_V = (int32_t *)PyArray_DATA (obj_cont_Y);
     if (pos_U == NULL || pos_V == NULL)
     {
-        PyErr_SetString (PyExc_TypeError, "invalid array object");
+        PyErr_SetString (PyExc_RuntimeError, "invalid array object");
         goto cleanup;
     }
 
@@ -661,7 +663,7 @@ py_swap (PyObject *self, PyObject *args)
     npy_intp rows_Y = PyArray_DIM (obj_cont_Y, 0), cols_Y = PyArray_DIM (obj_cont_Y, 1);
     if (rows_X != rows_Y || cols_X != cols_Y)
     {
-        PyErr_SetString (PyExc_TypeError, "expected arrays to have the same shape");
+        PyErr_SetString (PyExc_ValueError, "expected arrays to have the same shape");
         goto cleanup;
     }
 

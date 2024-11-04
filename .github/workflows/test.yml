@@ -15,7 +15,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     
     runs-on: ${{ matrix.os }}
-    
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4
 
@@ -24,10 +24,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           
       - name: Install dependencies
-        run: python -m pip install --upgrade pip setuptools wheel
+        run: python -m pip install --upgrade pip setuptools wheel pytest
 
       - name: Install package
         run: pip install .
 
       - name: Run tests
-        run: python3 tests/test.py
+        run: pytest tests/test.py -v -s

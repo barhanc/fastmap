@@ -2,12 +2,25 @@
 Fastmap provides optimized algorithms implementation for Maps of Elections framework.
 
 Fastmap is a small Python library that provides optimized C implementations (as well as convenient
-Python wrappers) of algorithms computing structural similarity between elections used in the Map of
-Elections framework, such as the isomorphic swap and Spearman distances, Hamming distance, pairwise
-distance as well as distances based on diversity, agreement and polarization of the elections.
+Python wrappers) of algorithms for computing structural similarity between elections used in the Map
+of Elections framework, such as the isomorphic swap and Spearman distances, Hamming distance,
+pairwise distance and k-Kemeny distance.
 """
 
 import numpy as np
+
+
+def kemeny(
+    V: np.ndarray[int],
+    k: int | None = None,
+    starting: np.ndarray[int] | None = None,
+    method: str = "ls",
+    # Options
+    l: int = 1,
+    # ...
+) -> int | np.ndarray[int]:
+
+    raise NotImplementedError()
 
 
 def spearman(

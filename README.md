@@ -28,16 +28,16 @@ default on Linux and macOS. For Windows users we recommend using WSL2.
 ## From source
 
 ```shell
-$ git clone https://github.com/barhanc/fastmap.git
-$ cd fastmap
-$ python3 -m venv venv
-$ source venv/bin/activate
-(venv) $ pip install -e .
+git clone https://github.com/barhanc/fastmap.git
+cd fastmap
+python3 -m venv venv
+source venv/bin/activate
+pip install -e .
 ```
 ## Direct (main)
 
 ```shell
-(venv) $ pip install git+https://github.com/barhanc/fastmap.git
+pip install git+https://github.com/barhanc/fastmap.git
 ```
 
 # Benchmarking

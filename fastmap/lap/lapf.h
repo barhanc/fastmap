@@ -75,7 +75,7 @@ _lapf_find_umins_avx2 (const size_t n,
     costf_t *c = cost + free_i * n;
 
     __m256d idxs = _mm256_setr_pd(0.0, 1.0, 2.0, 3.0);
-    __m256d incr = _mm256_set1_pd(5.0);
+    __m256d incr = _mm256_set1_pd(4.0);
 
     __m256d hvec = _mm256_set1_pd(LARGE);
     __m256d hvec_backup = _mm256_set1_pd(LARGE);

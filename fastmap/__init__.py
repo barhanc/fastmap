@@ -9,12 +9,14 @@ pairwise distance and k-Kemeny distance.
 
 import numpy as np
 
+from typing import Literal
+
 
 def kemeny(
     V: np.ndarray[int],
     k: int | None = None,
     starting: np.ndarray[int] | None = None,
-    method: str = "ls",
+    method: Literal["ls"] = "ls",
     # Options
     l: int = 1,
     # ...
@@ -26,7 +28,7 @@ def kemeny(
 def spearman(
     U: np.ndarray[int],
     V: np.ndarray[int],
-    method: str = "bf",
+    method: Literal["bf", "aa", "bb"] = "bf",
     repeats: int = 30,
     seed: int = -1,
 ) -> int:
@@ -142,7 +144,7 @@ def spearman(
 def hamming(
     U: np.ndarray[int],
     V: np.ndarray[int],
-    method: str = "bf",
+    method: Literal["bf", "aa", "bb"] = "bf",
     repeats: int = 30,
     seed: int = -1,
 ) -> int:
@@ -255,7 +257,7 @@ def hamming(
 def swap(
     U: np.ndarray[int],
     V: np.ndarray[int],
-    method: str = "bf",
+    method: Literal["bf", "aa"] = "bf",
     repeats: int = 30,
     seed: int = -1,
 ) -> int:
@@ -346,7 +348,7 @@ def swap(
 def pairwise(
     M_U: np.ndarray[float],
     M_V: np.ndarray[float],
-    method: str = "faq",
+    method: Literal["faq", "aa"] = "faq",
     repeats: int = 30,
     seed: int = -1,
     maxiter: int = 30,

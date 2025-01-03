@@ -8,21 +8,7 @@ pairwise distance and k-Kemeny distance.
 """
 
 import numpy as np
-
 from typing import Literal
-
-
-def kemeny(
-    V: np.ndarray[int],
-    k: int | None = None,
-    starting: np.ndarray[int] | None = None,
-    method: Literal["ls"] = "ls",
-    # Options
-    l: int = 1,
-    # ...
-) -> int | np.ndarray[int]:
-
-    raise NotImplementedError()
 
 
 def spearman(

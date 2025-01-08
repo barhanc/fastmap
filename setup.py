@@ -55,6 +55,22 @@ setup(
             extra_compile_args=CFLAGS,
             include_dirs=["fastmap/lap/", "fastmap/qap/", "fastmap/utils/"],
         ),
+        Extension(
+            name="fastmap._swap_distance_between_potes",
+            sources=["fastmap/swap_distance_between_potes.c"],
+            extra_compile_args=CFLAGS,
+        ),
+        Extension(
+            name="fastmap._local_search_kkemeny_single_k",
+            sources=["fastmap/local_search_kkemeny_single_k.c"],
+            extra_compile_args=CFLAGS,
+            include_dirs=["fastmap/kkemeny/"]
+        ),
+        Extension(
+            name="fastmap._simulated_annealing",
+            sources=["fastmap/simulated_annealing.c"],
+            extra_compile_args=CFLAGS,
+        ),
     ],
     include_dirs=[np.get_include()],
 )

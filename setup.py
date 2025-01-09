@@ -1,7 +1,7 @@
 import numpy as np
 
 from setuptools import setup, find_packages, Extension
-from numpy.core._multiarray_umath import __cpu_features__ as cpu_has
+from numpy._core._multiarray_umath import __cpu_features__ as cpu_has
 
 __version__ = "0.0.1"
 

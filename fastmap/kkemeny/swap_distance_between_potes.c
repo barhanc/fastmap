@@ -1,11 +1,9 @@
 #include <Python.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 /*
  * Function: merge
@@ -30,15 +28,15 @@
  * Notes:
  *  - This function is internally used by `merge_and_count` for recursive inversion counting.
  */
-static inline int merge(int* pote_1, int* pote_2, int left, int mid, int right) {
+static inline int merge(int *pote_1, int *pote_2, int left, int mid, int right) {
     int n1 = mid - left + 1;
     int n2 = right - mid;
 
     // Temporary arrays
-    int* temp_1 = (int*)malloc(n1 * sizeof(int));
-    int* temp_2 = (int*)malloc(n1 * sizeof(int));
-    int* temp_3 = (int*)malloc(n2 * sizeof(int));
-    int* temp_4 = (int*)malloc(n2 * sizeof(int));
+    int *temp_1 = (int *)malloc(n1 * sizeof(int));
+    int *temp_2 = (int *)malloc(n1 * sizeof(int));
+    int *temp_3 = (int *)malloc(n2 * sizeof(int));
+    int *temp_4 = (int *)malloc(n2 * sizeof(int));
 
     // Copy data to temporary arrays
     for (int i = 0; i < n1; i++) {
@@ -90,7 +88,6 @@ static inline int merge(int* pote_1, int* pote_2, int left, int mid, int right) 
     return inv_count;
 }
 
-
 /*
  * Function: merge_and_count
  * --------------------------
@@ -113,7 +110,7 @@ static inline int merge(int* pote_1, int* pote_2, int left, int mid, int right) 
  * Notes:
  *  - This function is part of the merge-sort-based inversion counting method.
  */
-static inline int merge_and_count(int* pote_1, int* pote_2, int left, int right) {
+static inline int merge_and_count(int *pote_1, int *pote_2, int left, int right) {
     if (left >= right) {
         return 0;
     }
@@ -127,7 +124,6 @@ static inline int merge_and_count(int* pote_1, int* pote_2, int left, int right)
 
     return inv_count;
 }
-
 
 /*
  * Function: swap_distance_between_potes_ms
@@ -148,11 +144,13 @@ static inline int merge_and_count(int* pote_1, int* pote_2, int left, int right)
  *  - Space: O(n), due to temporary storage for copying the arrays.
  *
  * Notes:
- *  - This method approximates swap distance between two potes by calculating the number of inversions between them. It works really well for pote lengths of >100 where approx ratio starts converging towards 1, but becomes inefficient and inaccurate for smaller lengths, where Positional Distance Heuristic or exact method will perform better.
+ *  - This method approximates swap distance between two potes by calculating the number of inversions between them. It
+ * works really well for pote lengths of >100 where approx ratio starts converging towards 1, but becomes inefficient
+ * and inaccurate for smaller lengths, where Positional Distance Heuristic or exact method will perform better.
  */
-static inline int swap_distance_between_potes_ms(int* pote_1, int* pote_2, int n) {
-    int* pote_1_copy = (int*)malloc(n * sizeof(int));
-    int* pote_2_copy = (int*)malloc(n * sizeof(int));
+static inline int swap_distance_between_potes_ms(int *pote_1, int *pote_2, int n) {
+    int *pote_1_copy = (int *)malloc(n * sizeof(int));
+    int *pote_2_copy = (int *)malloc(n * sizeof(int));
 
     // Copy arrays
     memcpy(pote_1_copy, pote_1, n * sizeof(int));
@@ -187,7 +185,8 @@ static inline int swap_distance_between_potes_ms(int* pote_1, int* pote_2, int n
  *  - Space: O(1), no additional memory allocation.
  *
  * Notes:
- *  - This heuristic is really fast and work pretty well for small length values, but growing size the approx ratio doesn't converge and stays somewhere in the range of 1.25-1.50.
+ *  - This heuristic is really fast and work pretty well for small length values, but growing size the approx ratio
+ * doesn't converge and stays somewhere in the range of 1.25-1.50.
  */
 int swap_distance_between_potes_pd(int *potes1, int *potes2, int n) {
     int heuristic_value = 0;
@@ -198,7 +197,6 @@ int swap_distance_between_potes_pd(int *potes1, int *potes2, int n) {
 
     return heuristic_value;
 }
-
 
 /*
  * Function: swap_distance_between_potes_bf
@@ -224,8 +222,7 @@ static inline int swap_distance_between_potes_bf(int *pote1, int *pote2, int n) 
     int swap_distance = 0;
     for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
-            if ((pote1[i] > pote1[j] && pote2[i] < pote2[j]) ||
-                (pote1[i] < pote1[j] && pote2[i] > pote2[j])) {
+            if ((pote1[i] > pote1[j] && pote2[i] < pote2[j]) || (pote1[i] < pote1[j] && pote2[i] > pote2[j])) {
                 swap_distance++;
             }
         }
@@ -233,7 +230,6 @@ static inline int swap_distance_between_potes_bf(int *pote1, int *pote2, int n) 
 
     return swap_distance;
 }
-
 
 /*
  * Function: py_swap_distance_between_potes
@@ -350,18 +346,18 @@ static PyObject *py_swap_distance_between_potes(PyObject *self, PyObject *args) 
 
 // Method definition table
 static PyMethodDef methods[] = {
-    {"swap_distance_between_potes", (PyCFunction)py_swap_distance_between_potes, METH_VARARGS, "Calculate exact or approximated swap distance between two potes."},
+    {"swap_distance_between_potes", (PyCFunction)py_swap_distance_between_potes, METH_VARARGS,
+     "Calculate exact or approximated swap distance between two potes."},
     {NULL, NULL, 0, NULL}  // Sentinel
 };
 
 // Module definition
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
-    "_swap_distance_between_potes",  // Module name
+    "_swap_distance_between_potes",                                  // Module name
     "Calculate exact or approximated swap distance between potes.",  // Module docstring
     -1,  // Size of per-interpreter state of the module, or -1 if module keeps state in global variables
-    methods
-};
+    methods};
 
 // Module initialization function
 PyMODINIT_FUNC PyInit__swap_distance_between_potes(void) {

@@ -26,6 +26,7 @@ setup(
     python_requires=">=3.10",
     extras_require={
         "testing": [
+            "pytest",
             "mapel",
             "tqdm",
         ]
@@ -54,6 +55,22 @@ setup(
             sources=["fastmap/pypairwise.c"],
             extra_compile_args=CFLAGS,
             include_dirs=["fastmap/lap/", "fastmap/qap/", "fastmap/utils/"],
+        ),
+        Extension(
+            name="fastmap._swap_distance_between_potes",
+            sources=["fastmap/kkemeny/swap_distance_between_potes.c"],
+            extra_compile_args=CFLAGS,
+        ),
+        Extension(
+            name="fastmap._local_search_kkemeny_single_k",
+            sources=["fastmap/kkemeny/local_search_kkemeny_single_k.c"],
+            extra_compile_args=CFLAGS,
+            include_dirs=["fastmap/kkemeny/"],
+        ),
+        Extension(
+            name="fastmap._simulated_annealing",
+            sources=["fastmap/kkemeny/simulated_annealing.c"],
+            extra_compile_args=CFLAGS,
         ),
     ],
     include_dirs=[np.get_include()],

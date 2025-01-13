@@ -39,7 +39,14 @@ pip install -e .
 pip install git+https://github.com/barhanc/fastmap.git
 ```
 
-# Benchmarking
+# Benchmarks
+
+To benchmark and test the implemented algorithms you need additional packages: `pytest`, `mapel` and
+`tqdm`. You can install those packages on your own or (if you chose to install the package from
+source) use
+```shell
+pip install -e '.[testing]'
+```
 
 In the [example.py](/examples/example.py) file we provide a minimal reproducible example which
 generates a map of elections with 8 candidates and 96 voters that requires computing 46056

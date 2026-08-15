@@ -1,3 +1,5 @@
+
+
 # Brief description
 
 The map of elections framework is a way of visualizing datasets of elections. A single election
@@ -50,7 +52,7 @@ pip install -e '.[testing]'
 
 In the [example.py](/examples/example.py) file we provide a minimal reproducible example which
 generates a map of elections with 8 candidates and 96 voters that requires computing 46056
-isomorphic swap distances. In the code we use the `concurrent.futures` module to utilze multiple
+isomorphic swap distances. In the code we use the `concurrent.futures` module to utilize multiple
 cores when computing the distances and use the `sklearn.manifold.MDS` method to obtain the 2D
 embedding. We provide the elections' matrices generated using `mapel.elections` module in the
 `args.pickle` file to allow full reproducibility. Below we show the resulting maps and the time
